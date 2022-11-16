@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// npx prisma migrate dev --name init
+
+// npm install @prisma/client
+// npx prisma generate => for everytime updating schema.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @default(autoincrement()) @id
+  email_google String @unique
+  token_google String
+  user_name String
+  password String
+  age Int
+  sex String
+  body_infos BodyInfo[]
+}
+
+model BodyInfo {
+  id Int @default(autoincrement()) @id
+  user User? @relation(fields: [user_id], references: [id])
+  user_id Int?
+  date DateTime
+  height Float
+  weight Float
+  fat_rate Float
+}
+
+model Manager {
+  id Int @default(autoincrement()) @id
+  user_name String
+  password String
+}
+
+model Program {
+  id Int @default(autoincrement()) @id
+  name String
+  description String
+  routines Routine[]
+  programRec ProgramRec[]
+}
+
+model Routine {
+  id Int @default(autoincrement()) @id
+  program Program @relation(fields: [program_id], references: [id])
+  program_id Int
+  week Int
+  day Int
+  order Int 
+  exercise Exercise @relation(fields: [exercise_id], references: [id])
+  exercise_id Int
+  reps Int
+
+  routineRecs RoutineRec[]
+}
+
+model Exercise {
+  id Int @default(autoincrement()) @id
+  name String
+  description String
+  routines Routine[]
+}
+
+model ProgramRec {
+  id Int @default(autoincrement()) @id
+  program Program @relation(fields: [program_id], references: [id])
+  program_id Int
+  start DateTime
+  end DateTime
+  sq_before Float
+  bp_before Float
+  dl_before Float
+  sq_after Float
+  bp_after Float
+  dl_after Float
+
+  routineRec RoutineRec[]
+  }
+
+  model RoutineRec {
+    id Int @default(autoincrement()) @id
+    programRec ProgramRec @relation(fields: [programrec_id], references: [id])
+    programrec_id Int
+    routineRec Routine @relation(fields: [routine_id], references: [id])
+    routine_id Int
+    done_reps Int
+  }
