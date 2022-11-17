@@ -7,6 +7,7 @@ import {
     Put,
     Delete
    } from '@nestjs/common';
+import { RecordFixed } from 'src/dto/RecordFixed';
 import { RecordWeekly } from 'src/dto/RecordWeekly';
 import { SBD } from 'src/dto/sbd.dto';
 import { PredService } from './services/pred.service';
@@ -23,8 +24,10 @@ import { PredService } from './services/pred.service';
      * @returns Best 3 methods and the results
      */
     @Post('pred') // POST /api/pred
-    getPred(@Body() records: RecordWeekly[]): SBD {
-      return this.predService.getPred(records);
+    getPred(
+      @Body('recordFixed') recordFixed: RecordFixed,
+      @Body('recordWeekly') records: RecordWeekly[]): SBD {
+      return this.predService.getPred(recordFixed, records);
     } 
   }
   
