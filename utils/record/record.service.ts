@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { RecordFixed } from 'src/dto/RecordFixed';
+import { RecordInput } from 'src/dto/RecordInput';
 import { RecordWeekly } from 'src/dto/RecordWeekly';
 
 @Injectable()
@@ -10,7 +11,7 @@ export class RecordService {
    * @param recordWeekly Variables like bodyweight etc
    * @returns 
    */
-  processRecords(recordFixed:RecordFixed, recordWeekly:RecordWeekly[]): [] {
+  processRecords(recordFixed:RecordFixed, recordWeekly:RecordWeekly[]): RecordInput[] {
     return []
   }
 }

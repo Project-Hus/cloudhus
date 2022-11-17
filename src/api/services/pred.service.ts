@@ -5,6 +5,7 @@ import { RecordWeekly } from 'src/dto/RecordWeekly';
 import { RecordFixed } from 'src/dto/RecordFixed';
 import { RecordService } from 'utils/record/record.service';
 
+
 @Injectable()
 export class PredService {
   constructor(
