@@ -8,8 +8,8 @@ import {
     Delete
    } from '@nestjs/common';
 import { RecordFixed } from 'src/dto/RecordFixed';
+import { RecordOutput } from 'src/dto/RecordOutput';
 import { RecordWeekly } from 'src/dto/RecordWeekly';
-import { SBD } from 'src/dto/sbd.dto';
 import { PredService } from './services/pred.service';
 
   @Controller('api')
@@ -26,7 +26,7 @@ import { PredService } from './services/pred.service';
     @Post('pred') // POST /api/pred
     getPred(
       @Body('recordFixed') recordFixed: RecordFixed,
-      @Body('recordWeekly') records: RecordWeekly[]): SBD {
+      @Body('recordWeekly') records: RecordWeekly[]): RecordOutput[] {
       return this.predService.getPred(recordFixed, records);
     } 
   }

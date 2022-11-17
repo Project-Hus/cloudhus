@@ -12,6 +12,10 @@ export class RecordService {
    * @returns 
    */
   processRecords(recordFixed:RecordFixed, recordWeekly:RecordWeekly[]): RecordInput[] {
-    return []
+    return [
+        {test:'hi', a:3, b:5},
+        {test:'no', a:1, b:4},
+        {test:'why', a:2, b:7}
+    ]
   }
 }
