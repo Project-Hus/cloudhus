@@ -6,11 +6,10 @@ import { writeFileSync } from 'fs';
 import { RecordWeekly } from 'src/dto/RecordWeekly';
 import { RecordFixed } from 'src/dto/RecordFixed';
 import { RecordInput } from 'src/dto/RecordInput';
+import { RecordOutput } from 'src/dto/RecordOutput';
 
 /* Service */
 import { RecordService } from 'utils/record/record.service';
-import { RecordOutput } from 'src/dto/RecordOutput';
-
 /**
  * API Service for training program suggestion and prediction.
  */
@@ -30,17 +29,19 @@ export class PredService {
       // spawn a prediction model and get the result
       const pythonProcess = spawnSync('python',["./predModel/model24.py"]);
       // get the result and return 
-      return pythonProcess.stdout.toString()
-        .split('\n')
-        .map((preds): RecordOutput =>{
-          const pred = preds.split(' ')
-          return {
-            method: pred[0],
-            squat: Number(pred[1]),
-            benchpress: Number(pred[2]),
-            deadlift: Number(pred[3]),
-          }
-        })
+      const abc = pythonProcess.stdout.toString();
+      console.log(abc)
+      return abc
+      .split('\n')
+      .map((preds): RecordOutput =>{
+        const pred = preds.split(' ')
+        return {
+          method: pred[0],
+          squat: Number(pred[1]),
+          benchpress: Number(pred[2]),
+          deadlift: Number(pred[3]),
+        }
+      })
     } catch (error) {
       return [{method: 'failed', squat:0, benchpress:0, deadlift:0}];
     }
