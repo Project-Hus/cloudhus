@@ -26,17 +26,11 @@ export class PredService {
       this.recordService.processRecords(recordFixed, records);
       
       // transfer records to the model by file
-      writeFile('./predModel/model24Input.json', JSON.stringify(recordsAttached),
-      (err)=>{
-        if(err) throw err;
-        else {
-
-        }
-      })
+      writeFileSync('./predModel/model24Input.json', JSON.stringify(recordsAttached))
       // spawn a prediction model and get the result
-      const pythonProcess = spawn('python',["./predModel/model24.py"]);
-      // get the result
-      const result = pythonProcess.stdout.toString()
+      const pythonProcess = spawnSync('python',["./predModel/model24.py"]);
+      // get the result and return 
+      return pythonProcess.stdout.toString()
         .split('\n')
         .map((preds): RecordOutput =>{
           const pred = preds.split(' ')
@@ -47,7 +41,6 @@ export class PredService {
             deadlift: Number(pred[3]),
           }
         })
-      return result;
     } catch (error) {
       return [{method: 'failed', squat:0, benchpress:0, deadlift:0}];
     }

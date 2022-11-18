@@ -27,6 +27,7 @@ import { PredService } from './services/pred.service';
     getPred(
       @Body('recordFixed') recordFixed: RecordFixed,
       @Body('recordWeekly') records: RecordWeekly[]): RecordOutput[] {
+      
       return this.predService.getPred(recordFixed, records);
     } 
   }
