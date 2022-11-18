@@ -31,7 +31,7 @@ export class PredService {
       // get the result and return 
       const abc = pythonProcess.stdout.toString();
       console.log(abc)
-      return abc
+      return abc.trim()
       .split('\n')
       .map((preds): RecordOutput =>{
         const pred = preds.split(' ')
