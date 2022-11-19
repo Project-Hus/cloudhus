@@ -12,10 +12,20 @@ export class RecordService {
    * @returns 
    */
   processRecords(recordFixed:RecordFixed, recordWeekly:RecordWeekly[]): RecordInput[] {
-    return [
-        {test:'hi', a:3, b:5},
-        {test:'no', a:1, b:4},
-        {test:'why', a:2, b:7}
-    ]
+    return recordWeekly.map((r)=>{
+      return {
+        sex: recordFixed.sex=='male'?true:false, // true male
+        age: recordFixed.age,
+        height: recordFixed.height,
+        arm_length: recordFixed.arm_length, 
+        leg_length: recordFixed.leg_length, 
+        weight: r.weight,
+        fat_rate: r.fat_rate,
+        program: r.program, // next program
+        squat: r.squat, // weights after previous program
+        benchpress: r.benchpress,
+        deadlift: r.deadlift,
+      }
+    });
   }
 }
