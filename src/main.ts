@@ -5,7 +5,6 @@ import { PrismaService } from './services/prisma/prisma.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
   const prismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app);
   // Prisma interferes with NestJS enableShutdownHooks. Prisma listens for shutdown signals

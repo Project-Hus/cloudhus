@@ -23,15 +23,12 @@ export class PredService {
     try{
       const recordsAttached: RecordInput[] = // Attaching constants and variables
       this.recordService.processRecords(recordFixed, records);
-      
       // transfer records to the model by file
       writeFileSync('./predModel/model24Input.json', JSON.stringify(recordsAttached))
       // spawn a prediction model and get the result
       const pythonProcess = spawnSync('python',["./predModel/model24.py"]);
       // get the result and return 
-      const abc = pythonProcess.stdout.toString();
-      console.log(abc)
-      return abc.trim()
+      return pythonProcess.stdout.toString().trim()
       .split('\n')
       .map((preds): RecordOutput =>{
         const pred = preds.split(' ')
