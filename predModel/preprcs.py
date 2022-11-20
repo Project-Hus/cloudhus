@@ -28,8 +28,6 @@ def preprcs(raw):
   # limbs embedding
   df['arm_length'].replace(['short','medium','long'], [0.25,0.5,0.75], inplace=True)
   df['leg_length'].replace(['short','medium','long'], [0.25,0.5,0.75], inplace=True)
-  # program embedding
-  df['program'] = df['program'][:-1].append(pd.Series(0)).to_numpy()
 
   # MinMax scaler for [ age, height, weight, fat_rate, s/b/d ]
   df['age'] = df['age'].map(aF)
@@ -40,6 +38,8 @@ def preprcs(raw):
   df['benchpress'] = df['benchpress'].map(bF)
   df['deadlift'] = df['deadlift'].map(dF)
 
+  # program embedding
+  df['program'] = pd.concat([df['program'][:-1], pd.Series(0)]).to_numpy()
   # 243 whole vector integer space
   v_space = np.array(space_generator_2d())
   program_vec = np.zeros((24,5))

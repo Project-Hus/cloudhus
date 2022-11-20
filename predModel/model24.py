@@ -2,22 +2,24 @@ import sys
 import json
 
 import pandas as pd
+import numpy as np
 #import tensorflow as tf
 
 import preprcs
+from LSTM24 import LSTM24
 
 with open('./predModel/model24Input.json', 'r') as f:
   data = json.load(f)
 
 data = preprcs.preprcs(data)
 
-with open('./predModel/model24Output.json', 'w') as f:
-  data.to_json(f)
+#with open('./predModel/model24Output.txt', 'w') as f:
+#  np.savetxt(f, data)
 
 # Prediction for every methods 
 # ============================
 
 # ============================
 
-print('Amethod 183 105 205\nBmethod 200 100 302\nCmethod 200 100 302\nDmethod 200 100 302\nEmethod 200 100 302',end='')
+print(LSTM24(data), end='')
 sys.stdout.flush()
