@@ -15,6 +15,11 @@
 import pandas as pd
 import numpy as np
 
+from recScaler import recScaler, recDescaler
+from recScaler import aF, hF, wF, fF, sF, bF, dF
+
+from embedProgram import space_generator_2d
+
 def preprcs(raw):
   df = pd.DataFrame(raw)
 
@@ -23,33 +28,28 @@ def preprcs(raw):
   # limbs embedding
   df['arm_length'].replace(['short','medium','long'], [0.25,0.5,0.75], inplace=True)
   df['leg_length'].replace(['short','medium','long'], [0.25,0.5,0.75], inplace=True)
-
+  # program embedding
   df['program'] = df['program'][:-1].append(pd.Series(0)).to_numpy()
 
+  # MinMax scaler for [ age, height, weight, fat_rate, s/b/d ]
+  df['age'] = df['age'].map(aF)
+  df['height'] = df['height'].map(hF)
+  df['weight'] = df['weight'].map(wF)
+  df['fat_rate'] = df['fat_rate'].map(fF)
+  df['squat'] = df['squat'].map(sF)
+  df['benchpress'] = df['benchpress'].map(bF)
+  df['deadlift'] = df['deadlift'].map(dF)
+
+  # 243 whole vector integer space
+  v_space = np.array(space_generator_2d())
+  program_vec = np.zeros((24,5))
+
+  for i in df['program']:
+    program_vec[i] = v_space[i]
+
+  for i in range(5):
+    df[f'program_{i}'] = program_vec[:,i]
+
+  df.drop('program', inplace=True, axis=1)
+
   return df
-
-# MinMax scaler for [ age, height, weight, fat_rate, s/b/d ]
-MIN = {
-  'age':10,
-  'height': 120,
-  'weight': 40,
-  'fat_rate': 0,
-  'squat': 20,
-  'benchpress': 20,
-  'deadlift': 20
-}
-MAX = {
-  'age':150,
-  'height': 220,
-  'weight': 250,
-  'fat_rate': 50,
-  'squat': 550,
-  'benchpress': 500,
-  'deadlift': 550
-}
-def recScaler(f_type, val):
-  res = 0
-  if f_type == 'age':
-    return 
-
-def recDescaler(f_type, race):

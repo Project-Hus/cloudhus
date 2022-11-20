@@ -22,3 +22,18 @@ def recScaler(f_type, val):
 
 def recDescaler(f_type, val):
   return val * (MAX[f_type]-MIN[f_type]) + MIN[f_type]
+
+def aF(v) :
+  return recScaler('age', v)
+def hF(v) :
+  return recScaler('height', v)
+def wF(v) :
+  return recScaler('weight', v)
+def fF(v) :
+  return recScaler('fat_rate', v)
+def sF(v) :
+  return recScaler('squat', v)
+def bF(v) :
+  return recScaler('benchpress', v)
+def dF(v) :
+  return recScaler('deadlift', v)
