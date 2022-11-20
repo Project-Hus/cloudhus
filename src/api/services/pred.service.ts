@@ -27,7 +27,6 @@ export class PredService {
       writeFileSync('./predModel/model24Input.json', JSON.stringify(recordsAttached))
       // spawn a prediction model and get the result
       const pythonProcess = spawnSync('python',["./predModel/model24.py"]);
-      console.log(pythonProcess)
       // get the result and return
       return pythonProcess.stdout.toString().trim()
       .split('\n')

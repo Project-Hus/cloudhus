@@ -1,6 +1,7 @@
 import sys
 import json
 
+import pandas as pd
 #import tensorflow as tf
 
 import preprcs
@@ -11,7 +12,7 @@ with open('./predModel/model24Input.json', 'r') as f:
 data = preprcs.preprcs(data)
 
 with open('./predModel/model24Output.json', 'w') as f:
-  json.dump(data, f)
+  data.to_json(f)
 
 # Prediction for every methods 
 # ============================
