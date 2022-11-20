@@ -16,10 +16,5 @@ data = preprcs.preprcs(data)
 #with open('./predModel/model24Output.txt', 'w') as f:
 #  np.savetxt(f, data)
 
-# Prediction for every methods 
-# ============================
-
-# ============================
-
 print(LSTM24(data), end='')
 sys.stdout.flush()
