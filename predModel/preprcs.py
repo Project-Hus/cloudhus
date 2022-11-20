@@ -52,4 +52,4 @@ def preprcs(raw):
 
   df.drop('program', inplace=True, axis=1)
 
-  return df
+  return df.to_numpy()
