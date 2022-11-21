@@ -10,19 +10,24 @@ import { RecordOutput } from 'src/dto/RecordOutput';
 
 /* Service */
 import { RecordProcessService } from 'utils/recordProcess/recordProcess.service';
+import { RecordService } from 'src/services/record/record.service';
+import { Prisma } from '@prisma/client';
+
 /**
  * API Service for training program suggestion and prediction.
  */
 @Injectable()
 export class PredService {
   constructor(
-    private readonly recordProcessService : RecordProcessService
+    private readonly recordProcessService : RecordProcessService,
+    private readonly recordService : RecordService
   ) {}
 
   getPred(recordFixed: RecordFixed, records: RecordWeekly[]): RecordOutput[] {
     try{
       const recordsAttached: RecordInput[] = // Attaching constants and variables
       this.recordProcessService.processRecords(recordFixed, records);
+      this.recordService.createProgramRec(recs)
       // transfer records to the model by file
       writeFileSync('./predModel/model24Input.json', JSON.stringify(recordsAttached))
       // spawn a prediction model and get the result
