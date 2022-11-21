@@ -9,20 +9,20 @@ import { RecordInput } from 'src/dto/RecordInput';
 import { RecordOutput } from 'src/dto/RecordOutput';
 
 /* Service */
-import { RecordService } from 'utils/record/record.service';
+import { RecordProcessService } from 'utils/recordProcess/recordProcess.service';
 /**
  * API Service for training program suggestion and prediction.
  */
 @Injectable()
 export class PredService {
   constructor(
-    private readonly recordService : RecordService
+    private readonly recordProcessService : RecordProcessService
   ) {}
 
   getPred(recordFixed: RecordFixed, records: RecordWeekly[]): RecordOutput[] {
     try{
       const recordsAttached: RecordInput[] = // Attaching constants and variables
-      this.recordService.processRecords(recordFixed, records);
+      this.recordProcessService.processRecords(recordFixed, records);
       // transfer records to the model by file
       writeFileSync('./predModel/model24Input.json', JSON.stringify(recordsAttached))
       // spawn a prediction model and get the result

@@ -1,10 +1,11 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// npx prisma migrate dev --name init
-
 // npm install @prisma/client
-// npx prisma generate => for everytime updating schema.
+
+// => for everytime updating schema.
+// npx prisma migrate dev --name init
+// npx prisma generate
 
 generator client {
   provider = "prisma-client-js"
@@ -18,8 +19,8 @@ datasource db {
 model User {
   id Int @default(autoincrement()) @id
   email_google String @unique
-  token_google String
-  user_name String
+  token_google String 
+  user_name String @unique
   password String
   age Int
   sex String
@@ -28,8 +29,8 @@ model User {
 
 model BodyInfo {
   id Int @default(autoincrement()) @id
-  user User? @relation(fields: [user_id], references: [id])
-  user_id Int?
+  user User @relation(fields: [user_id], references: [id])
+  user_id Int
   date DateTime
   height Float
   weight Float
@@ -77,12 +78,9 @@ model ProgramRec {
   program_id Int
   start DateTime
   end DateTime
-  sq_before Float
-  bp_before Float
-  dl_before Float
-  sq_after Float
-  bp_after Float
-  dl_after Float
+  sq Float
+  bp Float
+  dl Float
 
   routineRec RoutineRec[]
   }
