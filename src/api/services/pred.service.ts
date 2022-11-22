@@ -11,7 +11,7 @@ import { RecordOutput } from 'src/dto/RecordOutput';
 /* Service */
 import { RecordProcessService } from 'utils/recordProcess/recordProcess.service';
 import { RecordService } from 'src/services/record/record.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, ProgramRec } from '@prisma/client';
 
 /**
  * API Service for training program suggestion and prediction.
@@ -27,7 +27,12 @@ export class PredService {
     try{
       const recordsAttached: RecordInput[] = // Attaching constants and variables
       this.recordProcessService.processRecords(recordFixed, records);
-      this.recordService.createProgramRec(recs)
+      const a : Prisma.ProgramRecCreateUni = {
+        program: Prisma.Program,
+        start: '5',
+        end: '5',
+      }
+      this.recordService.createProgramRec( a )
       // transfer records to the model by file
       writeFileSync('./predModel/model24Input.json', JSON.stringify(recordsAttached))
       // spawn a prediction model and get the result
