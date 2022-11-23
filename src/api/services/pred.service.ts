@@ -11,7 +11,8 @@ import { RecordOutput } from 'src/dto/RecordOutput';
 /* Service */
 import { RecordProcessService } from 'utils/recordProcess/recordProcess.service';
 import { RecordService } from 'src/services/record/record.service';
-import { Prisma, ProgramRec } from '@prisma/client';
+import { Prisma, TrainingProgramRec } from '@prisma/client';
+import { UserService } from 'src/services/user/user.service';
 
 /**
  * API Service for training program suggestion and prediction.
@@ -20,19 +21,33 @@ import { Prisma, ProgramRec } from '@prisma/client';
 export class PredService {
   constructor(
     private readonly recordProcessService : RecordProcessService,
-    private readonly recordService : RecordService
+    private readonly recordService : RecordService,
+    private readonly userService : UserService
   ) {}
 
-  getPred(recordFixed: RecordFixed, records: RecordWeekly[]): RecordOutput[] {
+  async getPred(recordFixed: RecordFixed, records: RecordWeekly[]): Promise<RecordOutput[]> {
     try{
       const recordsAttached: RecordInput[] = // Attaching constants and variables
       this.recordProcessService.processRecords(recordFixed, records);
-      const a : Prisma.ProgramRecCreateUni = {
-        program: Prisma.Program,
-        start: '5',
-        end: '5',
-      }
-      this.recordService.createProgramRec( a )
+      
+      const new_user : Prisma.UserCreateInput = 
+
+      const records_db: Prisma.TrainingProgramRecCreateManyInput[] =
+        await records.map((e)=> {
+          return {
+            program_id: 1,
+            user_id: 1,
+            start: new Date(),
+            end: new Date(),
+            comment: '',
+            weight: e.weight,
+            fat_rate: e.fat_rate,
+            squat: e.squat,
+            benchpress: e.benchpress,
+            deadlift: e.deadlift,
+          }
+        })
+      await this.recordService.createProgramRecs( records_db )
       // transfer records to the model by file
       writeFileSync('./predModel/model24Input.json', JSON.stringify(recordsAttached))
       // spawn a prediction model and get the result

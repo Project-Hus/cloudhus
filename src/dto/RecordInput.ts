@@ -1,13 +1,13 @@
 export class RecordInput {
     sex: Boolean; // true male
-    age: Number;
-    height: Number;
-    arm_length: Number; 
-    leg_length: Number; 
-    weight: Number;
-    fat_rate: Number;
-    program: Number; // next program
-    squat: Number; // weights after previous program
-    benchpress: Number;
-    deadlift: Number;
+    age: number;
+    height: number;
+    arm_length: number; 
+    leg_length: number; 
+    weight: number;
+    fat_rate: number;
+    program: number; // next program
+    squat: number; // weights after previous program
+    benchpress: number;
+    deadlift: number;
 }

@@ -19,7 +19,7 @@ datasource db {
 model User {
   id Int @default(autoincrement()) @id
   created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  updated_at DateTime @default(now()) @updatedAt
   // user info
   email_google String @unique
   token_google String
@@ -40,7 +40,7 @@ model User {
 model Manager {
   id Int @default(autoincrement()) @id
   created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  updated_at DateTime @default(now()) @updatedAt
   manager_name String @unique
   password String
 }
@@ -55,7 +55,7 @@ model TrainingProgramType {
 model TrainingProgram {
   id Int @default(autoincrement()) @id
   created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  updated_at DateTime @default(now()) @updatedAt
 
   trainingProgramType TrainingProgramType @relation(fields: [type_id], references: [id])
   type_id Int

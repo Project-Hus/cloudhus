@@ -1,6 +1,6 @@
 export class RecordOutput {
     method: String;
-    squat: Number;
-    benchpress: Number;
-    deadlift: Number;
+    squat: number;
+    benchpress: number;
+    deadlift: number;
 }

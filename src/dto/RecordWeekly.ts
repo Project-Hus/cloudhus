@@ -1,8 +1,8 @@
 export class RecordWeekly {
-    weight: Number;
-    fat_rate: Number;
-    program: Number; 
-    squat: Number;
-    benchpress: Number;
-    deadlift: Number;
+    weight: number;
+    fat_rate: number;
+    program: number; 
+    squat: number;
+    benchpress: number;
+    deadlift: number;
 }

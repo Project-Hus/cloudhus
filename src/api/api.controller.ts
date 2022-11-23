@@ -24,9 +24,9 @@ import { PredService } from './services/pred.service';
      * @returns Best 3 methods and the results
      */
     @Post('pred') // POST /api/pred
-    getPred(
+    async getPred(
       @Body('recordFixed') recordFixed: RecordFixed,
-      @Body('recordWeekly') records: RecordWeekly[]): RecordOutput[] {
+      @Body('recordWeekly') records: RecordWeekly[]): Promise<RecordOutput[]> {
       
       return this.predService.getPred(recordFixed, records);
     } 
