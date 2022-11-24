@@ -1,5 +1,26 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
+
+function space_generator_2d(length = 1, base=[0,1]) : Promise<any[]> {
+    return new Promise((resolve, reject) => {
+        let space = [];
+    for (let i of base)
+      { space = [...space, [i]]; }
+    let new_space = [];
+    for (let i = 0; i < length -1 ; i++ ) {
+      for ( let j of space ) {
+        for ( let k of base )
+          new_space = [...new_space, [...j, k]]
+      }
+      if ( i!== length-2) {
+        space = [...new_space]
+        new_space = []
+      }
+    }
+    resolve(length > 1 ? new_space : space); 
+      })
+  }
+
 async function main() {
     Prisma
     await prisma.user.create({
@@ -18,7 +39,20 @@ async function main() {
     await prisma.trainingProgramType.create({
         data : { type: 'powerlifting' }
     });
+
+    const vector_space = await space_generator_2d(5, [0,-1,1]);
+    for ( const i in vector_space ) {
+        await prisma.programVector.create({data:{
+            c0: vector_space[i][0],
+            c1: vector_space[i][1],
+            c2: vector_space[i][2],
+            c3: vector_space[i][3],
+            c4: vector_space[i][4],
+        }});
+    }
+
     const initial_programs = [
+        '휴식', // 0
         'Kizen Powerlifting Peaking Program',
         'nSuns Programs',
         'Jim Wendler 5/3/1 Programs',
@@ -31,16 +65,19 @@ async function main() {
         'Intermediate Powerlifting Programs',
         'Madcow 5x5 Program',
         'General 5x5 Program',
+        '기타(etc)' // index 242
     ]
-    for (const e of initial_programs) {
-    await prisma.trainingProgram.create({
-            data : {
-
-            }
-        })
+    for (const i in initial_programs) {
+        await prisma.trainingProgram.create({
+                data : {
+                    type_id: 1,
+                    author: 1,
+                    name: initial_programs[i],
+                    description: 'no',
+                    vector: Number(i) !== (initial_programs.length)-1 ? Number(i) : 242
+                }
+            })
     }
-
-    await prisma.
 }
 main()
   .then(async () => {
