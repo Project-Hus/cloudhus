@@ -1,4 +1,23 @@
 ## APIs
+#### Methods
+```
+[
+        '휴식', // 0
+        'Kizen Powerlifting Peaking Program', // 1
+        'nSuns Programs',
+        'Jim Wendler 5/3/1 Programs',
+        'Calgary Barbell Programs',
+        'Sheiko Programs',
+        'Candito Program',
+        'Juggernaut Method Base Template',
+        'Greg Nuckols 28 Programs',
+        'Beginner Powerlifting Programs',
+        'Intermediate Powerlifting Programs',
+        'Madcow 5x5 Program',
+        'General 5x5 Program',
+        '기타(etc)' // 기타는 index 242로 설정 [ 주의 ]
+    ]
+```
 #### POST api/pred
 ```
 // Request body
