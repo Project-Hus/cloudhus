@@ -29,14 +29,29 @@ export class PredService {
     try{
       const recordsAttached: RecordInput[] = // Attaching constants and variables
       this.recordProcessService.processRecords(recordFixed, records);
+
+      const latest_user = await this.userService.latestUsers()
+      const latest_id = latest_user[0]['id'];
       
-      const new_user : Prisma.UserCreateInput = 
+      await this.userService.createUser(
+        {
+          email_google: `no${latest_id+1}@no.no`,
+          token_google: `no${latest_id+1}`,
+          user_name: `n${latest_id+1}`,
+          password: "no",
+          age: 20,
+          sex: "male",
+          height: 173,
+          arm_length: 'medium',
+          leg_length: 'medium',
+        }
+      )
 
       const records_db: Prisma.TrainingProgramRecCreateManyInput[] =
         await records.map((e)=> {
           return {
             program_id: 1,
-            user_id: 1,
+            user_id: latest_id+1,
             start: new Date(),
             end: new Date(),
             comment: '',
@@ -65,6 +80,7 @@ export class PredService {
         }
       })
     } catch (error) {
+      console.log(error)
       return [{method: 'failed', squat:0, benchpress:0, deadlift:0}];
     }
   }

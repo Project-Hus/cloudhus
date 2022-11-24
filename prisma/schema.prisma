@@ -7,6 +7,12 @@
 // npx prisma migrate dev --name init
 // npx prisma generate
 
+// # 
+//Create a migration using prisma migrate dev --create-only.
+//Edit the generated .sql file and add the above statement.
+//Run prisma migrate dev.
+//ALTER TABLE table_name AUTO_INCREMENT = 0;
+
 generator client {
   provider = "prisma-client-js"
 }
