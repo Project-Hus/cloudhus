@@ -2,6 +2,6 @@ export class RecordFixed {
     sex: string; // male|female
     age: number;
     height: number;
-    arm_length: number; // long | medium | short
-    leg_length: number; // long | medium | short
+    arm_length: string; // long | medium | short
+    leg_length: string; // long | medium | short
 }

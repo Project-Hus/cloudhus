@@ -1,3 +1,5 @@
+// npx prisma db seed
+
 import { Prisma, PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
@@ -22,7 +24,7 @@ function space_generator_2d(length = 1, base=[0,1]) : Promise<any[]> {
   }
 
 async function main() {
-    Prisma
+    
     await prisma.user.create({
         data: {
            email_google: 'a@a.a',
@@ -50,9 +52,9 @@ async function main() {
             c4: vector_space[i][4],
         }});
     }
-
+    
     const initial_programs = [
-        '휴식', // 0
+        '휴식', // 0 (DB에서는 인덱스 +1 )
         'Kizen Powerlifting Peaking Program',
         'nSuns Programs',
         'Jim Wendler 5/3/1 Programs',
@@ -66,7 +68,7 @@ async function main() {
         'Madcow 5x5 Program',
         'General 5x5 Program',
         '기타(etc)' // index 242
-    ]
+    ] 
     for (const i in initial_programs) {
         await prisma.trainingProgram.create({
                 data : {
@@ -74,7 +76,7 @@ async function main() {
                     author: 1,
                     name: initial_programs[i],
                     description: 'no',
-                    vector: Number(i) !== (initial_programs.length)-1 ? Number(i) : 242
+                    vector: Number(i) !== (initial_programs.length)-1 ? Number(i)+1 : 243
                 }
             })
     }

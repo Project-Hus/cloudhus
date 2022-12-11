@@ -9,9 +9,9 @@
 
 // # 
 //Create a migration using prisma migrate dev --create-only.
+//ALTER TABLE table_name AUTO_INCREMENT = 0;
 //Edit the generated .sql file and add the above statement.
 //Run prisma migrate dev.
-//ALTER TABLE table_name AUTO_INCREMENT = 0;
 
 generator client {
   provider = "prisma-client-js"

@@ -1,71 +1,34 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE `User` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `email_google` VARCHAR(191) NOT NULL,
+    `token_google` VARCHAR(191) NOT NULL,
+    `user_name` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NOT NULL,
+    `age` INTEGER NOT NULL,
+    `sex` VARCHAR(191) NOT NULL,
+    `height` DOUBLE NOT NULL,
+    `arm_length` VARCHAR(191) NOT NULL,
+    `leg_length` VARCHAR(191) NOT NULL,
 
-  - You are about to drop the column `user_name` on the `manager` table. All the data in the column will be lost.
-  - You are about to drop the `bodyinfo` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `program` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `programrec` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `routine` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `routinerec` table. If the table is not empty, all the data it contains will be lost.
-  - A unique constraint covering the columns `[name]` on the table `Exercise` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[manager_name]` on the table `Manager` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `type_id` to the `Exercise` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `manager_name` to the `Manager` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `updated_at` to the `Manager` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `arm_length` to the `User` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `height` to the `User` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `leg_length` to the `User` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `updated_at` to the `User` table without a default value. This is not possible if the table is not empty.
+    UNIQUE INDEX `User_email_google_key`(`email_google`),
+    UNIQUE INDEX `User_user_name_key`(`user_name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-*/
--- DropForeignKey
-ALTER TABLE `bodyinfo` DROP FOREIGN KEY `BodyInfo_user_id_fkey`;
+-- CreateTable
+CREATE TABLE `Manager` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `manager_name` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NOT NULL,
 
--- DropForeignKey
-ALTER TABLE `programrec` DROP FOREIGN KEY `ProgramRec_program_id_fkey`;
-
--- DropForeignKey
-ALTER TABLE `routine` DROP FOREIGN KEY `Routine_exercise_id_fkey`;
-
--- DropForeignKey
-ALTER TABLE `routine` DROP FOREIGN KEY `Routine_program_id_fkey`;
-
--- DropForeignKey
-ALTER TABLE `routinerec` DROP FOREIGN KEY `RoutineRec_programrec_id_fkey`;
-
--- DropForeignKey
-ALTER TABLE `routinerec` DROP FOREIGN KEY `RoutineRec_routine_id_fkey`;
-
--- AlterTable
-ALTER TABLE `exercise` ADD COLUMN `type_id` INTEGER NOT NULL;
-
--- AlterTable
-ALTER TABLE `manager` DROP COLUMN `user_name`,
-    ADD COLUMN `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    ADD COLUMN `manager_name` VARCHAR(191) NOT NULL,
-    ADD COLUMN `updated_at` DATETIME(3) NOT NULL;
-
--- AlterTable
-ALTER TABLE `user` ADD COLUMN `arm_length` VARCHAR(191) NOT NULL,
-    ADD COLUMN `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    ADD COLUMN `height` DOUBLE NOT NULL,
-    ADD COLUMN `leg_length` VARCHAR(191) NOT NULL,
-    ADD COLUMN `updated_at` DATETIME(3) NOT NULL;
-
--- DropTable
-DROP TABLE `bodyinfo`;
-
--- DropTable
-DROP TABLE `program`;
-
--- DropTable
-DROP TABLE `programrec`;
-
--- DropTable
-DROP TABLE `routine`;
-
--- DropTable
-DROP TABLE `routinerec`;
+    UNIQUE INDEX `Manager_manager_name_key`(`manager_name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `TrainingProgramType` (
@@ -80,7 +43,7 @@ CREATE TABLE `TrainingProgramType` (
 CREATE TABLE `TrainingProgram` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` DATETIME(3) NOT NULL,
+    `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `type_id` INTEGER NOT NULL,
     `author` INTEGER NOT NULL,
     `name` VARCHAR(191) NOT NULL,
@@ -186,11 +149,16 @@ CREATE TABLE `ExerciseType` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- CreateIndex
-CREATE UNIQUE INDEX `Exercise_name_key` ON `Exercise`(`name`);
+-- CreateTable
+CREATE TABLE `Exercise` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `type_id` INTEGER NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NOT NULL,
 
--- CreateIndex
-CREATE UNIQUE INDEX `Manager_manager_name_key` ON `Manager`(`manager_name`);
+    UNIQUE INDEX `Exercise_name_key`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
 ALTER TABLE `TrainingProgram` ADD CONSTRAINT `TrainingProgram_type_id_fkey` FOREIGN KEY (`type_id`) REFERENCES `TrainingProgramType`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

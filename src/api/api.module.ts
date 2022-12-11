@@ -1,15 +1,27 @@
 import { Module } from '@nestjs/common';
-import { PrismaService } from 'src/services/prisma/prisma.service';
-import { RecordService } from 'src/services/record/record.service';
-import { UserService } from 'src/services/user/user.service';
-import { RecordProcessService } from 'utils/recordProcess/recordProcess.service';
-import { ApiController } from './api.controller';
-import { PredService } from './services/pred.service';
+import { RouterModule } from '@nestjs/core';
+
+import { PredApiModule } from './pred/api.pred.module';
+import { UserApiModule } from './user/user.api.module';
 
 @Module({
-  imports: [],
-  controllers: [ ApiController ],
-  providers: [ PredService, RecordProcessService, RecordService, PrismaService,
-  UserService ],
+  imports: [
+    RouterModule.register([
+      {
+        path: 'api',
+        module: ApiModule,
+        children: [
+          {
+            path: 'user',
+            module: UserApiModule,
+          },
+          {
+            path: 'pred',
+            module: PredApiModule,
+          },
+        ],
+      },
+    ]),
+  ],
 })
 export class ApiModule {}
