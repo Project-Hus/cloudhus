@@ -3,10 +3,10 @@ import { spawnSync } from 'child_process';
 import { writeFileSync } from 'fs';
 
 /* DTOs */
-import { RecordWeekly } from 'src/dto/RecordWeekly';
-import { RecordFixed } from 'src/dto/RecordFixed';
-import { RecordInput } from 'src/dto/RecordInput';
-import { RecordOutput } from 'src/dto/RecordOutput';
+import { RecordWeekly } from 'src/dto/RecordWeekly.dto';
+import { RecordFixed } from 'src/dto/RecordFixed.dto';
+import { RecordInput } from 'src/dto/RecordInput.dto';
+import { RecordOutput } from 'src/dto/RecordOutput.dto';
 
 /* Service */
 import { RecordProcessService } from 'utils/recordProcess/recordProcess.service';

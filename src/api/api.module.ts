@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { RouterModule } from '@nestjs/core';
 
 import { PredApiModule } from './pred/api.pred.module';
-import { UserApiModule } from './user/user.api.module';
+import { AuthApiModule } from './auth/auth.api.module';
 
 @Module({
   imports: [
@@ -12,8 +12,8 @@ import { UserApiModule } from './user/user.api.module';
         module: ApiModule,
         children: [
           {
-            path: 'user',
-            module: UserApiModule,
+            path: 'auth',
+            module: AuthApiModule,
           },
           {
             path: 'pred',

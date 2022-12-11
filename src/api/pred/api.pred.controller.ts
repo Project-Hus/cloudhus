@@ -7,9 +7,9 @@ import {
     Put,
     Delete
    } from '@nestjs/common';
-import { RecordFixed } from 'src/dto/RecordFixed';
-import { RecordOutput } from 'src/dto/RecordOutput';
-import { RecordWeekly } from 'src/dto/RecordWeekly';
+import { RecordFixed } from 'src/dto/RecordFixed.dto';
+import { RecordOutput } from 'src/dto/RecordOutput.dto';
+import { RecordWeekly } from 'src/dto/RecordWeekly.dto';
 import { PredApiService } from './services/api.pred.service';
 
   @Controller()

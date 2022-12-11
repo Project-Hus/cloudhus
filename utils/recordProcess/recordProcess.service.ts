@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { RecordFixed } from 'src/dto/RecordFixed';
-import { RecordInput } from 'src/dto/RecordInput';
-import { RecordWeekly } from 'src/dto/RecordWeekly';
+import { RecordFixed } from 'src/dto/RecordFixed.dto';
+import { RecordInput } from 'src/dto/RecordInput.dto';
+import { RecordWeekly } from 'src/dto/RecordWeekly.dto';
 
 @Injectable()
 export class RecordProcessService {
