@@ -3,10 +3,10 @@
 package ent
 
 import (
-	"auth/ent/predicate"
-	"auth/ent/user"
 	"context"
 	"fmt"
+	"hus-auth/ent/predicate"
+	"hus-auth/ent/user"
 	"math"
 
 	"entgo.io/ent/dialect/sql"

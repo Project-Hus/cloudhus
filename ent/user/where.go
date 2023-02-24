@@ -3,7 +3,7 @@
 package user
 
 import (
-	"auth/ent/predicate"
+	"hus-auth/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 )

@@ -3,11 +3,11 @@
 package ent
 
 import (
-	"auth/ent/predicate"
-	"auth/ent/user"
 	"context"
 	"errors"
 	"fmt"
+	"hus-auth/ent/predicate"
+	"hus-auth/ent/user"
 	"sync"
 
 	"entgo.io/ent"

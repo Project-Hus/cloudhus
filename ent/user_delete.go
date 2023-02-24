@@ -3,9 +3,9 @@
 package ent
 
 import (
-	"auth/ent/predicate"
-	"auth/ent/user"
 	"context"
+	"hus-auth/ent/predicate"
+	"hus-auth/ent/user"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

@@ -3,12 +3,12 @@
 package enttest
 
 import (
-	"auth/ent"
 	"context"
+	"hus-auth/ent"
 	// required by schema hooks.
-	_ "auth/ent/runtime"
+	_ "hus-auth/ent/runtime"
 
-	"auth/ent/migrate"
+	"hus-auth/ent/migrate"
 
 	"entgo.io/ent/dialect/sql/schema"
 )

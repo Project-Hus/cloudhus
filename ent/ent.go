@@ -3,10 +3,10 @@
 package ent
 
 import (
-	"auth/ent/user"
 	"context"
 	"errors"
 	"fmt"
+	"hus-auth/ent/user"
 	"reflect"
 
 	"entgo.io/ent"

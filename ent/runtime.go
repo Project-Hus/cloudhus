@@ -3,8 +3,8 @@
 package ent
 
 import (
-	"auth/ent/schema"
-	"auth/ent/user"
+	"hus-auth/ent/schema"
+	"hus-auth/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code

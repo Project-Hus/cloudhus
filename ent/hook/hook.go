@@ -3,9 +3,9 @@
 package hook
 
 import (
-	"auth/ent"
 	"context"
 	"fmt"
+	"hus-auth/ent"
 )
 
 // The UserFunc type is an adapter to allow the use of ordinary

@@ -3,8 +3,8 @@
 package ent
 
 import (
-	"auth/ent/user"
 	"fmt"
+	"hus-auth/ent/user"
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
