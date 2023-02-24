@@ -3,6 +3,7 @@ module lifthus
 go 1.19
 
 require (
+	entgo.io/ent v0.11.8 // indirect
 	github.com/labstack/echo/v4 v4.10.2 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
