@@ -1,4 +1,4 @@
-module auth
+module hus-auth
 
 go 1.19
 
