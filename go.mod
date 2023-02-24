@@ -1,4 +1,4 @@
-module lifthus_project
+module auth
 
 go 1.19
 

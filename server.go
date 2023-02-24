@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"lifthus_project/ent"
+	"hus-auth/ent"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"

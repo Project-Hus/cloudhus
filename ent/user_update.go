@@ -3,11 +3,11 @@
 package ent
 
 import (
+	"auth/ent/predicate"
+	"auth/ent/user"
 	"context"
 	"errors"
 	"fmt"
-	"lifthus_project/ent/predicate"
-	"lifthus_project/ent/user"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

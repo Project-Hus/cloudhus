@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in lifthus_project/ent/runtime.go
+// The schema-stitching logic is generated in auth/ent/runtime.go
 
 const (
 	Version = "v0.11.8"                                         // Version of ent codegen.

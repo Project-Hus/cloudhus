@@ -3,10 +3,10 @@
 package ent
 
 import (
+	"auth/ent/user"
 	"context"
 	"errors"
 	"fmt"
-	"lifthus_project/ent/user"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"

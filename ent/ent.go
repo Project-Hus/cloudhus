@@ -3,10 +3,10 @@
 package ent
 
 import (
+	"auth/ent/user"
 	"context"
 	"errors"
 	"fmt"
-	"lifthus_project/ent/user"
 	"reflect"
 
 	"entgo.io/ent"

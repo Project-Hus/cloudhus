@@ -3,7 +3,7 @@
 package user
 
 import (
-	"lifthus_project/ent/predicate"
+	"auth/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 )

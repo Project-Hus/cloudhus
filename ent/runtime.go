@@ -3,8 +3,8 @@
 package ent
 
 import (
-	"lifthus_project/ent/schema"
-	"lifthus_project/ent/user"
+	"auth/ent/schema"
+	"auth/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code

@@ -3,9 +3,9 @@
 package hook
 
 import (
+	"auth/ent"
 	"context"
 	"fmt"
-	"lifthus_project/ent"
 )
 
 // The UserFunc type is an adapter to allow the use of ordinary

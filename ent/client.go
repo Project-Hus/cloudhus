@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"log"
 
-	"lifthus_project/ent/migrate"
+	"auth/ent/migrate"
 
-	"lifthus_project/ent/user"
+	"auth/ent/user"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"

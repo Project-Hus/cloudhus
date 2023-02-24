@@ -3,12 +3,12 @@
 package enttest
 
 import (
+	"auth/ent"
 	"context"
-	"lifthus_project/ent"
 	// required by schema hooks.
-	_ "lifthus_project/ent/runtime"
+	_ "auth/ent/runtime"
 
-	"lifthus_project/ent/migrate"
+	"auth/ent/migrate"
 
 	"entgo.io/ent/dialect/sql/schema"
 )
