@@ -1,1 +1,1 @@
-# lifthus_project in Go
+# Project Hus auth server with Go
