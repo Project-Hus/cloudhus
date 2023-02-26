@@ -4,8 +4,11 @@ go 1.19
 
 require (
 	entgo.io/ent v0.11.8
+	github.com/go-sql-driver/mysql v1.7.0
+	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang-jwt/jwt/v5 v5.0.0-rc.1
 	github.com/joho/godotenv v1.5.1
-	github.com/labstack/echo/v4 v4.10.2
+	github.com/labstack/echo v3.3.10+incompatible
 )
 
 require (

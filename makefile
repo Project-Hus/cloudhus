@@ -14,5 +14,6 @@ vet: fmt
 .PHONY:vet
 
 build: vet
+    go generate ./ent
 	go build
 .PHONY:build
