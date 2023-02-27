@@ -6,14 +6,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hus-auth/ent/car"
 	"hus-auth/ent/group"
 	"hus-auth/ent/predicate"
 	"hus-auth/ent/user"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -29,16 +30,35 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
-// SetAge sets the "age" field.
-func (uu *UserUpdate) SetAge(i int) *UserUpdate {
-	uu.mutation.ResetAge()
-	uu.mutation.SetAge(i)
+// SetUUID sets the "uuid" field.
+func (uu *UserUpdate) SetUUID(u uuid.UUID) *UserUpdate {
+	uu.mutation.SetUUID(u)
 	return uu
 }
 
-// AddAge adds i to the "age" field.
-func (uu *UserUpdate) AddAge(i int) *UserUpdate {
-	uu.mutation.AddAge(i)
+// SetNillableUUID sets the "uuid" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableUUID(u *uuid.UUID) *UserUpdate {
+	if u != nil {
+		uu.SetUUID(*u)
+	}
+	return uu
+}
+
+// SetGoogleSub sets the "google_sub" field.
+func (uu *UserUpdate) SetGoogleSub(s string) *UserUpdate {
+	uu.mutation.SetGoogleSub(s)
+	return uu
+}
+
+// SetEmail sets the "email" field.
+func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
+	uu.mutation.SetEmail(s)
+	return uu
+}
+
+// SetEmailVerified sets the "email_verified" field.
+func (uu *UserUpdate) SetEmailVerified(b bool) *UserUpdate {
+	uu.mutation.SetEmailVerified(b)
 	return uu
 }
 
@@ -48,27 +68,28 @@ func (uu *UserUpdate) SetName(s string) *UserUpdate {
 	return uu
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableName(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetName(*s)
-	}
+// SetBirthday sets the "birthday" field.
+func (uu *UserUpdate) SetBirthday(t time.Time) *UserUpdate {
+	uu.mutation.SetBirthday(t)
 	return uu
 }
 
-// AddCarIDs adds the "cars" edge to the Car entity by IDs.
-func (uu *UserUpdate) AddCarIDs(ids ...int) *UserUpdate {
-	uu.mutation.AddCarIDs(ids...)
+// SetGivenName sets the "given_name" field.
+func (uu *UserUpdate) SetGivenName(s string) *UserUpdate {
+	uu.mutation.SetGivenName(s)
 	return uu
 }
 
-// AddCars adds the "cars" edges to the Car entity.
-func (uu *UserUpdate) AddCars(c ...*Car) *UserUpdate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return uu.AddCarIDs(ids...)
+// SetFamilyName sets the "family_name" field.
+func (uu *UserUpdate) SetFamilyName(s string) *UserUpdate {
+	uu.mutation.SetFamilyName(s)
+	return uu
+}
+
+// SetGoogleProfilePicture sets the "google_profile_picture" field.
+func (uu *UserUpdate) SetGoogleProfilePicture(s string) *UserUpdate {
+	uu.mutation.SetGoogleProfilePicture(s)
+	return uu
 }
 
 // AddGroupIDs adds the "groups" edge to the Group entity by IDs.
@@ -89,27 +110,6 @@ func (uu *UserUpdate) AddGroups(g ...*Group) *UserUpdate {
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
-}
-
-// ClearCars clears all "cars" edges to the Car entity.
-func (uu *UserUpdate) ClearCars() *UserUpdate {
-	uu.mutation.ClearCars()
-	return uu
-}
-
-// RemoveCarIDs removes the "cars" edge to Car entities by IDs.
-func (uu *UserUpdate) RemoveCarIDs(ids ...int) *UserUpdate {
-	uu.mutation.RemoveCarIDs(ids...)
-	return uu
-}
-
-// RemoveCars removes "cars" edges to Car entities.
-func (uu *UserUpdate) RemoveCars(c ...*Car) *UserUpdate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return uu.RemoveCarIDs(ids...)
 }
 
 // ClearGroups clears all "groups" edges to the Group entity.
@@ -160,20 +160,7 @@ func (uu *UserUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (uu *UserUpdate) check() error {
-	if v, ok := uu.mutation.Age(); ok {
-		if err := user.AgeValidator(v); err != nil {
-			return &ValidationError{Name: "age", err: fmt.Errorf(`ent: validator failed for field "User.age": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := uu.check(); err != nil {
-		return n, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt))
 	if ps := uu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -182,68 +169,32 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := uu.mutation.Age(); ok {
-		_spec.SetField(user.FieldAge, field.TypeInt, value)
+	if value, ok := uu.mutation.UUID(); ok {
+		_spec.SetField(user.FieldUUID, field.TypeUUID, value)
 	}
-	if value, ok := uu.mutation.AddedAge(); ok {
-		_spec.AddField(user.FieldAge, field.TypeInt, value)
+	if value, ok := uu.mutation.GoogleSub(); ok {
+		_spec.SetField(user.FieldGoogleSub, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.EmailVerified(); ok {
+		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
 	}
 	if value, ok := uu.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 	}
-	if uu.mutation.CarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CarsTable,
-			Columns: []string{user.CarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: car.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := uu.mutation.Birthday(); ok {
+		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
 	}
-	if nodes := uu.mutation.RemovedCarsIDs(); len(nodes) > 0 && !uu.mutation.CarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CarsTable,
-			Columns: []string{user.CarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: car.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := uu.mutation.GivenName(); ok {
+		_spec.SetField(user.FieldGivenName, field.TypeString, value)
 	}
-	if nodes := uu.mutation.CarsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CarsTable,
-			Columns: []string{user.CarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: car.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := uu.mutation.FamilyName(); ok {
+		_spec.SetField(user.FieldFamilyName, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.GoogleProfilePicture(); ok {
+		_spec.SetField(user.FieldGoogleProfilePicture, field.TypeString, value)
 	}
 	if uu.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -319,16 +270,35 @@ type UserUpdateOne struct {
 	mutation *UserMutation
 }
 
-// SetAge sets the "age" field.
-func (uuo *UserUpdateOne) SetAge(i int) *UserUpdateOne {
-	uuo.mutation.ResetAge()
-	uuo.mutation.SetAge(i)
+// SetUUID sets the "uuid" field.
+func (uuo *UserUpdateOne) SetUUID(u uuid.UUID) *UserUpdateOne {
+	uuo.mutation.SetUUID(u)
 	return uuo
 }
 
-// AddAge adds i to the "age" field.
-func (uuo *UserUpdateOne) AddAge(i int) *UserUpdateOne {
-	uuo.mutation.AddAge(i)
+// SetNillableUUID sets the "uuid" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableUUID(u *uuid.UUID) *UserUpdateOne {
+	if u != nil {
+		uuo.SetUUID(*u)
+	}
+	return uuo
+}
+
+// SetGoogleSub sets the "google_sub" field.
+func (uuo *UserUpdateOne) SetGoogleSub(s string) *UserUpdateOne {
+	uuo.mutation.SetGoogleSub(s)
+	return uuo
+}
+
+// SetEmail sets the "email" field.
+func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
+	uuo.mutation.SetEmail(s)
+	return uuo
+}
+
+// SetEmailVerified sets the "email_verified" field.
+func (uuo *UserUpdateOne) SetEmailVerified(b bool) *UserUpdateOne {
+	uuo.mutation.SetEmailVerified(b)
 	return uuo
 }
 
@@ -338,27 +308,28 @@ func (uuo *UserUpdateOne) SetName(s string) *UserUpdateOne {
 	return uuo
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableName(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetName(*s)
-	}
+// SetBirthday sets the "birthday" field.
+func (uuo *UserUpdateOne) SetBirthday(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetBirthday(t)
 	return uuo
 }
 
-// AddCarIDs adds the "cars" edge to the Car entity by IDs.
-func (uuo *UserUpdateOne) AddCarIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.AddCarIDs(ids...)
+// SetGivenName sets the "given_name" field.
+func (uuo *UserUpdateOne) SetGivenName(s string) *UserUpdateOne {
+	uuo.mutation.SetGivenName(s)
 	return uuo
 }
 
-// AddCars adds the "cars" edges to the Car entity.
-func (uuo *UserUpdateOne) AddCars(c ...*Car) *UserUpdateOne {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return uuo.AddCarIDs(ids...)
+// SetFamilyName sets the "family_name" field.
+func (uuo *UserUpdateOne) SetFamilyName(s string) *UserUpdateOne {
+	uuo.mutation.SetFamilyName(s)
+	return uuo
+}
+
+// SetGoogleProfilePicture sets the "google_profile_picture" field.
+func (uuo *UserUpdateOne) SetGoogleProfilePicture(s string) *UserUpdateOne {
+	uuo.mutation.SetGoogleProfilePicture(s)
+	return uuo
 }
 
 // AddGroupIDs adds the "groups" edge to the Group entity by IDs.
@@ -379,27 +350,6 @@ func (uuo *UserUpdateOne) AddGroups(g ...*Group) *UserUpdateOne {
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
-}
-
-// ClearCars clears all "cars" edges to the Car entity.
-func (uuo *UserUpdateOne) ClearCars() *UserUpdateOne {
-	uuo.mutation.ClearCars()
-	return uuo
-}
-
-// RemoveCarIDs removes the "cars" edge to Car entities by IDs.
-func (uuo *UserUpdateOne) RemoveCarIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.RemoveCarIDs(ids...)
-	return uuo
-}
-
-// RemoveCars removes "cars" edges to Car entities.
-func (uuo *UserUpdateOne) RemoveCars(c ...*Car) *UserUpdateOne {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return uuo.RemoveCarIDs(ids...)
 }
 
 // ClearGroups clears all "groups" edges to the Group entity.
@@ -463,20 +413,7 @@ func (uuo *UserUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (uuo *UserUpdateOne) check() error {
-	if v, ok := uuo.mutation.Age(); ok {
-		if err := user.AgeValidator(v); err != nil {
-			return &ValidationError{Name: "age", err: fmt.Errorf(`ent: validator failed for field "User.age": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
-	if err := uuo.check(); err != nil {
-		return _node, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt))
 	id, ok := uuo.mutation.ID()
 	if !ok {
@@ -502,68 +439,32 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			}
 		}
 	}
-	if value, ok := uuo.mutation.Age(); ok {
-		_spec.SetField(user.FieldAge, field.TypeInt, value)
+	if value, ok := uuo.mutation.UUID(); ok {
+		_spec.SetField(user.FieldUUID, field.TypeUUID, value)
 	}
-	if value, ok := uuo.mutation.AddedAge(); ok {
-		_spec.AddField(user.FieldAge, field.TypeInt, value)
+	if value, ok := uuo.mutation.GoogleSub(); ok {
+		_spec.SetField(user.FieldGoogleSub, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.EmailVerified(); ok {
+		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
 	}
 	if value, ok := uuo.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 	}
-	if uuo.mutation.CarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CarsTable,
-			Columns: []string{user.CarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: car.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := uuo.mutation.Birthday(); ok {
+		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
 	}
-	if nodes := uuo.mutation.RemovedCarsIDs(); len(nodes) > 0 && !uuo.mutation.CarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CarsTable,
-			Columns: []string{user.CarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: car.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := uuo.mutation.GivenName(); ok {
+		_spec.SetField(user.FieldGivenName, field.TypeString, value)
 	}
-	if nodes := uuo.mutation.CarsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CarsTable,
-			Columns: []string{user.CarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: car.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := uuo.mutation.FamilyName(); ok {
+		_spec.SetField(user.FieldFamilyName, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.GoogleProfilePicture(); ok {
+		_spec.SetField(user.FieldGoogleProfilePicture, field.TypeString, value)
 	}
 	if uuo.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{

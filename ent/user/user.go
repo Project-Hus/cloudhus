@@ -2,28 +2,37 @@
 
 package user
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldAge holds the string denoting the age field in the database.
-	FieldAge = "age"
+	// FieldUUID holds the string denoting the uuid field in the database.
+	FieldUUID = "uuid"
+	// FieldGoogleSub holds the string denoting the google_sub field in the database.
+	FieldGoogleSub = "google_sub"
+	// FieldEmail holds the string denoting the email field in the database.
+	FieldEmail = "email"
+	// FieldEmailVerified holds the string denoting the email_verified field in the database.
+	FieldEmailVerified = "email_verified"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// EdgeCars holds the string denoting the cars edge name in mutations.
-	EdgeCars = "cars"
+	// FieldBirthday holds the string denoting the birthday field in the database.
+	FieldBirthday = "birthday"
+	// FieldGivenName holds the string denoting the given_name field in the database.
+	FieldGivenName = "given_name"
+	// FieldFamilyName holds the string denoting the family_name field in the database.
+	FieldFamilyName = "family_name"
+	// FieldGoogleProfilePicture holds the string denoting the google_profile_picture field in the database.
+	FieldGoogleProfilePicture = "google_profile_picture"
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
 	EdgeGroups = "groups"
 	// Table holds the table name of the user in the database.
 	Table = "users"
-	// CarsTable is the table that holds the cars relation/edge.
-	CarsTable = "cars"
-	// CarsInverseTable is the table name for the Car entity.
-	// It exists in this package in order to avoid circular dependency with the "car" package.
-	CarsInverseTable = "cars"
-	// CarsColumn is the table column denoting the cars relation/edge.
-	CarsColumn = "user_cars"
 	// GroupsTable is the table that holds the groups relation/edge. The primary key declared below.
 	GroupsTable = "group_users"
 	// GroupsInverseTable is the table name for the Group entity.
@@ -34,8 +43,15 @@ const (
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
-	FieldAge,
+	FieldUUID,
+	FieldGoogleSub,
+	FieldEmail,
+	FieldEmailVerified,
 	FieldName,
+	FieldBirthday,
+	FieldGivenName,
+	FieldFamilyName,
+	FieldGoogleProfilePicture,
 }
 
 var (
@@ -55,8 +71,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// AgeValidator is a validator for the "age" field. It is called by the builders before save.
-	AgeValidator func(int) error
-	// DefaultName holds the default value on creation for the "name" field.
-	DefaultName string
+	// DefaultUUID holds the default value on creation for the "uuid" field.
+	DefaultUUID func() uuid.UUID
 )

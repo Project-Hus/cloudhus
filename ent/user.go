@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"hus-auth/ent/user"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // User is the model entity for the User schema.
@@ -15,10 +17,24 @@ type User struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// Age holds the value of the "age" field.
-	Age int `json:"age,omitempty"`
+	// UUID holds the value of the "uuid" field.
+	UUID uuid.UUID `json:"uuid,omitempty"`
+	// GoogleSub holds the value of the "google_sub" field.
+	GoogleSub string `json:"google_sub,omitempty"`
+	// Email holds the value of the "email" field.
+	Email string `json:"email,omitempty"`
+	// EmailVerified holds the value of the "email_verified" field.
+	EmailVerified bool `json:"email_verified,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Birthday holds the value of the "birthday" field.
+	Birthday time.Time `json:"birthday,omitempty"`
+	// GivenName holds the value of the "given_name" field.
+	GivenName string `json:"given_name,omitempty"`
+	// FamilyName holds the value of the "family_name" field.
+	FamilyName string `json:"family_name,omitempty"`
+	// GoogleProfilePicture holds the value of the "google_profile_picture" field.
+	GoogleProfilePicture string `json:"google_profile_picture,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges UserEdges `json:"edges"`
@@ -26,28 +42,17 @@ type User struct {
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
-	// Cars holds the value of the cars edge.
-	Cars []*Car `json:"cars,omitempty"`
 	// Groups holds the value of the groups edge.
 	Groups []*Group `json:"groups,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// CarsOrErr returns the Cars value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CarsOrErr() ([]*Car, error) {
-	if e.loadedTypes[0] {
-		return e.Cars, nil
-	}
-	return nil, &NotLoadedError{edge: "cars"}
+	loadedTypes [1]bool
 }
 
 // GroupsOrErr returns the Groups value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) GroupsOrErr() ([]*Group, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Groups, nil
 	}
 	return nil, &NotLoadedError{edge: "groups"}
@@ -58,10 +63,16 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldID, user.FieldAge:
+		case user.FieldEmailVerified:
+			values[i] = new(sql.NullBool)
+		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldName:
+		case user.FieldGoogleSub, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldGoogleProfilePicture:
 			values[i] = new(sql.NullString)
+		case user.FieldBirthday:
+			values[i] = new(sql.NullTime)
+		case user.FieldUUID:
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
 		}
@@ -83,11 +94,29 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			u.ID = int(value.Int64)
-		case user.FieldAge:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field age", values[i])
+		case user.FieldUUID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field uuid", values[i])
+			} else if value != nil {
+				u.UUID = *value
+			}
+		case user.FieldGoogleSub:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field google_sub", values[i])
 			} else if value.Valid {
-				u.Age = int(value.Int64)
+				u.GoogleSub = value.String
+			}
+		case user.FieldEmail:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field email", values[i])
+			} else if value.Valid {
+				u.Email = value.String
+			}
+		case user.FieldEmailVerified:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field email_verified", values[i])
+			} else if value.Valid {
+				u.EmailVerified = value.Bool
 			}
 		case user.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -95,14 +124,33 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Name = value.String
 			}
+		case user.FieldBirthday:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field birthday", values[i])
+			} else if value.Valid {
+				u.Birthday = value.Time
+			}
+		case user.FieldGivenName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field given_name", values[i])
+			} else if value.Valid {
+				u.GivenName = value.String
+			}
+		case user.FieldFamilyName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field family_name", values[i])
+			} else if value.Valid {
+				u.FamilyName = value.String
+			}
+		case user.FieldGoogleProfilePicture:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field google_profile_picture", values[i])
+			} else if value.Valid {
+				u.GoogleProfilePicture = value.String
+			}
 		}
 	}
 	return nil
-}
-
-// QueryCars queries the "cars" edge of the User entity.
-func (u *User) QueryCars() *CarQuery {
-	return NewUserClient(u.config).QueryCars(u)
 }
 
 // QueryGroups queries the "groups" edge of the User entity.
@@ -133,11 +181,32 @@ func (u *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
-	builder.WriteString("age=")
-	builder.WriteString(fmt.Sprintf("%v", u.Age))
+	builder.WriteString("uuid=")
+	builder.WriteString(fmt.Sprintf("%v", u.UUID))
+	builder.WriteString(", ")
+	builder.WriteString("google_sub=")
+	builder.WriteString(u.GoogleSub)
+	builder.WriteString(", ")
+	builder.WriteString("email=")
+	builder.WriteString(u.Email)
+	builder.WriteString(", ")
+	builder.WriteString("email_verified=")
+	builder.WriteString(fmt.Sprintf("%v", u.EmailVerified))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(u.Name)
+	builder.WriteString(", ")
+	builder.WriteString("birthday=")
+	builder.WriteString(u.Birthday.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("given_name=")
+	builder.WriteString(u.GivenName)
+	builder.WriteString(", ")
+	builder.WriteString("family_name=")
+	builder.WriteString(u.FamilyName)
+	builder.WriteString(", ")
+	builder.WriteString("google_profile_picture=")
+	builder.WriteString(u.GoogleProfilePicture)
 	builder.WriteByte(')')
 	return builder.String()
 }

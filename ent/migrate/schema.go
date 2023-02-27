@@ -8,27 +8,6 @@ import (
 )
 
 var (
-	// CarsColumns holds the columns for the "cars" table.
-	CarsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "model", Type: field.TypeString},
-		{Name: "registered_at", Type: field.TypeTime},
-		{Name: "user_cars", Type: field.TypeInt, Nullable: true},
-	}
-	// CarsTable holds the schema information for the "cars" table.
-	CarsTable = &schema.Table{
-		Name:       "cars",
-		Columns:    CarsColumns,
-		PrimaryKey: []*schema.Column{CarsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "cars_users_cars",
-				Columns:    []*schema.Column{CarsColumns[3]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
 	// GroupsColumns holds the columns for the "groups" table.
 	GroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -43,8 +22,15 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "age", Type: field.TypeInt},
-		{Name: "name", Type: field.TypeString, Default: "unknown"},
+		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "google_sub", Type: field.TypeString, Unique: true},
+		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "email_verified", Type: field.TypeBool},
+		{Name: "name", Type: field.TypeString},
+		{Name: "birthday", Type: field.TypeTime},
+		{Name: "given_name", Type: field.TypeString},
+		{Name: "family_name", Type: field.TypeString},
+		{Name: "google_profile_picture", Type: field.TypeString, Size: 2147483647},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -79,7 +65,6 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		CarsTable,
 		GroupsTable,
 		UsersTable,
 		GroupUsersTable,
@@ -87,7 +72,6 @@ var (
 )
 
 func init() {
-	CarsTable.ForeignKeys[0].RefTable = UsersTable
 	GroupUsersTable.ForeignKeys[0].RefTable = GroupsTable
 	GroupUsersTable.ForeignKeys[1].RefTable = UsersTable
 }
