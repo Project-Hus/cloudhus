@@ -35,6 +35,8 @@ type User struct {
 	FamilyName string `json:"family_name,omitempty"`
 	// GoogleProfilePicture holds the value of the "google_profile_picture" field.
 	GoogleProfilePicture string `json:"google_profile_picture,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges UserEdges `json:"edges"`
@@ -69,7 +71,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case user.FieldGoogleSub, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldGoogleProfilePicture:
 			values[i] = new(sql.NullString)
-		case user.FieldBirthday:
+		case user.FieldBirthday, user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case user.FieldUUID:
 			values[i] = new(uuid.UUID)
@@ -148,6 +150,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.GoogleProfilePicture = value.String
 			}
+		case user.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				u.CreatedAt = value.Time
+			}
 		}
 	}
 	return nil
@@ -207,6 +215,9 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("google_profile_picture=")
 	builder.WriteString(u.GoogleProfilePicture)
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

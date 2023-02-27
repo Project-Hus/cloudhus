@@ -1,0 +1,17 @@
+basePath: /auth
+host: lifthus.com
+info:
+  contact:
+    email: lifthus531@gmail.com
+    name: API Support
+    url: lifthus531@gmail.com
+  description: This is Project-Hus's root authentication server containing each user's
+    UUID, which is unique for all hus services.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Project-Hus auth server
+  version: 0.0.0
+paths: {}
+swagger: "2.0"

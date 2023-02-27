@@ -3,6 +3,8 @@
 package user
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -29,6 +31,8 @@ const (
 	FieldFamilyName = "family_name"
 	// FieldGoogleProfilePicture holds the string denoting the google_profile_picture field in the database.
 	FieldGoogleProfilePicture = "google_profile_picture"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
 	EdgeGroups = "groups"
 	// Table holds the table name of the user in the database.
@@ -52,6 +56,7 @@ var Columns = []string{
 	FieldGivenName,
 	FieldFamilyName,
 	FieldGoogleProfilePicture,
+	FieldCreatedAt,
 }
 
 var (
@@ -73,4 +78,6 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultUUID holds the default value on creation for the "uuid" field.
 	DefaultUUID func() uuid.UUID
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt time.Time
 )

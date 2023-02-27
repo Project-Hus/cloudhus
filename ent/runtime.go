@@ -6,6 +6,7 @@ import (
 	"hus-auth/ent/group"
 	"hus-auth/ent/schema"
 	"hus-auth/ent/user"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -26,4 +27,8 @@ func init() {
 	userDescUUID := userFields[0].Descriptor()
 	// user.DefaultUUID holds the default value on creation for the uuid field.
 	user.DefaultUUID = userDescUUID.Default.(func() uuid.UUID)
+	// userDescCreatedAt is the schema descriptor for created_at field.
+	userDescCreatedAt := userFields[9].Descriptor()
+	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
+	user.DefaultCreatedAt = userDescCreatedAt.Default.(time.Time)
 }
