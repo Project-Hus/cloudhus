@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hus-auth/ent/group"
+	"hus-auth/ent/community"
 	"hus-auth/ent/predicate"
 	"hus-auth/ent/user"
 	"sync"
@@ -27,12 +27,12 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeGroup = "Group"
-	TypeUser  = "User"
+	TypeCommunity = "Community"
+	TypeUser      = "User"
 )
 
-// GroupMutation represents an operation that mutates the Group nodes in the graph.
-type GroupMutation struct {
+// CommunityMutation represents an operation that mutates the Community nodes in the graph.
+type CommunityMutation struct {
 	config
 	op            Op
 	typ           string
@@ -43,21 +43,21 @@ type GroupMutation struct {
 	removedusers  map[int]struct{}
 	clearedusers  bool
 	done          bool
-	oldValue      func(context.Context) (*Group, error)
-	predicates    []predicate.Group
+	oldValue      func(context.Context) (*Community, error)
+	predicates    []predicate.Community
 }
 
-var _ ent.Mutation = (*GroupMutation)(nil)
+var _ ent.Mutation = (*CommunityMutation)(nil)
 
-// groupOption allows management of the mutation configuration using functional options.
-type groupOption func(*GroupMutation)
+// communityOption allows management of the mutation configuration using functional options.
+type communityOption func(*CommunityMutation)
 
-// newGroupMutation creates new mutation for the Group entity.
-func newGroupMutation(c config, op Op, opts ...groupOption) *GroupMutation {
-	m := &GroupMutation{
+// newCommunityMutation creates new mutation for the Community entity.
+func newCommunityMutation(c config, op Op, opts ...communityOption) *CommunityMutation {
+	m := &CommunityMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeGroup,
+		typ:           TypeCommunity,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -66,20 +66,20 @@ func newGroupMutation(c config, op Op, opts ...groupOption) *GroupMutation {
 	return m
 }
 
-// withGroupID sets the ID field of the mutation.
-func withGroupID(id int) groupOption {
-	return func(m *GroupMutation) {
+// withCommunityID sets the ID field of the mutation.
+func withCommunityID(id int) communityOption {
+	return func(m *CommunityMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *Group
+			value *Community
 		)
-		m.oldValue = func(ctx context.Context) (*Group, error) {
+		m.oldValue = func(ctx context.Context) (*Community, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().Group.Get(ctx, id)
+					value, err = m.Client().Community.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -88,10 +88,10 @@ func withGroupID(id int) groupOption {
 	}
 }
 
-// withGroup sets the old Group of the mutation.
-func withGroup(node *Group) groupOption {
-	return func(m *GroupMutation) {
-		m.oldValue = func(context.Context) (*Group, error) {
+// withCommunity sets the old Community of the mutation.
+func withCommunity(node *Community) communityOption {
+	return func(m *CommunityMutation) {
+		m.oldValue = func(context.Context) (*Community, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -100,7 +100,7 @@ func withGroup(node *Group) groupOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m GroupMutation) Client() *Client {
+func (m CommunityMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -108,7 +108,7 @@ func (m GroupMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m GroupMutation) Tx() (*Tx, error) {
+func (m CommunityMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -119,7 +119,7 @@ func (m GroupMutation) Tx() (*Tx, error) {
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *GroupMutation) ID() (id int, exists bool) {
+func (m *CommunityMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -130,7 +130,7 @@ func (m *GroupMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *GroupMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *CommunityMutation) IDs(ctx context.Context) ([]int, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -139,19 +139,19 @@ func (m *GroupMutation) IDs(ctx context.Context) ([]int, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Group.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().Community.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetName sets the "name" field.
-func (m *GroupMutation) SetName(s string) {
+func (m *CommunityMutation) SetName(s string) {
 	m.name = &s
 }
 
 // Name returns the value of the "name" field in the mutation.
-func (m *GroupMutation) Name() (r string, exists bool) {
+func (m *CommunityMutation) Name() (r string, exists bool) {
 	v := m.name
 	if v == nil {
 		return
@@ -159,10 +159,10 @@ func (m *GroupMutation) Name() (r string, exists bool) {
 	return *v, true
 }
 
-// OldName returns the old "name" field's value of the Group entity.
-// If the Group object wasn't provided to the builder, the object is fetched from the database.
+// OldName returns the old "name" field's value of the Community entity.
+// If the Community object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *GroupMutation) OldName(ctx context.Context) (v string, err error) {
+func (m *CommunityMutation) OldName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldName is only allowed on UpdateOne operations")
 	}
@@ -177,12 +177,12 @@ func (m *GroupMutation) OldName(ctx context.Context) (v string, err error) {
 }
 
 // ResetName resets all changes to the "name" field.
-func (m *GroupMutation) ResetName() {
+func (m *CommunityMutation) ResetName() {
 	m.name = nil
 }
 
 // AddUserIDs adds the "users" edge to the User entity by ids.
-func (m *GroupMutation) AddUserIDs(ids ...int) {
+func (m *CommunityMutation) AddUserIDs(ids ...int) {
 	if m.users == nil {
 		m.users = make(map[int]struct{})
 	}
@@ -192,17 +192,17 @@ func (m *GroupMutation) AddUserIDs(ids ...int) {
 }
 
 // ClearUsers clears the "users" edge to the User entity.
-func (m *GroupMutation) ClearUsers() {
+func (m *CommunityMutation) ClearUsers() {
 	m.clearedusers = true
 }
 
 // UsersCleared reports if the "users" edge to the User entity was cleared.
-func (m *GroupMutation) UsersCleared() bool {
+func (m *CommunityMutation) UsersCleared() bool {
 	return m.clearedusers
 }
 
 // RemoveUserIDs removes the "users" edge to the User entity by IDs.
-func (m *GroupMutation) RemoveUserIDs(ids ...int) {
+func (m *CommunityMutation) RemoveUserIDs(ids ...int) {
 	if m.removedusers == nil {
 		m.removedusers = make(map[int]struct{})
 	}
@@ -213,7 +213,7 @@ func (m *GroupMutation) RemoveUserIDs(ids ...int) {
 }
 
 // RemovedUsers returns the removed IDs of the "users" edge to the User entity.
-func (m *GroupMutation) RemovedUsersIDs() (ids []int) {
+func (m *CommunityMutation) RemovedUsersIDs() (ids []int) {
 	for id := range m.removedusers {
 		ids = append(ids, id)
 	}
@@ -221,7 +221,7 @@ func (m *GroupMutation) RemovedUsersIDs() (ids []int) {
 }
 
 // UsersIDs returns the "users" edge IDs in the mutation.
-func (m *GroupMutation) UsersIDs() (ids []int) {
+func (m *CommunityMutation) UsersIDs() (ids []int) {
 	for id := range m.users {
 		ids = append(ids, id)
 	}
@@ -229,21 +229,21 @@ func (m *GroupMutation) UsersIDs() (ids []int) {
 }
 
 // ResetUsers resets all changes to the "users" edge.
-func (m *GroupMutation) ResetUsers() {
+func (m *CommunityMutation) ResetUsers() {
 	m.users = nil
 	m.clearedusers = false
 	m.removedusers = nil
 }
 
-// Where appends a list predicates to the GroupMutation builder.
-func (m *GroupMutation) Where(ps ...predicate.Group) {
+// Where appends a list predicates to the CommunityMutation builder.
+func (m *CommunityMutation) Where(ps ...predicate.Community) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the GroupMutation builder. Using this method,
+// WhereP appends storage-level predicates to the CommunityMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *GroupMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.Group, len(ps))
+func (m *CommunityMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Community, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -251,27 +251,27 @@ func (m *GroupMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *GroupMutation) Op() Op {
+func (m *CommunityMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *GroupMutation) SetOp(op Op) {
+func (m *CommunityMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (Group).
-func (m *GroupMutation) Type() string {
+// Type returns the node type of this mutation (Community).
+func (m *CommunityMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *GroupMutation) Fields() []string {
+func (m *CommunityMutation) Fields() []string {
 	fields := make([]string, 0, 1)
 	if m.name != nil {
-		fields = append(fields, group.FieldName)
+		fields = append(fields, community.FieldName)
 	}
 	return fields
 }
@@ -279,9 +279,9 @@ func (m *GroupMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *GroupMutation) Field(name string) (ent.Value, bool) {
+func (m *CommunityMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case group.FieldName:
+	case community.FieldName:
 		return m.Name()
 	}
 	return nil, false
@@ -290,20 +290,20 @@ func (m *GroupMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *GroupMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *CommunityMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case group.FieldName:
+	case community.FieldName:
 		return m.OldName(ctx)
 	}
-	return nil, fmt.Errorf("unknown Group field %s", name)
+	return nil, fmt.Errorf("unknown Community field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *GroupMutation) SetField(name string, value ent.Value) error {
+func (m *CommunityMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case group.FieldName:
+	case community.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -311,75 +311,75 @@ func (m *GroupMutation) SetField(name string, value ent.Value) error {
 		m.SetName(v)
 		return nil
 	}
-	return fmt.Errorf("unknown Group field %s", name)
+	return fmt.Errorf("unknown Community field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *GroupMutation) AddedFields() []string {
+func (m *CommunityMutation) AddedFields() []string {
 	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *GroupMutation) AddedField(name string) (ent.Value, bool) {
+func (m *CommunityMutation) AddedField(name string) (ent.Value, bool) {
 	return nil, false
 }
 
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *GroupMutation) AddField(name string, value ent.Value) error {
+func (m *CommunityMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown Group numeric field %s", name)
+	return fmt.Errorf("unknown Community numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *GroupMutation) ClearedFields() []string {
+func (m *CommunityMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *GroupMutation) FieldCleared(name string) bool {
+func (m *CommunityMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *GroupMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown Group nullable field %s", name)
+func (m *CommunityMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Community nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *GroupMutation) ResetField(name string) error {
+func (m *CommunityMutation) ResetField(name string) error {
 	switch name {
-	case group.FieldName:
+	case community.FieldName:
 		m.ResetName()
 		return nil
 	}
-	return fmt.Errorf("unknown Group field %s", name)
+	return fmt.Errorf("unknown Community field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *GroupMutation) AddedEdges() []string {
+func (m *CommunityMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
 	if m.users != nil {
-		edges = append(edges, group.EdgeUsers)
+		edges = append(edges, community.EdgeUsers)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *GroupMutation) AddedIDs(name string) []ent.Value {
+func (m *CommunityMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case group.EdgeUsers:
+	case community.EdgeUsers:
 		ids := make([]ent.Value, 0, len(m.users))
 		for id := range m.users {
 			ids = append(ids, id)
@@ -390,19 +390,19 @@ func (m *GroupMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *GroupMutation) RemovedEdges() []string {
+func (m *CommunityMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
 	if m.removedusers != nil {
-		edges = append(edges, group.EdgeUsers)
+		edges = append(edges, community.EdgeUsers)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *GroupMutation) RemovedIDs(name string) []ent.Value {
+func (m *CommunityMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case group.EdgeUsers:
+	case community.EdgeUsers:
 		ids := make([]ent.Value, 0, len(m.removedusers))
 		for id := range m.removedusers {
 			ids = append(ids, id)
@@ -413,19 +413,19 @@ func (m *GroupMutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *GroupMutation) ClearedEdges() []string {
+func (m *CommunityMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
 	if m.clearedusers {
-		edges = append(edges, group.EdgeUsers)
+		edges = append(edges, community.EdgeUsers)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *GroupMutation) EdgeCleared(name string) bool {
+func (m *CommunityMutation) EdgeCleared(name string) bool {
 	switch name {
-	case group.EdgeUsers:
+	case community.EdgeUsers:
 		return m.clearedusers
 	}
 	return false
@@ -433,21 +433,21 @@ func (m *GroupMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *GroupMutation) ClearEdge(name string) error {
+func (m *CommunityMutation) ClearEdge(name string) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown Group unique edge %s", name)
+	return fmt.Errorf("unknown Community unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *GroupMutation) ResetEdge(name string) error {
+func (m *CommunityMutation) ResetEdge(name string) error {
 	switch name {
-	case group.EdgeUsers:
+	case community.EdgeUsers:
 		m.ResetUsers()
 		return nil
 	}
-	return fmt.Errorf("unknown Group edge %s", name)
+	return fmt.Errorf("unknown Community edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.
@@ -770,7 +770,7 @@ func (m *UserMutation) Birthdate() (r time.Time, exists bool) {
 // OldBirthdate returns the old "birthdate" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldBirthdate(ctx context.Context) (v time.Time, err error) {
+func (m *UserMutation) OldBirthdate(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldBirthdate is only allowed on UpdateOne operations")
 	}
@@ -933,7 +933,7 @@ func (m *UserMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// AddGroupIDs adds the "groups" edge to the Group entity by ids.
+// AddGroupIDs adds the "groups" edge to the Community entity by ids.
 func (m *UserMutation) AddGroupIDs(ids ...int) {
 	if m.groups == nil {
 		m.groups = make(map[int]struct{})
@@ -943,17 +943,17 @@ func (m *UserMutation) AddGroupIDs(ids ...int) {
 	}
 }
 
-// ClearGroups clears the "groups" edge to the Group entity.
+// ClearGroups clears the "groups" edge to the Community entity.
 func (m *UserMutation) ClearGroups() {
 	m.clearedgroups = true
 }
 
-// GroupsCleared reports if the "groups" edge to the Group entity was cleared.
+// GroupsCleared reports if the "groups" edge to the Community entity was cleared.
 func (m *UserMutation) GroupsCleared() bool {
 	return m.clearedgroups
 }
 
-// RemoveGroupIDs removes the "groups" edge to the Group entity by IDs.
+// RemoveGroupIDs removes the "groups" edge to the Community entity by IDs.
 func (m *UserMutation) RemoveGroupIDs(ids ...int) {
 	if m.removedgroups == nil {
 		m.removedgroups = make(map[int]struct{})
@@ -964,7 +964,7 @@ func (m *UserMutation) RemoveGroupIDs(ids ...int) {
 	}
 }
 
-// RemovedGroups returns the removed IDs of the "groups" edge to the Group entity.
+// RemovedGroups returns the removed IDs of the "groups" edge to the Community entity.
 func (m *UserMutation) RemovedGroupsIDs() (ids []int) {
 	for id := range m.removedgroups {
 		ids = append(ids, id)

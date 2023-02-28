@@ -3,16 +3,17 @@ package db
 import (
 	"context"
 	"fmt"
+	"hus-auth/dto"
 	"hus-auth/ent"
 	"hus-auth/ent/user"
 	"log"
 )
 
-func CreateUser(ctx context.Context, client *ent.Client) (*ent.User, error) {
+func CreateUser(ctx context.Context, client *ent.Client, gu dto.GoogleUser) (*ent.User, error) {
 	u, err := client.User.
-		Create().
-		SetName("a8m").
-		Save(ctx)
+		Create().SetGoogleSub(gu.Sub).SetEmail(gu.Email).SetEmailVerified(gu.Email_verified).
+		SetName(gu.Name).SetGoogleProfilePicture(gu.Picture).SetFamilyName(gu.Family_name).
+		SetGivenName(gu.Given_name).Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating user: %w", err)
 	}
@@ -20,7 +21,7 @@ func CreateUser(ctx context.Context, client *ent.Client) (*ent.User, error) {
 	return u, nil
 }
 
-func QueryUser(ctx context.Context, client *ent.Client) (*ent.User, error) {
+func QueryUser(ctx context.Context, client *ent.Client, sub string) (*ent.User, error) {
 	u, err := client.User.
 		Query().
 		Where(user.Name("a8m")).

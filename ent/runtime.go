@@ -3,7 +3,7 @@
 package ent
 
 import (
-	"hus-auth/ent/group"
+	"hus-auth/ent/community"
 	"hus-auth/ent/schema"
 	"hus-auth/ent/user"
 	"time"
@@ -15,12 +15,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	groupFields := schema.Group{}.Fields()
-	_ = groupFields
-	// groupDescName is the schema descriptor for name field.
-	groupDescName := groupFields[0].Descriptor()
-	// group.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	group.NameValidator = groupDescName.Validators[0].(func(string) error)
+	communityFields := schema.Community{}.Fields()
+	_ = communityFields
+	// communityDescName is the schema descriptor for name field.
+	communityDescName := communityFields[0].Descriptor()
+	// community.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	community.NameValidator = communityDescName.Validators[0].(func(string) error)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescUUID is the schema descriptor for uuid field.

@@ -8,16 +8,16 @@ import (
 )
 
 var (
-	// GroupsColumns holds the columns for the "groups" table.
-	GroupsColumns = []*schema.Column{
+	// CommunitiesColumns holds the columns for the "communities" table.
+	CommunitiesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
 	}
-	// GroupsTable holds the schema information for the "groups" table.
-	GroupsTable = &schema.Table{
-		Name:       "groups",
-		Columns:    GroupsColumns,
-		PrimaryKey: []*schema.Column{GroupsColumns[0]},
+	// CommunitiesTable holds the schema information for the "communities" table.
+	CommunitiesTable = &schema.Table{
+		Name:       "communities",
+		Columns:    CommunitiesColumns,
+		PrimaryKey: []*schema.Column{CommunitiesColumns[0]},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -46,26 +46,26 @@ var (
 			},
 		},
 	}
-	// GroupUsersColumns holds the columns for the "group_users" table.
-	GroupUsersColumns = []*schema.Column{
-		{Name: "group_id", Type: field.TypeInt},
+	// CommunityUsersColumns holds the columns for the "community_users" table.
+	CommunityUsersColumns = []*schema.Column{
+		{Name: "community_id", Type: field.TypeInt},
 		{Name: "user_id", Type: field.TypeInt},
 	}
-	// GroupUsersTable holds the schema information for the "group_users" table.
-	GroupUsersTable = &schema.Table{
-		Name:       "group_users",
-		Columns:    GroupUsersColumns,
-		PrimaryKey: []*schema.Column{GroupUsersColumns[0], GroupUsersColumns[1]},
+	// CommunityUsersTable holds the schema information for the "community_users" table.
+	CommunityUsersTable = &schema.Table{
+		Name:       "community_users",
+		Columns:    CommunityUsersColumns,
+		PrimaryKey: []*schema.Column{CommunityUsersColumns[0], CommunityUsersColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "group_users_group_id",
-				Columns:    []*schema.Column{GroupUsersColumns[0]},
-				RefColumns: []*schema.Column{GroupsColumns[0]},
+				Symbol:     "community_users_community_id",
+				Columns:    []*schema.Column{CommunityUsersColumns[0]},
+				RefColumns: []*schema.Column{CommunitiesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "group_users_user_id",
-				Columns:    []*schema.Column{GroupUsersColumns[1]},
+				Symbol:     "community_users_user_id",
+				Columns:    []*schema.Column{CommunityUsersColumns[1]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -73,13 +73,13 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		GroupsTable,
+		CommunitiesTable,
 		UsersTable,
-		GroupUsersTable,
+		CommunityUsersTable,
 	}
 )
 
 func init() {
-	GroupUsersTable.ForeignKeys[0].RefTable = GroupsTable
-	GroupUsersTable.ForeignKeys[1].RefTable = UsersTable
+	CommunityUsersTable.ForeignKeys[0].RefTable = CommunitiesTable
+	CommunityUsersTable.ForeignKeys[1].RefTable = UsersTable
 }

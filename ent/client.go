@@ -10,7 +10,7 @@ import (
 
 	"hus-auth/ent/migrate"
 
-	"hus-auth/ent/group"
+	"hus-auth/ent/community"
 	"hus-auth/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -23,8 +23,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// Group is the client for interacting with the Group builders.
-	Group *GroupClient
+	// Community is the client for interacting with the Community builders.
+	Community *CommunityClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -40,7 +40,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.Group = NewGroupClient(c.config)
+	c.Community = NewCommunityClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -73,10 +73,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Group:  NewGroupClient(cfg),
-		User:   NewUserClient(cfg),
+		ctx:       ctx,
+		config:    cfg,
+		Community: NewCommunityClient(cfg),
+		User:      NewUserClient(cfg),
 	}, nil
 }
 
@@ -94,17 +94,17 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Group:  NewGroupClient(cfg),
-		User:   NewUserClient(cfg),
+		ctx:       ctx,
+		config:    cfg,
+		Community: NewCommunityClient(cfg),
+		User:      NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Group.
+//		Community.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -126,22 +126,22 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Group.Use(hooks...)
+	c.Community.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.Group.Intercept(interceptors...)
+	c.Community.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *GroupMutation:
-		return c.Group.mutate(ctx, m)
+	case *CommunityMutation:
+		return c.Community.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -149,92 +149,92 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	}
 }
 
-// GroupClient is a client for the Group schema.
-type GroupClient struct {
+// CommunityClient is a client for the Community schema.
+type CommunityClient struct {
 	config
 }
 
-// NewGroupClient returns a client for the Group from the given config.
-func NewGroupClient(c config) *GroupClient {
-	return &GroupClient{config: c}
+// NewCommunityClient returns a client for the Community from the given config.
+func NewCommunityClient(c config) *CommunityClient {
+	return &CommunityClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `group.Hooks(f(g(h())))`.
-func (c *GroupClient) Use(hooks ...Hook) {
-	c.hooks.Group = append(c.hooks.Group, hooks...)
+// A call to `Use(f, g, h)` equals to `community.Hooks(f(g(h())))`.
+func (c *CommunityClient) Use(hooks ...Hook) {
+	c.hooks.Community = append(c.hooks.Community, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `group.Intercept(f(g(h())))`.
-func (c *GroupClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Group = append(c.inters.Group, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `community.Intercept(f(g(h())))`.
+func (c *CommunityClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Community = append(c.inters.Community, interceptors...)
 }
 
-// Create returns a builder for creating a Group entity.
-func (c *GroupClient) Create() *GroupCreate {
-	mutation := newGroupMutation(c.config, OpCreate)
-	return &GroupCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Community entity.
+func (c *CommunityClient) Create() *CommunityCreate {
+	mutation := newCommunityMutation(c.config, OpCreate)
+	return &CommunityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Group entities.
-func (c *GroupClient) CreateBulk(builders ...*GroupCreate) *GroupCreateBulk {
-	return &GroupCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Community entities.
+func (c *CommunityClient) CreateBulk(builders ...*CommunityCreate) *CommunityCreateBulk {
+	return &CommunityCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Group.
-func (c *GroupClient) Update() *GroupUpdate {
-	mutation := newGroupMutation(c.config, OpUpdate)
-	return &GroupUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Community.
+func (c *CommunityClient) Update() *CommunityUpdate {
+	mutation := newCommunityMutation(c.config, OpUpdate)
+	return &CommunityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *GroupClient) UpdateOne(gr *Group) *GroupUpdateOne {
-	mutation := newGroupMutation(c.config, OpUpdateOne, withGroup(gr))
-	return &GroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *CommunityClient) UpdateOne(co *Community) *CommunityUpdateOne {
+	mutation := newCommunityMutation(c.config, OpUpdateOne, withCommunity(co))
+	return &CommunityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *GroupClient) UpdateOneID(id int) *GroupUpdateOne {
-	mutation := newGroupMutation(c.config, OpUpdateOne, withGroupID(id))
-	return &GroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *CommunityClient) UpdateOneID(id int) *CommunityUpdateOne {
+	mutation := newCommunityMutation(c.config, OpUpdateOne, withCommunityID(id))
+	return &CommunityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Group.
-func (c *GroupClient) Delete() *GroupDelete {
-	mutation := newGroupMutation(c.config, OpDelete)
-	return &GroupDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Community.
+func (c *CommunityClient) Delete() *CommunityDelete {
+	mutation := newCommunityMutation(c.config, OpDelete)
+	return &CommunityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *GroupClient) DeleteOne(gr *Group) *GroupDeleteOne {
-	return c.DeleteOneID(gr.ID)
+func (c *CommunityClient) DeleteOne(co *Community) *CommunityDeleteOne {
+	return c.DeleteOneID(co.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *GroupClient) DeleteOneID(id int) *GroupDeleteOne {
-	builder := c.Delete().Where(group.ID(id))
+func (c *CommunityClient) DeleteOneID(id int) *CommunityDeleteOne {
+	builder := c.Delete().Where(community.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &GroupDeleteOne{builder}
+	return &CommunityDeleteOne{builder}
 }
 
-// Query returns a query builder for Group.
-func (c *GroupClient) Query() *GroupQuery {
-	return &GroupQuery{
+// Query returns a query builder for Community.
+func (c *CommunityClient) Query() *CommunityQuery {
+	return &CommunityQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeGroup},
+		ctx:    &QueryContext{Type: TypeCommunity},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a Group entity by its id.
-func (c *GroupClient) Get(ctx context.Context, id int) (*Group, error) {
-	return c.Query().Where(group.ID(id)).Only(ctx)
+// Get returns a Community entity by its id.
+func (c *CommunityClient) Get(ctx context.Context, id int) (*Community, error) {
+	return c.Query().Where(community.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *GroupClient) GetX(ctx context.Context, id int) *Group {
+func (c *CommunityClient) GetX(ctx context.Context, id int) *Community {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -242,44 +242,44 @@ func (c *GroupClient) GetX(ctx context.Context, id int) *Group {
 	return obj
 }
 
-// QueryUsers queries the users edge of a Group.
-func (c *GroupClient) QueryUsers(gr *Group) *UserQuery {
+// QueryUsers queries the users edge of a Community.
+func (c *CommunityClient) QueryUsers(co *Community) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := gr.ID
+		id := co.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.From(community.Table, community.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, group.UsersTable, group.UsersPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, community.UsersTable, community.UsersPrimaryKey...),
 		)
-		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *GroupClient) Hooks() []Hook {
-	return c.hooks.Group
+func (c *CommunityClient) Hooks() []Hook {
+	return c.hooks.Community
 }
 
 // Interceptors returns the client interceptors.
-func (c *GroupClient) Interceptors() []Interceptor {
-	return c.inters.Group
+func (c *CommunityClient) Interceptors() []Interceptor {
+	return c.inters.Community
 }
 
-func (c *GroupClient) mutate(ctx context.Context, m *GroupMutation) (Value, error) {
+func (c *CommunityClient) mutate(ctx context.Context, m *CommunityMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&GroupCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&CommunityCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&GroupUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&CommunityUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&GroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&CommunityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&GroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&CommunityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown Group mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown Community mutation op: %q", m.Op())
 	}
 }
 
@@ -377,13 +377,13 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 }
 
 // QueryGroups queries the groups edge of a User.
-func (c *UserClient) QueryGroups(u *User) *GroupQuery {
-	query := (&GroupClient{config: c.config}).Query()
+func (c *UserClient) QueryGroups(u *User) *CommunityQuery {
+	query := (&CommunityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.To(community.Table, community.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, user.GroupsTable, user.GroupsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)

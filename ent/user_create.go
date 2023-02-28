@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hus-auth/ent/group"
+	"hus-auth/ent/community"
 	"hus-auth/ent/user"
 	"time"
 
@@ -98,17 +98,17 @@ func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 	return uc
 }
 
-// AddGroupIDs adds the "groups" edge to the Group entity by IDs.
+// AddGroupIDs adds the "groups" edge to the Community entity by IDs.
 func (uc *UserCreate) AddGroupIDs(ids ...int) *UserCreate {
 	uc.mutation.AddGroupIDs(ids...)
 	return uc
 }
 
-// AddGroups adds the "groups" edges to the Group entity.
-func (uc *UserCreate) AddGroups(g ...*Group) *UserCreate {
-	ids := make([]int, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+// AddGroups adds the "groups" edges to the Community entity.
+func (uc *UserCreate) AddGroups(c ...*Community) *UserCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
 	return uc.AddGroupIDs(ids...)
 }
@@ -238,7 +238,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := uc.mutation.Birthdate(); ok {
 		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
-		_node.Birthdate = value
+		_node.Birthdate = &value
 	}
 	if value, ok := uc.mutation.GivenName(); ok {
 		_spec.SetField(user.FieldGivenName, field.TypeString, value)
@@ -266,7 +266,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: group.FieldID,
+					Column: community.FieldID,
 				},
 			},
 		}

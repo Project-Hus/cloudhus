@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hus-auth/ent/group"
+	"hus-auth/ent/community"
 	"hus-auth/ent/predicate"
 	"hus-auth/ent/user"
 	"time"
@@ -106,17 +106,17 @@ func (uu *UserUpdate) SetNillableCreatedAt(t *time.Time) *UserUpdate {
 	return uu
 }
 
-// AddGroupIDs adds the "groups" edge to the Group entity by IDs.
+// AddGroupIDs adds the "groups" edge to the Community entity by IDs.
 func (uu *UserUpdate) AddGroupIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddGroupIDs(ids...)
 	return uu
 }
 
-// AddGroups adds the "groups" edges to the Group entity.
-func (uu *UserUpdate) AddGroups(g ...*Group) *UserUpdate {
-	ids := make([]int, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+// AddGroups adds the "groups" edges to the Community entity.
+func (uu *UserUpdate) AddGroups(c ...*Community) *UserUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
 	return uu.AddGroupIDs(ids...)
 }
@@ -126,23 +126,23 @@ func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
 }
 
-// ClearGroups clears all "groups" edges to the Group entity.
+// ClearGroups clears all "groups" edges to the Community entity.
 func (uu *UserUpdate) ClearGroups() *UserUpdate {
 	uu.mutation.ClearGroups()
 	return uu
 }
 
-// RemoveGroupIDs removes the "groups" edge to Group entities by IDs.
+// RemoveGroupIDs removes the "groups" edge to Community entities by IDs.
 func (uu *UserUpdate) RemoveGroupIDs(ids ...int) *UserUpdate {
 	uu.mutation.RemoveGroupIDs(ids...)
 	return uu
 }
 
-// RemoveGroups removes "groups" edges to Group entities.
-func (uu *UserUpdate) RemoveGroups(g ...*Group) *UserUpdate {
-	ids := make([]int, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+// RemoveGroups removes "groups" edges to Community entities.
+func (uu *UserUpdate) RemoveGroups(c ...*Community) *UserUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
 	return uu.RemoveGroupIDs(ids...)
 }
@@ -223,7 +223,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: group.FieldID,
+					Column: community.FieldID,
 				},
 			},
 		}
@@ -239,7 +239,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: group.FieldID,
+					Column: community.FieldID,
 				},
 			},
 		}
@@ -258,7 +258,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: group.FieldID,
+					Column: community.FieldID,
 				},
 			},
 		}
@@ -363,17 +363,17 @@ func (uuo *UserUpdateOne) SetNillableCreatedAt(t *time.Time) *UserUpdateOne {
 	return uuo
 }
 
-// AddGroupIDs adds the "groups" edge to the Group entity by IDs.
+// AddGroupIDs adds the "groups" edge to the Community entity by IDs.
 func (uuo *UserUpdateOne) AddGroupIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddGroupIDs(ids...)
 	return uuo
 }
 
-// AddGroups adds the "groups" edges to the Group entity.
-func (uuo *UserUpdateOne) AddGroups(g ...*Group) *UserUpdateOne {
-	ids := make([]int, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+// AddGroups adds the "groups" edges to the Community entity.
+func (uuo *UserUpdateOne) AddGroups(c ...*Community) *UserUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
 	return uuo.AddGroupIDs(ids...)
 }
@@ -383,23 +383,23 @@ func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
 }
 
-// ClearGroups clears all "groups" edges to the Group entity.
+// ClearGroups clears all "groups" edges to the Community entity.
 func (uuo *UserUpdateOne) ClearGroups() *UserUpdateOne {
 	uuo.mutation.ClearGroups()
 	return uuo
 }
 
-// RemoveGroupIDs removes the "groups" edge to Group entities by IDs.
+// RemoveGroupIDs removes the "groups" edge to Community entities by IDs.
 func (uuo *UserUpdateOne) RemoveGroupIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.RemoveGroupIDs(ids...)
 	return uuo
 }
 
-// RemoveGroups removes "groups" edges to Group entities.
-func (uuo *UserUpdateOne) RemoveGroups(g ...*Group) *UserUpdateOne {
-	ids := make([]int, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+// RemoveGroups removes "groups" edges to Community entities.
+func (uuo *UserUpdateOne) RemoveGroups(c ...*Community) *UserUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
 	return uuo.RemoveGroupIDs(ids...)
 }
@@ -510,7 +510,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: group.FieldID,
+					Column: community.FieldID,
 				},
 			},
 		}
@@ -526,7 +526,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: group.FieldID,
+					Column: community.FieldID,
 				},
 			},
 		}
@@ -545,7 +545,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: group.FieldID,
+					Column: community.FieldID,
 				},
 			},
 		}

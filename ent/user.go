@@ -28,7 +28,7 @@ type User struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Birthdate holds the value of the "birthdate" field.
-	Birthdate time.Time `json:"birthdate,omitempty"`
+	Birthdate *time.Time `json:"birthdate,omitempty"`
 	// GivenName holds the value of the "given_name" field.
 	GivenName string `json:"given_name,omitempty"`
 	// FamilyName holds the value of the "family_name" field.
@@ -45,7 +45,7 @@ type User struct {
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
 	// Groups holds the value of the groups edge.
-	Groups []*Group `json:"groups,omitempty"`
+	Groups []*Community `json:"groups,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
@@ -53,7 +53,7 @@ type UserEdges struct {
 
 // GroupsOrErr returns the Groups value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) GroupsOrErr() ([]*Group, error) {
+func (e UserEdges) GroupsOrErr() ([]*Community, error) {
 	if e.loadedTypes[0] {
 		return e.Groups, nil
 	}
@@ -130,7 +130,8 @@ func (u *User) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field birthdate", values[i])
 			} else if value.Valid {
-				u.Birthdate = value.Time
+				u.Birthdate = new(time.Time)
+				*u.Birthdate = value.Time
 			}
 		case user.FieldGivenName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -162,7 +163,7 @@ func (u *User) assignValues(columns []string, values []any) error {
 }
 
 // QueryGroups queries the "groups" edge of the User entity.
-func (u *User) QueryGroups() *GroupQuery {
+func (u *User) QueryGroups() *CommunityQuery {
 	return NewUserClient(u.config).QueryGroups(u)
 }
 
@@ -204,8 +205,10 @@ func (u *User) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(u.Name)
 	builder.WriteString(", ")
-	builder.WriteString("birthdate=")
-	builder.WriteString(u.Birthdate.Format(time.ANSIC))
+	if v := u.Birthdate; v != nil {
+		builder.WriteString("birthdate=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("given_name=")
 	builder.WriteString(u.GivenName)

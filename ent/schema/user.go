@@ -32,7 +32,7 @@ func (User) Fields() []ent.Field {
 
 		// User real info
 		field.String("name"),
-		field.Time("birthdate"),
+		field.Time("birthdate").Nillable(),
 		field.String("given_name"),
 		field.String("family_name"),
 
@@ -45,6 +45,6 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("groups", Group.Type).Ref("users"),
+		edge.From("groups", Community.Type).Ref("users"),
 	}
 }

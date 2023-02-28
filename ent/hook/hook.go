@@ -8,16 +8,16 @@ import (
 	"hus-auth/ent"
 )
 
-// The GroupFunc type is an adapter to allow the use of ordinary
-// function as Group mutator.
-type GroupFunc func(context.Context, *ent.GroupMutation) (ent.Value, error)
+// The CommunityFunc type is an adapter to allow the use of ordinary
+// function as Community mutator.
+type CommunityFunc func(context.Context, *ent.CommunityMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f GroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.GroupMutation); ok {
+func (f CommunityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CommunityMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GroupMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommunityMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary

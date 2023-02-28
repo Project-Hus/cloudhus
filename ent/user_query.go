@@ -6,7 +6,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
-	"hus-auth/ent/group"
+	"hus-auth/ent/community"
 	"hus-auth/ent/predicate"
 	"hus-auth/ent/user"
 	"math"
@@ -23,7 +23,7 @@ type UserQuery struct {
 	order      []OrderFunc
 	inters     []Interceptor
 	predicates []predicate.User
-	withGroups *GroupQuery
+	withGroups *CommunityQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,8 +61,8 @@ func (uq *UserQuery) Order(o ...OrderFunc) *UserQuery {
 }
 
 // QueryGroups chains the current query on the "groups" edge.
-func (uq *UserQuery) QueryGroups() *GroupQuery {
-	query := (&GroupClient{config: uq.config}).Query()
+func (uq *UserQuery) QueryGroups() *CommunityQuery {
+	query := (&CommunityClient{config: uq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -73,7 +73,7 @@ func (uq *UserQuery) QueryGroups() *GroupQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.To(community.Table, community.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, user.GroupsTable, user.GroupsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
@@ -283,8 +283,8 @@ func (uq *UserQuery) Clone() *UserQuery {
 
 // WithGroups tells the query-builder to eager-load the nodes that are connected to
 // the "groups" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithGroups(opts ...func(*GroupQuery)) *UserQuery {
-	query := (&GroupClient{config: uq.config}).Query()
+func (uq *UserQuery) WithGroups(opts ...func(*CommunityQuery)) *UserQuery {
+	query := (&CommunityClient{config: uq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -394,15 +394,15 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	}
 	if query := uq.withGroups; query != nil {
 		if err := uq.loadGroups(ctx, query, nodes,
-			func(n *User) { n.Edges.Groups = []*Group{} },
-			func(n *User, e *Group) { n.Edges.Groups = append(n.Edges.Groups, e) }); err != nil {
+			func(n *User) { n.Edges.Groups = []*Community{} },
+			func(n *User, e *Community) { n.Edges.Groups = append(n.Edges.Groups, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (uq *UserQuery) loadGroups(ctx context.Context, query *GroupQuery, nodes []*User, init func(*User), assign func(*User, *Group)) error {
+func (uq *UserQuery) loadGroups(ctx context.Context, query *CommunityQuery, nodes []*User, init func(*User), assign func(*User, *Community)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*User)
 	nids := make(map[int]map[*User]struct{})
@@ -415,7 +415,7 @@ func (uq *UserQuery) loadGroups(ctx context.Context, query *GroupQuery, nodes []
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(user.GroupsTable)
-		s.Join(joinT).On(s.C(group.FieldID), joinT.C(user.GroupsPrimaryKey[0]))
+		s.Join(joinT).On(s.C(community.FieldID), joinT.C(user.GroupsPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(user.GroupsPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(user.GroupsPrimaryKey[1]))
@@ -448,7 +448,7 @@ func (uq *UserQuery) loadGroups(ctx context.Context, query *GroupQuery, nodes []
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*Group](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*Community](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}

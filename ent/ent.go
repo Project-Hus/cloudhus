@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hus-auth/ent/group"
+	"hus-auth/ent/community"
 	"hus-auth/ent/user"
 	"reflect"
 
@@ -40,8 +40,8 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		group.Table: group.ValidColumn,
-		user.Table:  user.ValidColumn,
+		community.Table: community.ValidColumn,
+		user.Table:      user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {
