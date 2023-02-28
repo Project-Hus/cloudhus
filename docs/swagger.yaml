@@ -14,25 +14,24 @@ info:
   title: Project-Hus auth server
   version: 0.0.0
 paths:
-  /sign:
+  /auth/google:
     post:
       consumes:
       - application/json
-      description: get string by ID
+      description: validates the google ID token and redirects with hus auth token
+        query.
       parameters:
-      - description: Account ID
+      - description: Google ID token
         in: path
-        name: id
+        name: jwt
         required: true
-        type: integer
-      produces:
-      - application/json
+        type: string
       responses:
-        "300":
-          description: /sign
+        "301":
+          description: to /token
         "400":
           description: Bad Request
-      summary: Show an account
+      summary: Process google auth
       tags:
-      - users
+      - auth
 swagger: "2.0"

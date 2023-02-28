@@ -9,7 +9,7 @@ import (
 func AuthApiController() *echo.Echo {
 	api := echo.New()
 
-	api.POST("/sign", auth.GoogleLoginHandler)
+	api.POST("/auth/google", auth.GoogleAuthHandler)
 
 	return api
 }

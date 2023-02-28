@@ -24,31 +24,28 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/sign": {
+        "/auth/google": {
             "post": {
-                "description": "get string by ID",
+                "description": "validates the google ID token and redirects with hus auth token query.",
                 "consumes": [
                     "application/json"
                 ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
-                    "users"
+                    "auth"
                 ],
-                "summary": "Show an account",
+                "summary": "Process google auth",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Account ID",
-                        "name": "id",
+                        "type": "string",
+                        "description": "Google ID token",
+                        "name": "jwt",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
-                    "300": {
-                        "description": "/sign"
+                    "301": {
+                        "description": "to /token"
                     },
                     "400": {
                         "description": "Bad Request"

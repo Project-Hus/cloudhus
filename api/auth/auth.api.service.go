@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -12,17 +11,16 @@ import (
 	_ "net/http/httputil"
 )
 
-// GoogleLoginHandler godoc
-// @Summary      Show an account
-// @Description  get string by ID
-// @Tags         users
+// GoogleAuthHandler godoc
+// @Summary      Process google auth
+// @Description  validates the google ID token and redirects with hus auth token query.
+// @Tags         auth
 // @Accept       json
-// @Produce      json
-// @Param        id   path      int  true  "Account ID"
-// @Success      301 "to /"
-// @Failure      400
-// @Router       /sign [post]
-func GoogleLoginHandler(c echo.Context) error {
+// @Param        jwt path string true "Google ID token"
+// @Success      301 "to /token"
+// @Failure      401 "Unauthorized"
+// @Router       /auth/google [post]
+func GoogleAuthHandler(c echo.Context) error {
 	credential := c.FormValue("credential")
 
 	const clientID = "199526293983-r0b7tpmbpcc8nb786v261e451i2vihu3.apps.googleusercontent.com"
@@ -30,11 +28,11 @@ func GoogleLoginHandler(c echo.Context) error {
 	payload, err := idtoken.Validate(context.TODO(), credential, clientID)
 	if err != nil {
 		// Handle any errors that occur while verifying the ID token.
-		log.Fatalf("Invalid ID token: %v", err)
+		return c.String(401, fmt.Sprintf("Invalid ID token: %v", err))
 	}
 	// Check that the user's ID token was intended for your application.
 	if payload.Audience != clientID {
-		log.Fatalf("Invalid client ID")
+		return c.String(401, "Invalid client ID")
 	}
 
 	sub := payload.Claims["sub"].(string)
