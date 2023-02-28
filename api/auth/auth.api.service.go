@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"fmt"
+	db "hus-auth/db/user"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -20,7 +21,7 @@ import (
 // @Success      301 "to /token"
 // @Failure      401 "Unauthorized"
 // @Router       /auth/google [post]
-func GoogleAuthHandler(c echo.Context) error {
+func (ac AuthApiController) GoogleAuthHandler(c echo.Context) error {
 	credential := c.FormValue("credential")
 
 	const clientID = "199526293983-r0b7tpmbpcc8nb786v261e451i2vihu3.apps.googleusercontent.com"
@@ -42,6 +43,8 @@ func GoogleAuthHandler(c echo.Context) error {
 	picture := payload.Claims["picture"].(string)
 	given_name := payload.Claims["given_name"].(string)
 	family_name := payload.Claims["family_name"].(string)
+
+	u, err := db.QueryUserByGoogleSub(c.Request().Context(), ac.Client, sub)
 
 	fmt.Println(sub, email, email_verified, name, picture, given_name, family_name)
 

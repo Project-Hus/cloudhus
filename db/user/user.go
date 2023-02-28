@@ -27,8 +27,8 @@ func QueryUserByGoogleSub(ctx context.Context, client *ent.Client, sub string) (
 		Query().
 		Where(user.GoogleSub(sub)).
 		Only(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed querying user: %w", err)
+	if ent.IsNotFound(err) {
+		return nil, nil
 	}
-	return u, nil
+	return u, err
 }
