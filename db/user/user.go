@@ -3,17 +3,17 @@ package db
 import (
 	"context"
 	"fmt"
-	"hus-auth/dto"
 	"hus-auth/ent"
 	"hus-auth/ent/user"
 	"log"
 )
 
-func CreateUser(ctx context.Context, client *ent.Client, gu dto.GoogleUser) (*ent.User, error) {
+// CreateUserFromGoogle takes google ID token data and register new user to Project-Hus network.
+func CreateUserFromGoogle(ctx context.Context, client *ent.Client, gu ent.User) (*ent.User, error) {
 	u, err := client.User.
-		Create().SetGoogleSub(gu.Sub).SetEmail(gu.Email).SetEmailVerified(gu.Email_verified).
-		SetName(gu.Name).SetGoogleProfilePicture(gu.Picture).SetFamilyName(gu.Family_name).
-		SetGivenName(gu.Given_name).Save(ctx)
+		Create().SetGoogleSub(gu.GoogleSub).SetEmail(gu.Email).SetEmailVerified(gu.EmailVerified).
+		SetName(gu.Name).SetGoogleProfilePicture(gu.GoogleProfilePicture).SetFamilyName(gu.FamilyName).
+		SetGivenName(gu.GivenName).Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating user: %w", err)
 	}
@@ -21,14 +21,14 @@ func CreateUser(ctx context.Context, client *ent.Client, gu dto.GoogleUser) (*en
 	return u, nil
 }
 
-func QueryUser(ctx context.Context, client *ent.Client, sub string) (*ent.User, error) {
+// QuerUserByGoogle takes Google's sub and check if the user is registered.
+func QueryUserByGoogle(ctx context.Context, client *ent.Client, sub string) (*ent.User, error) {
 	u, err := client.User.
 		Query().
-		Where(user.Name("a8m")).
+		Where(user.GoogleSub(sub)).
 		Only(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed querying user: %w", err)
 	}
-	log.Println("user returned: ", u)
 	return u, nil
 }
