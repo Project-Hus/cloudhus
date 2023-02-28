@@ -346,6 +346,16 @@ func BirthdateLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldBirthdate, v))
 }
 
+// BirthdateIsNil applies the IsNil predicate on the "birthdate" field.
+func BirthdateIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldBirthdate))
+}
+
+// BirthdateNotNil applies the NotNil predicate on the "birthdate" field.
+func BirthdateNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldBirthdate))
+}
+
 // GivenNameEQ applies the EQ predicate on the "given_name" field.
 func GivenNameEQ(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldGivenName, v))

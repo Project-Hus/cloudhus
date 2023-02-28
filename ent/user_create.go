@@ -52,6 +52,14 @@ func (uc *UserCreate) SetBirthdate(t time.Time) *UserCreate {
 	return uc
 }
 
+// SetNillableBirthdate sets the "birthdate" field if the given value is not nil.
+func (uc *UserCreate) SetNillableBirthdate(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetBirthdate(*t)
+	}
+	return uc
+}
+
 // SetGivenName sets the "given_name" field.
 func (uc *UserCreate) SetGivenName(s string) *UserCreate {
 	uc.mutation.SetGivenName(s)
@@ -171,9 +179,6 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "User.name"`)}
-	}
-	if _, ok := uc.mutation.Birthdate(); !ok {
-		return &ValidationError{Name: "birthdate", err: errors.New(`ent: missing required field "User.birthdate"`)}
 	}
 	if _, ok := uc.mutation.GivenName(); !ok {
 		return &ValidationError{Name: "given_name", err: errors.New(`ent: missing required field "User.given_name"`)}

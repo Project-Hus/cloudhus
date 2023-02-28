@@ -32,7 +32,7 @@ func (User) Fields() []ent.Field {
 
 		// User real info
 		field.String("name"),
-		field.Time("birthdate").Nillable(),
+		field.Time("birthdate").Optional().Nillable(),
 		field.String("given_name"),
 		field.String("family_name"),
 

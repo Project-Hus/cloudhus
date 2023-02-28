@@ -59,6 +59,20 @@ func (uu *UserUpdate) SetBirthdate(t time.Time) *UserUpdate {
 	return uu
 }
 
+// SetNillableBirthdate sets the "birthdate" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableBirthdate(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetBirthdate(*t)
+	}
+	return uu
+}
+
+// ClearBirthdate clears the value of the "birthdate" field.
+func (uu *UserUpdate) ClearBirthdate() *UserUpdate {
+	uu.mutation.ClearBirthdate()
+	return uu
+}
+
 // SetGivenName sets the "given_name" field.
 func (uu *UserUpdate) SetGivenName(s string) *UserUpdate {
 	uu.mutation.SetGivenName(s)
@@ -183,6 +197,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.Birthdate(); ok {
 		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
 	}
+	if uu.mutation.BirthdateCleared() {
+		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
+	}
 	if value, ok := uu.mutation.GivenName(); ok {
 		_spec.SetField(user.FieldGivenName, field.TypeString, value)
 	}
@@ -296,6 +313,20 @@ func (uuo *UserUpdateOne) SetName(s string) *UserUpdateOne {
 // SetBirthdate sets the "birthdate" field.
 func (uuo *UserUpdateOne) SetBirthdate(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetBirthdate(t)
+	return uuo
+}
+
+// SetNillableBirthdate sets the "birthdate" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableBirthdate(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetBirthdate(*t)
+	}
+	return uuo
+}
+
+// ClearBirthdate clears the value of the "birthdate" field.
+func (uuo *UserUpdateOne) ClearBirthdate() *UserUpdateOne {
+	uuo.mutation.ClearBirthdate()
 	return uuo
 }
 
@@ -452,6 +483,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.Birthdate(); ok {
 		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
+	}
+	if uuo.mutation.BirthdateCleared() {
+		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
 	}
 	if value, ok := uuo.mutation.GivenName(); ok {
 		_spec.SetField(user.FieldGivenName, field.TypeString, value)

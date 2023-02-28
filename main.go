@@ -3,8 +3,7 @@ package main
 import (
 	"log"
 
-	"hus-auth/api"
-	"hus-auth/common/types"
+	"hus-auth/api/auth"
 	"hus-auth/db"
 
 	"github.com/joho/godotenv"
@@ -45,14 +44,13 @@ func main() {
 	defer client.Close()
 
 	// Set Controller
-	controller := &api.Controller{Client: client}
 
 	// Hosts (subdomains)
-	hosts := map[string]*types.Host{}
+	hosts := map[string]*Host{}
 
 	// gonna uses api.lifthus.com later
-	api := api.AuthApiController(controller)
-	hosts["localhost:9090"] = &types.Host{Echo: api}
+	api := auth.NewAuthApiController(client)
+	hosts["localhost:9090"] = &Host{Echo: api}
 
 	e := echo.New()
 	e.Any("/*", func(c echo.Context) (err error) {

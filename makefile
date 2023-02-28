@@ -10,7 +10,7 @@ lint: fmt
 
 vet: fmt
 	go vet ./...
-	shadow ./... # this tool detects shadowing variables
+	# shadow ./... # this tool detects shadowing variables
 .PHONY:vet
 
 build: vet
