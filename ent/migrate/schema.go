@@ -27,7 +27,7 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "email_verified", Type: field.TypeBool},
 		{Name: "name", Type: field.TypeString},
-		{Name: "birthday", Type: field.TypeTime},
+		{Name: "birthdate", Type: field.TypeTime},
 		{Name: "given_name", Type: field.TypeString},
 		{Name: "family_name", Type: field.TypeString},
 		{Name: "google_profile_picture", Type: field.TypeString, Size: 2147483647},

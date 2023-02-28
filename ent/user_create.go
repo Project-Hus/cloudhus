@@ -60,9 +60,9 @@ func (uc *UserCreate) SetName(s string) *UserCreate {
 	return uc
 }
 
-// SetBirthday sets the "birthday" field.
-func (uc *UserCreate) SetBirthday(t time.Time) *UserCreate {
-	uc.mutation.SetBirthday(t)
+// SetBirthdate sets the "birthdate" field.
+func (uc *UserCreate) SetBirthdate(t time.Time) *UserCreate {
+	uc.mutation.SetBirthdate(t)
 	return uc
 }
 
@@ -175,8 +175,8 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "User.name"`)}
 	}
-	if _, ok := uc.mutation.Birthday(); !ok {
-		return &ValidationError{Name: "birthday", err: errors.New(`ent: missing required field "User.birthday"`)}
+	if _, ok := uc.mutation.Birthdate(); !ok {
+		return &ValidationError{Name: "birthdate", err: errors.New(`ent: missing required field "User.birthdate"`)}
 	}
 	if _, ok := uc.mutation.GivenName(); !ok {
 		return &ValidationError{Name: "given_name", err: errors.New(`ent: missing required field "User.given_name"`)}
@@ -236,9 +236,9 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := uc.mutation.Birthday(); ok {
-		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
-		_node.Birthday = value
+	if value, ok := uc.mutation.Birthdate(); ok {
+		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
+		_node.Birthdate = value
 	}
 	if value, ok := uc.mutation.GivenName(); ok {
 		_spec.SetField(user.FieldGivenName, field.TypeString, value)

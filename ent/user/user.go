@@ -23,8 +23,8 @@ const (
 	FieldEmailVerified = "email_verified"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldBirthday holds the string denoting the birthday field in the database.
-	FieldBirthday = "birthday"
+	// FieldBirthdate holds the string denoting the birthdate field in the database.
+	FieldBirthdate = "birthdate"
 	// FieldGivenName holds the string denoting the given_name field in the database.
 	FieldGivenName = "given_name"
 	// FieldFamilyName holds the string denoting the family_name field in the database.
@@ -52,7 +52,7 @@ var Columns = []string{
 	FieldEmail,
 	FieldEmailVerified,
 	FieldName,
-	FieldBirthday,
+	FieldBirthdate,
 	FieldGivenName,
 	FieldFamilyName,
 	FieldGoogleProfilePicture,

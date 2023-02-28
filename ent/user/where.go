@@ -81,9 +81,9 @@ func Name(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldName, v))
 }
 
-// Birthday applies equality check predicate on the "birthday" field. It's identical to BirthdayEQ.
-func Birthday(v time.Time) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldBirthday, v))
+// Birthdate applies equality check predicate on the "birthdate" field. It's identical to BirthdateEQ.
+func Birthdate(v time.Time) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldBirthdate, v))
 }
 
 // GivenName applies equality check predicate on the "given_name" field. It's identical to GivenNameEQ.
@@ -351,44 +351,44 @@ func NameContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldName, v))
 }
 
-// BirthdayEQ applies the EQ predicate on the "birthday" field.
-func BirthdayEQ(v time.Time) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldBirthday, v))
+// BirthdateEQ applies the EQ predicate on the "birthdate" field.
+func BirthdateEQ(v time.Time) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldBirthdate, v))
 }
 
-// BirthdayNEQ applies the NEQ predicate on the "birthday" field.
-func BirthdayNEQ(v time.Time) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldBirthday, v))
+// BirthdateNEQ applies the NEQ predicate on the "birthdate" field.
+func BirthdateNEQ(v time.Time) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldBirthdate, v))
 }
 
-// BirthdayIn applies the In predicate on the "birthday" field.
-func BirthdayIn(vs ...time.Time) predicate.User {
-	return predicate.User(sql.FieldIn(FieldBirthday, vs...))
+// BirthdateIn applies the In predicate on the "birthdate" field.
+func BirthdateIn(vs ...time.Time) predicate.User {
+	return predicate.User(sql.FieldIn(FieldBirthdate, vs...))
 }
 
-// BirthdayNotIn applies the NotIn predicate on the "birthday" field.
-func BirthdayNotIn(vs ...time.Time) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldBirthday, vs...))
+// BirthdateNotIn applies the NotIn predicate on the "birthdate" field.
+func BirthdateNotIn(vs ...time.Time) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldBirthdate, vs...))
 }
 
-// BirthdayGT applies the GT predicate on the "birthday" field.
-func BirthdayGT(v time.Time) predicate.User {
-	return predicate.User(sql.FieldGT(FieldBirthday, v))
+// BirthdateGT applies the GT predicate on the "birthdate" field.
+func BirthdateGT(v time.Time) predicate.User {
+	return predicate.User(sql.FieldGT(FieldBirthdate, v))
 }
 
-// BirthdayGTE applies the GTE predicate on the "birthday" field.
-func BirthdayGTE(v time.Time) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldBirthday, v))
+// BirthdateGTE applies the GTE predicate on the "birthdate" field.
+func BirthdateGTE(v time.Time) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldBirthdate, v))
 }
 
-// BirthdayLT applies the LT predicate on the "birthday" field.
-func BirthdayLT(v time.Time) predicate.User {
-	return predicate.User(sql.FieldLT(FieldBirthday, v))
+// BirthdateLT applies the LT predicate on the "birthdate" field.
+func BirthdateLT(v time.Time) predicate.User {
+	return predicate.User(sql.FieldLT(FieldBirthdate, v))
 }
 
-// BirthdayLTE applies the LTE predicate on the "birthday" field.
-func BirthdayLTE(v time.Time) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldBirthday, v))
+// BirthdateLTE applies the LTE predicate on the "birthdate" field.
+func BirthdateLTE(v time.Time) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldBirthdate, v))
 }
 
 // GivenNameEQ applies the EQ predicate on the "given_name" field.

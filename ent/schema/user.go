@@ -32,7 +32,7 @@ func (User) Fields() []ent.Field {
 
 		// User real info
 		field.String("name"),
-		field.Time("birthday"),
+		field.Time("birthdate"),
 		field.String("given_name"),
 		field.String("family_name"),
 

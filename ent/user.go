@@ -27,8 +27,8 @@ type User struct {
 	EmailVerified bool `json:"email_verified,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Birthday holds the value of the "birthday" field.
-	Birthday time.Time `json:"birthday,omitempty"`
+	// Birthdate holds the value of the "birthdate" field.
+	Birthdate time.Time `json:"birthdate,omitempty"`
 	// GivenName holds the value of the "given_name" field.
 	GivenName string `json:"given_name,omitempty"`
 	// FamilyName holds the value of the "family_name" field.
@@ -71,7 +71,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case user.FieldGoogleSub, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldGoogleProfilePicture:
 			values[i] = new(sql.NullString)
-		case user.FieldBirthday, user.FieldCreatedAt:
+		case user.FieldBirthdate, user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case user.FieldUUID:
 			values[i] = new(uuid.UUID)
@@ -126,11 +126,11 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Name = value.String
 			}
-		case user.FieldBirthday:
+		case user.FieldBirthdate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field birthday", values[i])
+				return fmt.Errorf("unexpected type %T for field birthdate", values[i])
 			} else if value.Valid {
-				u.Birthday = value.Time
+				u.Birthdate = value.Time
 			}
 		case user.FieldGivenName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -204,8 +204,8 @@ func (u *User) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(u.Name)
 	builder.WriteString(", ")
-	builder.WriteString("birthday=")
-	builder.WriteString(u.Birthday.Format(time.ANSIC))
+	builder.WriteString("birthdate=")
+	builder.WriteString(u.Birthdate.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("given_name=")
 	builder.WriteString(u.GivenName)

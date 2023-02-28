@@ -13,5 +13,26 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Project-Hus auth server
   version: 0.0.0
-paths: {}
+paths:
+  /sign:
+    post:
+      consumes:
+      - application/json
+      description: get string by ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "300":
+          description: /sign
+        "400":
+          description: Bad Request
+      summary: Show an account
+      tags:
+      - users
 swagger: "2.0"

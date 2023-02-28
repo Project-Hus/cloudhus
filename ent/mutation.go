@@ -461,7 +461,7 @@ type UserMutation struct {
 	email                  *string
 	email_verified         *bool
 	name                   *string
-	birthday               *time.Time
+	birthdate              *time.Time
 	given_name             *string
 	family_name            *string
 	google_profile_picture *string
@@ -753,40 +753,40 @@ func (m *UserMutation) ResetName() {
 	m.name = nil
 }
 
-// SetBirthday sets the "birthday" field.
-func (m *UserMutation) SetBirthday(t time.Time) {
-	m.birthday = &t
+// SetBirthdate sets the "birthdate" field.
+func (m *UserMutation) SetBirthdate(t time.Time) {
+	m.birthdate = &t
 }
 
-// Birthday returns the value of the "birthday" field in the mutation.
-func (m *UserMutation) Birthday() (r time.Time, exists bool) {
-	v := m.birthday
+// Birthdate returns the value of the "birthdate" field in the mutation.
+func (m *UserMutation) Birthdate() (r time.Time, exists bool) {
+	v := m.birthdate
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldBirthday returns the old "birthday" field's value of the User entity.
+// OldBirthdate returns the old "birthdate" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldBirthday(ctx context.Context) (v time.Time, err error) {
+func (m *UserMutation) OldBirthdate(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldBirthday is only allowed on UpdateOne operations")
+		return v, errors.New("OldBirthdate is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldBirthday requires an ID field in the mutation")
+		return v, errors.New("OldBirthdate requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldBirthday: %w", err)
+		return v, fmt.Errorf("querying old value for OldBirthdate: %w", err)
 	}
-	return oldValue.Birthday, nil
+	return oldValue.Birthdate, nil
 }
 
-// ResetBirthday resets all changes to the "birthday" field.
-func (m *UserMutation) ResetBirthday() {
-	m.birthday = nil
+// ResetBirthdate resets all changes to the "birthdate" field.
+func (m *UserMutation) ResetBirthdate() {
+	m.birthdate = nil
 }
 
 // SetGivenName sets the "given_name" field.
@@ -1037,8 +1037,8 @@ func (m *UserMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, user.FieldName)
 	}
-	if m.birthday != nil {
-		fields = append(fields, user.FieldBirthday)
+	if m.birthdate != nil {
+		fields = append(fields, user.FieldBirthdate)
 	}
 	if m.given_name != nil {
 		fields = append(fields, user.FieldGivenName)
@@ -1070,8 +1070,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.EmailVerified()
 	case user.FieldName:
 		return m.Name()
-	case user.FieldBirthday:
-		return m.Birthday()
+	case user.FieldBirthdate:
+		return m.Birthdate()
 	case user.FieldGivenName:
 		return m.GivenName()
 	case user.FieldFamilyName:
@@ -1099,8 +1099,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldEmailVerified(ctx)
 	case user.FieldName:
 		return m.OldName(ctx)
-	case user.FieldBirthday:
-		return m.OldBirthday(ctx)
+	case user.FieldBirthdate:
+		return m.OldBirthdate(ctx)
 	case user.FieldGivenName:
 		return m.OldGivenName(ctx)
 	case user.FieldFamilyName:
@@ -1153,12 +1153,12 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case user.FieldBirthday:
+	case user.FieldBirthdate:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetBirthday(v)
+		m.SetBirthdate(v)
 		return nil
 	case user.FieldGivenName:
 		v, ok := value.(string)
@@ -1252,8 +1252,8 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldName:
 		m.ResetName()
 		return nil
-	case user.FieldBirthday:
-		m.ResetBirthday()
+	case user.FieldBirthdate:
+		m.ResetBirthdate()
 		return nil
 	case user.FieldGivenName:
 		m.ResetGivenName()
