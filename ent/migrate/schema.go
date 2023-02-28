@@ -21,8 +21,7 @@ var (
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "google_sub", Type: field.TypeString, Unique: true},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "email_verified", Type: field.TypeBool},
@@ -40,16 +39,16 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "user_uuid",
+				Name:    "user_id",
 				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[1]},
+				Columns: []*schema.Column{UsersColumns[0]},
 			},
 		},
 	}
 	// CommunityUsersColumns holds the columns for the "community_users" table.
 	CommunityUsersColumns = []*schema.Column{
 		{Name: "community_id", Type: field.TypeInt},
-		{Name: "user_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// CommunityUsersTable holds the schema information for the "community_users" table.
 	CommunityUsersTable = &schema.Table{

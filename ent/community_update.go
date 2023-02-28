@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // CommunityUpdate is the builder for updating Community entities.
@@ -35,14 +36,14 @@ func (cu *CommunityUpdate) SetName(s string) *CommunityUpdate {
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
-func (cu *CommunityUpdate) AddUserIDs(ids ...int) *CommunityUpdate {
+func (cu *CommunityUpdate) AddUserIDs(ids ...uuid.UUID) *CommunityUpdate {
 	cu.mutation.AddUserIDs(ids...)
 	return cu
 }
 
 // AddUsers adds the "users" edges to the User entity.
 func (cu *CommunityUpdate) AddUsers(u ...*User) *CommunityUpdate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -61,14 +62,14 @@ func (cu *CommunityUpdate) ClearUsers() *CommunityUpdate {
 }
 
 // RemoveUserIDs removes the "users" edge to User entities by IDs.
-func (cu *CommunityUpdate) RemoveUserIDs(ids ...int) *CommunityUpdate {
+func (cu *CommunityUpdate) RemoveUserIDs(ids ...uuid.UUID) *CommunityUpdate {
 	cu.mutation.RemoveUserIDs(ids...)
 	return cu
 }
 
 // RemoveUsers removes "users" edges to User entities.
 func (cu *CommunityUpdate) RemoveUsers(u ...*User) *CommunityUpdate {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -136,7 +137,7 @@ func (cu *CommunityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -152,7 +153,7 @@ func (cu *CommunityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -171,7 +172,7 @@ func (cu *CommunityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -208,14 +209,14 @@ func (cuo *CommunityUpdateOne) SetName(s string) *CommunityUpdateOne {
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
-func (cuo *CommunityUpdateOne) AddUserIDs(ids ...int) *CommunityUpdateOne {
+func (cuo *CommunityUpdateOne) AddUserIDs(ids ...uuid.UUID) *CommunityUpdateOne {
 	cuo.mutation.AddUserIDs(ids...)
 	return cuo
 }
 
 // AddUsers adds the "users" edges to the User entity.
 func (cuo *CommunityUpdateOne) AddUsers(u ...*User) *CommunityUpdateOne {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -234,14 +235,14 @@ func (cuo *CommunityUpdateOne) ClearUsers() *CommunityUpdateOne {
 }
 
 // RemoveUserIDs removes the "users" edge to User entities by IDs.
-func (cuo *CommunityUpdateOne) RemoveUserIDs(ids ...int) *CommunityUpdateOne {
+func (cuo *CommunityUpdateOne) RemoveUserIDs(ids ...uuid.UUID) *CommunityUpdateOne {
 	cuo.mutation.RemoveUserIDs(ids...)
 	return cuo
 }
 
 // RemoveUsers removes "users" edges to User entities.
 func (cuo *CommunityUpdateOne) RemoveUsers(u ...*User) *CommunityUpdateOne {
-	ids := make([]int, len(u))
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
@@ -339,7 +340,7 @@ func (cuo *CommunityUpdateOne) sqlSave(ctx context.Context) (_node *Community, e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -355,7 +356,7 @@ func (cuo *CommunityUpdateOne) sqlSave(ctx context.Context) (_node *Community, e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -374,7 +375,7 @@ func (cuo *CommunityUpdateOne) sqlSave(ctx context.Context) (_node *Community, e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},

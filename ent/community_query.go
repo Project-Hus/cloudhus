@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // CommunityQuery is the builder for querying Community entities.
@@ -405,7 +406,7 @@ func (cq *CommunityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Co
 func (cq *CommunityQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*Community, init func(*Community), assign func(*Community, *User)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*Community)
-	nids := make(map[int]map[*Community]struct{})
+	nids := make(map[uuid.UUID]map[*Community]struct{})
 	for i, node := range nodes {
 		edgeIDs[i] = node.ID
 		byID[node.ID] = node
@@ -438,7 +439,7 @@ func (cq *CommunityQuery) loadUsers(ctx context.Context, query *UserQuery, nodes
 			}
 			spec.Assign = func(columns []string, values []any) error {
 				outValue := int(values[0].(*sql.NullInt64).Int64)
-				inValue := int(values[1].(*sql.NullInt64).Int64)
+				inValue := *values[1].(*uuid.UUID)
 				if nids[inValue] == nil {
 					nids[inValue] = map[*Community]struct{}{byID[outValue]: {}}
 					return assign(columns[1:], values[1:])

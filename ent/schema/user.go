@@ -17,14 +17,14 @@ type User struct {
 
 func (User) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("uuid").Unique(),
+		index.Fields("id").Unique(),
 	}
 }
 
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("uuid", uuid.UUID{}).Default(uuid.New),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New).Unique(),
 		field.String("google_sub").Unique(),
 
 		field.String("email").Unique(),

@@ -21,8 +21,8 @@ func CreateUserFromGoogle(ctx context.Context, client *ent.Client, gu ent.User) 
 	return u, nil
 }
 
-// QuerUserByGoogle takes Google's sub and check if the user is registered.
-func QueryUserByGoogle(ctx context.Context, client *ent.Client, sub string) (*ent.User, error) {
+// QuerUserByGoogleSub takes Google's sub and check if the user is registered.
+func QueryUserByGoogleSub(ctx context.Context, client *ent.Client, sub string) (*ent.User, error) {
 	u, err := client.User.
 		Query().
 		Where(user.GoogleSub(sub)).

@@ -13,8 +13,6 @@ const (
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldUUID holds the string denoting the uuid field in the database.
-	FieldUUID = "uuid"
 	// FieldGoogleSub holds the string denoting the google_sub field in the database.
 	FieldGoogleSub = "google_sub"
 	// FieldEmail holds the string denoting the email field in the database.
@@ -47,7 +45,6 @@ const (
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
-	FieldUUID,
 	FieldGoogleSub,
 	FieldEmail,
 	FieldEmailVerified,
@@ -76,8 +73,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultUUID holds the default value on creation for the "uuid" field.
-	DefaultUUID func() uuid.UUID
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
