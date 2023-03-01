@@ -10,47 +10,47 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Community {
+func ID(id string) predicate.Community {
 	return predicate.Community(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Community {
+func IDEQ(id string) predicate.Community {
 	return predicate.Community(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Community {
+func IDNEQ(id string) predicate.Community {
 	return predicate.Community(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Community {
+func IDIn(ids ...string) predicate.Community {
 	return predicate.Community(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Community {
+func IDNotIn(ids ...string) predicate.Community {
 	return predicate.Community(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Community {
+func IDGT(id string) predicate.Community {
 	return predicate.Community(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Community {
+func IDGTE(id string) predicate.Community {
 	return predicate.Community(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Community {
+func IDLT(id string) predicate.Community {
 	return predicate.Community(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Community {
+func IDLTE(id string) predicate.Community {
 	return predicate.Community(sql.FieldLTE(FieldID, id))
 }
 

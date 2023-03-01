@@ -406,7 +406,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 func (uq *UserQuery) loadGroups(ctx context.Context, query *CommunityQuery, nodes []*User, init func(*User), assign func(*User, *Community)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*User)
-	nids := make(map[int]map[*User]struct{})
+	nids := make(map[string]map[*User]struct{})
 	for i, node := range nodes {
 		edgeIDs[i] = node.ID
 		byID[node.ID] = node
@@ -439,7 +439,7 @@ func (uq *UserQuery) loadGroups(ctx context.Context, query *CommunityQuery, node
 			}
 			spec.Assign = func(columns []string, values []any) error {
 				outValue := *values[0].(*uuid.UUID)
-				inValue := int(values[1].(*sql.NullInt64).Int64)
+				inValue := values[1].(*sql.NullString).String
 				if nids[inValue] == nil {
 					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
 					return assign(columns[1:], values[1:])

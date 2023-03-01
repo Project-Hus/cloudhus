@@ -39,6 +39,7 @@ func (User) Fields() []ent.Field {
 		// User Info in the service
 		field.Text("google_profile_picture"),
 		field.Time("created_at").Default(time.Now()),
+		field.Time("updated_at").Default(time.Now()),
 	}
 }
 

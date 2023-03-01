@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // Group holds the schema definition for the Group entity.
@@ -16,6 +17,7 @@ type Community struct {
 // Fields of the Group.
 func (Community) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("id").Default(uuid.New().String()),
 		field.String("name").
 			Match(regexp.MustCompile("[a-zA-Z_]+$")),
 	}

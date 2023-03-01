@@ -107,8 +107,8 @@ func (cq *CommunityQuery) FirstX(ctx context.Context) *Community {
 
 // FirstID returns the first Community ID from the query.
 // Returns a *NotFoundError when no Community ID was found.
-func (cq *CommunityQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (cq *CommunityQuery) FirstID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = cq.Limit(1).IDs(setContextOp(ctx, cq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -120,7 +120,7 @@ func (cq *CommunityQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (cq *CommunityQuery) FirstIDX(ctx context.Context) int {
+func (cq *CommunityQuery) FirstIDX(ctx context.Context) string {
 	id, err := cq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -158,8 +158,8 @@ func (cq *CommunityQuery) OnlyX(ctx context.Context) *Community {
 // OnlyID is like Only, but returns the only Community ID in the query.
 // Returns a *NotSingularError when more than one Community ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (cq *CommunityQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (cq *CommunityQuery) OnlyID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = cq.Limit(2).IDs(setContextOp(ctx, cq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -175,7 +175,7 @@ func (cq *CommunityQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (cq *CommunityQuery) OnlyIDX(ctx context.Context) int {
+func (cq *CommunityQuery) OnlyIDX(ctx context.Context) string {
 	id, err := cq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -203,7 +203,7 @@ func (cq *CommunityQuery) AllX(ctx context.Context) []*Community {
 }
 
 // IDs executes the query and returns a list of Community IDs.
-func (cq *CommunityQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (cq *CommunityQuery) IDs(ctx context.Context) (ids []string, err error) {
 	if cq.ctx.Unique == nil && cq.path != nil {
 		cq.Unique(true)
 	}
@@ -215,7 +215,7 @@ func (cq *CommunityQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (cq *CommunityQuery) IDsX(ctx context.Context) []int {
+func (cq *CommunityQuery) IDsX(ctx context.Context) []string {
 	ids, err := cq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -405,7 +405,7 @@ func (cq *CommunityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Co
 
 func (cq *CommunityQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*Community, init func(*Community), assign func(*Community, *User)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*Community)
+	byID := make(map[string]*Community)
 	nids := make(map[uuid.UUID]map[*Community]struct{})
 	for i, node := range nodes {
 		edgeIDs[i] = node.ID
@@ -435,10 +435,10 @@ func (cq *CommunityQuery) loadUsers(ctx context.Context, query *UserQuery, nodes
 				if err != nil {
 					return nil, err
 				}
-				return append([]any{new(sql.NullInt64)}, values...), nil
+				return append([]any{new(sql.NullString)}, values...), nil
 			}
 			spec.Assign = func(columns []string, values []any) error {
-				outValue := int(values[0].(*sql.NullInt64).Int64)
+				outValue := values[0].(*sql.NullString).String
 				inValue := *values[1].(*uuid.UUID)
 				if nids[inValue] == nil {
 					nids[inValue] = map[*Community]struct{}{byID[outValue]: {}}
@@ -475,7 +475,7 @@ func (cq *CommunityQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (cq *CommunityQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(community.Table, community.Columns, sqlgraph.NewFieldSpec(community.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(community.Table, community.Columns, sqlgraph.NewFieldSpec(community.FieldID, field.TypeString))
 	_spec.From = cq.sql
 	if unique := cq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

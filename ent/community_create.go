@@ -27,6 +27,20 @@ func (cc *CommunityCreate) SetName(s string) *CommunityCreate {
 	return cc
 }
 
+// SetID sets the "id" field.
+func (cc *CommunityCreate) SetID(s string) *CommunityCreate {
+	cc.mutation.SetID(s)
+	return cc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (cc *CommunityCreate) SetNillableID(s *string) *CommunityCreate {
+	if s != nil {
+		cc.SetID(*s)
+	}
+	return cc
+}
+
 // AddUserIDs adds the "users" edge to the User entity by IDs.
 func (cc *CommunityCreate) AddUserIDs(ids ...uuid.UUID) *CommunityCreate {
 	cc.mutation.AddUserIDs(ids...)
@@ -49,6 +63,7 @@ func (cc *CommunityCreate) Mutation() *CommunityMutation {
 
 // Save creates the Community in the database.
 func (cc *CommunityCreate) Save(ctx context.Context) (*Community, error) {
+	cc.defaults()
 	return withHooks[*Community, CommunityMutation](ctx, cc.sqlSave, cc.mutation, cc.hooks)
 }
 
@@ -71,6 +86,14 @@ func (cc *CommunityCreate) Exec(ctx context.Context) error {
 func (cc *CommunityCreate) ExecX(ctx context.Context) {
 	if err := cc.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (cc *CommunityCreate) defaults() {
+	if _, ok := cc.mutation.ID(); !ok {
+		v := community.DefaultID
+		cc.mutation.SetID(v)
 	}
 }
 
@@ -98,8 +121,13 @@ func (cc *CommunityCreate) sqlSave(ctx context.Context) (*Community, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(string); ok {
+			_node.ID = id
+		} else {
+			return nil, fmt.Errorf("unexpected Community.ID type: %T", _spec.ID.Value)
+		}
+	}
 	cc.mutation.id = &_node.ID
 	cc.mutation.done = true
 	return _node, nil
@@ -108,8 +136,12 @@ func (cc *CommunityCreate) sqlSave(ctx context.Context) (*Community, error) {
 func (cc *CommunityCreate) createSpec() (*Community, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Community{config: cc.config}
-		_spec = sqlgraph.NewCreateSpec(community.Table, sqlgraph.NewFieldSpec(community.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(community.Table, sqlgraph.NewFieldSpec(community.FieldID, field.TypeString))
 	)
+	if id, ok := cc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := cc.mutation.Name(); ok {
 		_spec.SetField(community.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -150,6 +182,7 @@ func (ccb *CommunityCreateBulk) Save(ctx context.Context) ([]*Community, error) 
 	for i := range ccb.builders {
 		func(i int, root context.Context) {
 			builder := ccb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*CommunityMutation)
 				if !ok {
@@ -176,10 +209,6 @@ func (ccb *CommunityCreateBulk) Save(ctx context.Context) ([]*Community, error) 
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

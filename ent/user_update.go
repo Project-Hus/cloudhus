@@ -105,15 +105,29 @@ func (uu *UserUpdate) SetNillableCreatedAt(t *time.Time) *UserUpdate {
 	return uu
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
+	uu.mutation.SetUpdatedAt(t)
+	return uu
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableUpdatedAt(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetUpdatedAt(*t)
+	}
+	return uu
+}
+
 // AddGroupIDs adds the "groups" edge to the Community entity by IDs.
-func (uu *UserUpdate) AddGroupIDs(ids ...int) *UserUpdate {
+func (uu *UserUpdate) AddGroupIDs(ids ...string) *UserUpdate {
 	uu.mutation.AddGroupIDs(ids...)
 	return uu
 }
 
 // AddGroups adds the "groups" edges to the Community entity.
 func (uu *UserUpdate) AddGroups(c ...*Community) *UserUpdate {
-	ids := make([]int, len(c))
+	ids := make([]string, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -132,14 +146,14 @@ func (uu *UserUpdate) ClearGroups() *UserUpdate {
 }
 
 // RemoveGroupIDs removes the "groups" edge to Community entities by IDs.
-func (uu *UserUpdate) RemoveGroupIDs(ids ...int) *UserUpdate {
+func (uu *UserUpdate) RemoveGroupIDs(ids ...string) *UserUpdate {
 	uu.mutation.RemoveGroupIDs(ids...)
 	return uu
 }
 
 // RemoveGroups removes "groups" edges to Community entities.
 func (uu *UserUpdate) RemoveGroups(c ...*Community) *UserUpdate {
-	ids := make([]int, len(c))
+	ids := make([]string, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -212,6 +226,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 	}
+	if value, ok := uu.mutation.UpdatedAt(); ok {
+		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if uu.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -221,7 +238,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: community.FieldID,
 				},
 			},
@@ -237,7 +254,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: community.FieldID,
 				},
 			},
@@ -256,7 +273,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: community.FieldID,
 				},
 			},
@@ -362,15 +379,29 @@ func (uuo *UserUpdateOne) SetNillableCreatedAt(t *time.Time) *UserUpdateOne {
 	return uuo
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (uuo *UserUpdateOne) SetUpdatedAt(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetUpdatedAt(t)
+	return uuo
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableUpdatedAt(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetUpdatedAt(*t)
+	}
+	return uuo
+}
+
 // AddGroupIDs adds the "groups" edge to the Community entity by IDs.
-func (uuo *UserUpdateOne) AddGroupIDs(ids ...int) *UserUpdateOne {
+func (uuo *UserUpdateOne) AddGroupIDs(ids ...string) *UserUpdateOne {
 	uuo.mutation.AddGroupIDs(ids...)
 	return uuo
 }
 
 // AddGroups adds the "groups" edges to the Community entity.
 func (uuo *UserUpdateOne) AddGroups(c ...*Community) *UserUpdateOne {
-	ids := make([]int, len(c))
+	ids := make([]string, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -389,14 +420,14 @@ func (uuo *UserUpdateOne) ClearGroups() *UserUpdateOne {
 }
 
 // RemoveGroupIDs removes the "groups" edge to Community entities by IDs.
-func (uuo *UserUpdateOne) RemoveGroupIDs(ids ...int) *UserUpdateOne {
+func (uuo *UserUpdateOne) RemoveGroupIDs(ids ...string) *UserUpdateOne {
 	uuo.mutation.RemoveGroupIDs(ids...)
 	return uuo
 }
 
 // RemoveGroups removes "groups" edges to Community entities.
 func (uuo *UserUpdateOne) RemoveGroups(c ...*Community) *UserUpdateOne {
-	ids := make([]int, len(c))
+	ids := make([]string, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -499,6 +530,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 	}
+	if value, ok := uuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if uuo.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -508,7 +542,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: community.FieldID,
 				},
 			},
@@ -524,7 +558,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: community.FieldID,
 				},
 			},
@@ -543,7 +577,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: community.FieldID,
 				},
 			},

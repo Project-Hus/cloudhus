@@ -40,7 +40,7 @@ func (cd *CommunityDelete) ExecX(ctx context.Context) int {
 }
 
 func (cd *CommunityDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(community.Table, sqlgraph.NewFieldSpec(community.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewDeleteSpec(community.Table, sqlgraph.NewFieldSpec(community.FieldID, field.TypeString))
 	if ps := cd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

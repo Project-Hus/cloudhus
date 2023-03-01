@@ -10,7 +10,7 @@ import (
 var (
 	// CommunitiesColumns holds the columns for the "communities" table.
 	CommunitiesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 	}
 	// CommunitiesTable holds the schema information for the "communities" table.
@@ -18,6 +18,20 @@ var (
 		Name:       "communities",
 		Columns:    CommunitiesColumns,
 		PrimaryKey: []*schema.Column{CommunitiesColumns[0]},
+	}
+	// RefreshTokensColumns holds the columns for the "refresh_tokens" table.
+	RefreshTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "uid", Type: field.TypeString},
+		{Name: "revoked", Type: field.TypeBool, Default: false},
+		{Name: "last_used_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// RefreshTokensTable holds the schema information for the "refresh_tokens" table.
+	RefreshTokensTable = &schema.Table{
+		Name:       "refresh_tokens",
+		Columns:    RefreshTokensColumns,
+		PrimaryKey: []*schema.Column{RefreshTokensColumns[0]},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -31,6 +45,7 @@ var (
 		{Name: "family_name", Type: field.TypeString},
 		{Name: "google_profile_picture", Type: field.TypeString, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -47,7 +62,7 @@ var (
 	}
 	// CommunityUsersColumns holds the columns for the "community_users" table.
 	CommunityUsersColumns = []*schema.Column{
-		{Name: "community_id", Type: field.TypeInt},
+		{Name: "community_id", Type: field.TypeString},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// CommunityUsersTable holds the schema information for the "community_users" table.
@@ -73,6 +88,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CommunitiesTable,
+		RefreshTokensTable,
 		UsersTable,
 		CommunityUsersTable,
 	}

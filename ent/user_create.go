@@ -92,6 +92,20 @@ func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 	return uc
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (uc *UserCreate) SetUpdatedAt(t time.Time) *UserCreate {
+	uc.mutation.SetUpdatedAt(t)
+	return uc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (uc *UserCreate) SetNillableUpdatedAt(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetUpdatedAt(*t)
+	}
+	return uc
+}
+
 // SetID sets the "id" field.
 func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
 	uc.mutation.SetID(u)
@@ -107,14 +121,14 @@ func (uc *UserCreate) SetNillableID(u *uuid.UUID) *UserCreate {
 }
 
 // AddGroupIDs adds the "groups" edge to the Community entity by IDs.
-func (uc *UserCreate) AddGroupIDs(ids ...int) *UserCreate {
+func (uc *UserCreate) AddGroupIDs(ids ...string) *UserCreate {
 	uc.mutation.AddGroupIDs(ids...)
 	return uc
 }
 
 // AddGroups adds the "groups" edges to the Community entity.
 func (uc *UserCreate) AddGroups(c ...*Community) *UserCreate {
-	ids := make([]int, len(c))
+	ids := make([]string, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -160,6 +174,10 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultCreatedAt
 		uc.mutation.SetCreatedAt(v)
 	}
+	if _, ok := uc.mutation.UpdatedAt(); !ok {
+		v := user.DefaultUpdatedAt
+		uc.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := uc.mutation.ID(); !ok {
 		v := user.DefaultID()
 		uc.mutation.SetID(v)
@@ -191,6 +209,9 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
+	}
+	if _, ok := uc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "User.updated_at"`)}
 	}
 	return nil
 }
@@ -263,6 +284,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
+	if value, ok := uc.mutation.UpdatedAt(); ok {
+		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if nodes := uc.mutation.GroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -272,7 +297,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: community.FieldID,
 				},
 			},
