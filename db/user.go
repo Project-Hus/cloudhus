@@ -25,7 +25,7 @@ func CreateUserFromGoogle(ctx context.Context, client *ent.Client, payload idtok
 		SetName(name).SetGoogleProfilePicture(picture).SetFamilyName(familyName).
 		SetGivenName(givenName).Save(ctx)
 	if err != nil {
-		log.Printf("[F]creating user failed:%v", err)
+		log.Printf("[F] creating user failed:%v", err)
 		return nil, fmt.Errorf("creating user failed:%w", err)
 	}
 	log.Printf("user(%s) is created by Google", u.ID)
@@ -41,7 +41,7 @@ func QueryUserByGoogleSub(ctx context.Context, client *ent.Client, sub string) (
 	if ent.IsNotFound(err) {
 		return nil, nil
 	} else if err != nil {
-		log.Printf("[F]querying user failed:%v", err)
+		log.Printf("[F] querying user failed:%v", err)
 		return nil, fmt.Errorf("querying user failed:%w", err)
 	}
 	return u, err

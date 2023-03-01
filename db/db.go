@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 
 	"hus-auth/ent"
@@ -23,12 +24,14 @@ func ConnectToHusAuth() (*ent.Client, error) {
 
 	client, err := ent.Open("mysql", connectionPhrase)
 	if err != nil {
-		return nil, fmt.Errorf("failed opening connection to mysql: %v", err)
+		log.Print("[F] opening connection to mysql failed: %w", err)
+		return nil, fmt.Errorf("opening connection to mysql failed: %v", err)
 	}
 
 	// Running the auto migration tool.
 	if err := client.Schema.Create(context.Background()); err != nil {
-		return nil, fmt.Errorf("failed creating schema resources: %v", err)
+		log.Print("[F] creating schema resources failed: %w", err)
+		return nil, fmt.Errorf("creating schema resources failed: %v", err)
 	}
 
 	return client, nil
