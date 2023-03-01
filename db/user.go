@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"hus-auth/ent"
 	"hus-auth/ent/user"
 	"log"
@@ -26,9 +25,9 @@ func CreateUserFromGoogle(ctx context.Context, client *ent.Client, payload idtok
 		SetGivenName(givenName).Save(ctx)
 	if err != nil {
 		log.Printf("[F] creating user failed:%v", err)
-		return nil, fmt.Errorf("creating user failed:%w", err)
+		return nil, err
 	}
-	log.Printf("user(%s) is created by Google", u.ID)
+	log.Printf("new user(%s) is registered by Google", u.ID)
 	return u, nil
 }
 
@@ -42,7 +41,7 @@ func QueryUserByGoogleSub(ctx context.Context, client *ent.Client, sub string) (
 		return nil, nil
 	} else if err != nil {
 		log.Printf("[F] querying user failed:%v", err)
-		return nil, fmt.Errorf("querying user failed:%w", err)
+		return nil, err
 	}
 	return u, err
 }

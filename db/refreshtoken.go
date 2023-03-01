@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"hus-auth/ent"
 	"log"
 	"os"
@@ -31,12 +30,12 @@ func CreateRefreshToken(ctx context.Context, client *ent.Client, uid string) (st
 		Create().SetID(tid).SetUID(uid).Save(ctx)
 	if err != nil {
 		log.Print("[F] creating refresh token failed: ", err)
-		return "", fmt.Errorf("failed creating refresh token: %w", err)
+		return "", err
 	}
 	rts, err := rt.SignedString(os.Getenv("HUS_AUTH_TOKEN_KEY"))
 	if err != nil {
 		log.Print("[F] signing refresh token failed: ", err)
-		return "", fmt.Errorf("signing refresh token failed: %w", err)
+		return "", err
 	}
 	log.Printf("refresh token was created by (%s)", uid)
 	// Sign and return the complete encoded token as a string
