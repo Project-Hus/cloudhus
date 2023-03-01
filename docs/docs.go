@@ -24,6 +24,35 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/access": {
+            "get": {
+                "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "gets refresh token in the header and returns access token after validation.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Refresh token",
+                        "name": "jwt",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Access token created"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/auth/google": {
             "post": {
                 "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.",

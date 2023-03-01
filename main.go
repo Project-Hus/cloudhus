@@ -48,9 +48,9 @@ func main() {
 	// Hosts (subdomains)
 	hosts := map[string]*Host{}
 
-	// gonna uses api.lifthus.com later
-	api := auth.NewAuthApiController(client)
-	hosts["localhost:9090"] = &Host{Echo: api}
+	// gonna use api.lifthus.com later
+	authApi := auth.NewAuthApiController(client)
+	hosts["localhost:9090"] = &Host{Echo: authApi}
 
 	e := echo.New()
 	e.Any("/*", func(c echo.Context) (err error) {

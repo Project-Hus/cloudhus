@@ -19,11 +19,12 @@ func CreateRefreshToken(ctx context.Context, client *ent.Client, uid string) (st
 	tid := uuid.New().String()
 	// Create new refresh token
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"tid": tid,                                       // refresh token's uuid
-		"iss": "https://api.lifthus.com",                 // issuer
-		"uid": uid,                                       // user's uuid
-		"iat": time.Now().Unix(),                         // issued at
-		"exp": time.Now().Add(time.Hour * 24 * 7).Unix(), // expiration : one week
+		"tid":     tid,                                       // refresh token's uuid
+		"purpose": "refresh",                                 // purpose
+		"iss":     "https://api.lifthus.com",                 // issuer
+		"uid":     uid,                                       // user's uuid
+		"iat":     time.Now().Unix(),                         // issued at
+		"exp":     time.Now().Add(time.Hour * 24 * 7).Unix(), // expiration : one week
 	})
 	// Save refresh token to database
 	_, err := client.RefreshToken.

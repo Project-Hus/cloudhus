@@ -14,6 +14,26 @@ info:
   title: Project-Hus auth server
   version: 0.0.0
 paths:
+  /auth/access:
+    get:
+      description: validates the google ID token and redirects with hus refresh token
+        to /auth/{token_string}.
+      parameters:
+      - description: Refresh token
+        in: header
+        name: jwt
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Access token created
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: gets refresh token in the header and returns access token after validation.
+      tags:
+      - auth
   /auth/google:
     post:
       consumes:
