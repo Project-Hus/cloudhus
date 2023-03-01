@@ -26,29 +26,34 @@ const docTemplate = `{
     "paths": {
         "/auth/google": {
             "post": {
-                "description": "validates the google ID token and redirects with hus auth token query.",
+                "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "auth"
                 ],
-                "summary": "Process google auth",
+                "summary": "processes google auth and redirect with refresh token in url.",
                 "parameters": [
                     {
-                        "type": "string",
                         "description": "Google ID token",
                         "name": "jwt",
-                        "in": "path",
-                        "required": true
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
                     "301": {
-                        "description": "to /token"
+                        "description": "to /auth/{token_string}"
                     },
-                    "400": {
-                        "description": "Bad Request"
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }

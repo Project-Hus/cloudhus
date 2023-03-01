@@ -18,20 +18,23 @@ paths:
     post:
       consumes:
       - application/json
-      description: validates the google ID token and redirects with hus auth token
-        query.
+      description: validates the google ID token and redirects with hus refresh token
+        to /auth/{token_string}.
       parameters:
       - description: Google ID token
-        in: path
+        in: body
         name: jwt
         required: true
-        type: string
+        schema:
+          type: string
       responses:
         "301":
-          description: to /token
-        "400":
-          description: Bad Request
-      summary: Process google auth
+          description: to /auth/{token_string}
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: processes google auth and redirect with refresh token in url.
       tags:
       - auth
 swagger: "2.0"

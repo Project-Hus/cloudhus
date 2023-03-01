@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"hus-auth/db"
-	db "hus-auth/db/user"
 	"hus-auth/ent"
 	"log"
 	"net/http"
@@ -16,14 +15,15 @@ import (
 )
 
 // GoogleAuthHandler godoc
-// @Summary      Process google auth
-// @Description  validates the google ID token and redirects with hus auth token query.
+// @Router       /auth/google [post]
+// @Summary      processes google auth and redirect with refresh token in url.
+// @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
 // @Tags         auth
 // @Accept       json
-// @Param        jwt path string true "Google ID token"
-// @Success      301 "to /token"
+// @Param        jwt body string true "Google ID token"
+// @Success      301 "to /auth/{token_string}"
 // @Failure      401 "Unauthorized"
-// @Router       /auth/google [post]
+// @Failure      500 "Internal Server Error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// client ID that Google issued to lifthus
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
@@ -84,18 +84,12 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	// refresh token with one week expiration.
-	refrsh_token, err := db.CreateRefreshToken(c.Request().Context(), ac.Client, u.ID.String())
-
-	// string of refrsh token
-	refrsh_token_signed, err := refrsh_token.SignedString(os.Getenv("AUTH_TOKEN_KEY"))
+	// create and get refresh token
+	refrsh_token_signed, err := db.CreateRefreshToken(c.Request().Context(), ac.Client, u.ID.String())
 	if err != nil {
-		log.Println("signing token failed:%w", err)
+		log.Println("creating signed refresh token failed:%w", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
-
-	// store refresh token's uuid in database
-	_, err = db.CreateRefreshToken(c.Request().Context(), ac.Client, tid)
 
 	return c.Redirect(http.StatusMovedPermanently, os.Getenv("LIFTHUS_URL")+"/auth/"+refrsh_token_signed)
 }
