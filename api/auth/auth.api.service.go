@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"hus-auth/db"
 	"hus-auth/ent"
 	"hus-auth/helper"
@@ -135,6 +134,11 @@ func (ac authApiController) AcessTokenRequestHandler(c echo.Context) error {
 	// Sign and get the complete encoded token as a string using the secret
 	tokenString, err := accessToken.SignedString(os.Getenv("HUS_AUTH_TOKEN_KEY"))
 
-	fmt.Println(tokenString, err)
+	cookie := new(http.Cookie)
+	cookie.Name = "access_token"
+	cookie.Value = tokenString
+	cookie.Expires = time.Now().Add(24 * time.Hour)
+	c.SetCookie(cookie)
 
+	return c.NoContent(http.StatusCreated)
 }
