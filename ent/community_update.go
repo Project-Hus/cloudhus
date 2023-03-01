@@ -8,12 +8,10 @@ import (
 	"fmt"
 	"hus-auth/ent/community"
 	"hus-auth/ent/predicate"
-	"hus-auth/ent/user"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // CommunityUpdate is the builder for updating Community entities.
@@ -35,45 +33,9 @@ func (cu *CommunityUpdate) SetName(s string) *CommunityUpdate {
 	return cu
 }
 
-// AddUserIDs adds the "users" edge to the User entity by IDs.
-func (cu *CommunityUpdate) AddUserIDs(ids ...uuid.UUID) *CommunityUpdate {
-	cu.mutation.AddUserIDs(ids...)
-	return cu
-}
-
-// AddUsers adds the "users" edges to the User entity.
-func (cu *CommunityUpdate) AddUsers(u ...*User) *CommunityUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return cu.AddUserIDs(ids...)
-}
-
 // Mutation returns the CommunityMutation object of the builder.
 func (cu *CommunityUpdate) Mutation() *CommunityMutation {
 	return cu.mutation
-}
-
-// ClearUsers clears all "users" edges to the User entity.
-func (cu *CommunityUpdate) ClearUsers() *CommunityUpdate {
-	cu.mutation.ClearUsers()
-	return cu
-}
-
-// RemoveUserIDs removes the "users" edge to User entities by IDs.
-func (cu *CommunityUpdate) RemoveUserIDs(ids ...uuid.UUID) *CommunityUpdate {
-	cu.mutation.RemoveUserIDs(ids...)
-	return cu
-}
-
-// RemoveUsers removes "users" edges to User entities.
-func (cu *CommunityUpdate) RemoveUsers(u ...*User) *CommunityUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return cu.RemoveUserIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -128,60 +90,6 @@ func (cu *CommunityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cu.mutation.Name(); ok {
 		_spec.SetField(community.FieldName, field.TypeString, value)
 	}
-	if cu.mutation.UsersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   community.UsersTable,
-			Columns: community.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.RemovedUsersIDs(); len(nodes) > 0 && !cu.mutation.UsersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   community.UsersTable,
-			Columns: community.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.UsersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   community.UsersTable,
-			Columns: community.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{community.Label}
@@ -208,45 +116,9 @@ func (cuo *CommunityUpdateOne) SetName(s string) *CommunityUpdateOne {
 	return cuo
 }
 
-// AddUserIDs adds the "users" edge to the User entity by IDs.
-func (cuo *CommunityUpdateOne) AddUserIDs(ids ...uuid.UUID) *CommunityUpdateOne {
-	cuo.mutation.AddUserIDs(ids...)
-	return cuo
-}
-
-// AddUsers adds the "users" edges to the User entity.
-func (cuo *CommunityUpdateOne) AddUsers(u ...*User) *CommunityUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return cuo.AddUserIDs(ids...)
-}
-
 // Mutation returns the CommunityMutation object of the builder.
 func (cuo *CommunityUpdateOne) Mutation() *CommunityMutation {
 	return cuo.mutation
-}
-
-// ClearUsers clears all "users" edges to the User entity.
-func (cuo *CommunityUpdateOne) ClearUsers() *CommunityUpdateOne {
-	cuo.mutation.ClearUsers()
-	return cuo
-}
-
-// RemoveUserIDs removes the "users" edge to User entities by IDs.
-func (cuo *CommunityUpdateOne) RemoveUserIDs(ids ...uuid.UUID) *CommunityUpdateOne {
-	cuo.mutation.RemoveUserIDs(ids...)
-	return cuo
-}
-
-// RemoveUsers removes "users" edges to User entities.
-func (cuo *CommunityUpdateOne) RemoveUsers(u ...*User) *CommunityUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return cuo.RemoveUserIDs(ids...)
 }
 
 // Where appends a list predicates to the CommunityUpdate builder.
@@ -330,60 +202,6 @@ func (cuo *CommunityUpdateOne) sqlSave(ctx context.Context) (_node *Community, e
 	}
 	if value, ok := cuo.mutation.Name(); ok {
 		_spec.SetField(community.FieldName, field.TypeString, value)
-	}
-	if cuo.mutation.UsersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   community.UsersTable,
-			Columns: community.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.RemovedUsersIDs(); len(nodes) > 0 && !cuo.mutation.UsersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   community.UsersTable,
-			Columns: community.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.UsersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   community.UsersTable,
-			Columns: community.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Community{config: cuo.config}
 	_spec.Assign = _node.assignValues

@@ -18,6 +18,13 @@ var (
 		Name:       "communities",
 		Columns:    CommunitiesColumns,
 		PrimaryKey: []*schema.Column{CommunitiesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "community_id",
+				Unique:  true,
+				Columns: []*schema.Column{CommunitiesColumns[0]},
+			},
+		},
 	}
 	// RefreshTokensColumns holds the columns for the "refresh_tokens" table.
 	RefreshTokensColumns = []*schema.Column{
@@ -60,41 +67,13 @@ var (
 			},
 		},
 	}
-	// CommunityUsersColumns holds the columns for the "community_users" table.
-	CommunityUsersColumns = []*schema.Column{
-		{Name: "community_id", Type: field.TypeString},
-		{Name: "user_id", Type: field.TypeUUID},
-	}
-	// CommunityUsersTable holds the schema information for the "community_users" table.
-	CommunityUsersTable = &schema.Table{
-		Name:       "community_users",
-		Columns:    CommunityUsersColumns,
-		PrimaryKey: []*schema.Column{CommunityUsersColumns[0], CommunityUsersColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "community_users_community_id",
-				Columns:    []*schema.Column{CommunityUsersColumns[0]},
-				RefColumns: []*schema.Column{CommunitiesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "community_users_user_id",
-				Columns:    []*schema.Column{CommunityUsersColumns[1]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CommunitiesTable,
 		RefreshTokensTable,
 		UsersTable,
-		CommunityUsersTable,
 	}
 )
 
 func init() {
-	CommunityUsersTable.ForeignKeys[0].RefTable = CommunitiesTable
-	CommunityUsersTable.ForeignKeys[1].RefTable = UsersTable
 }

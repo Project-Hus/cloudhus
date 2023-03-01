@@ -7,11 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"hus-auth/ent/community"
-	"hus-auth/ent/user"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // CommunityCreate is the builder for creating a Community entity.
@@ -39,21 +37,6 @@ func (cc *CommunityCreate) SetNillableID(s *string) *CommunityCreate {
 		cc.SetID(*s)
 	}
 	return cc
-}
-
-// AddUserIDs adds the "users" edge to the User entity by IDs.
-func (cc *CommunityCreate) AddUserIDs(ids ...uuid.UUID) *CommunityCreate {
-	cc.mutation.AddUserIDs(ids...)
-	return cc
-}
-
-// AddUsers adds the "users" edges to the User entity.
-func (cc *CommunityCreate) AddUsers(u ...*User) *CommunityCreate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return cc.AddUserIDs(ids...)
 }
 
 // Mutation returns the CommunityMutation object of the builder.
@@ -145,25 +128,6 @@ func (cc *CommunityCreate) createSpec() (*Community, *sqlgraph.CreateSpec) {
 	if value, ok := cc.mutation.Name(); ok {
 		_spec.SetField(community.FieldName, field.TypeString, value)
 		_node.Name = value
-	}
-	if nodes := cc.mutation.UsersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   community.UsersTable,
-			Columns: community.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

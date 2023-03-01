@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"hus-auth/db"
 	"hus-auth/ent"
 	"hus-auth/helper"
@@ -10,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/api/idtoken"
@@ -35,7 +34,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// credential sent from Google
 	credential := c.FormValue("credential")
 	// validating and parsing Google ID token
-	payload, err := idtoken.Validate(context.TODO(), credential, clientID)
+	payload, err := idtoken.Validate(c.Request().Context(), credential, clientID)
 	if err != nil {
 		log.Println("Invalid ID token: %w", err)
 		return c.NoContent(http.StatusUnauthorized)
@@ -98,9 +97,9 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	return c.Redirect(http.StatusMovedPermanently, os.Getenv("LIFTHUS_URL")+"/auth/"+refreshTokenSigned)
 }
 
-// GoogleAuthHandler godoc
+// AccessTokenRequestHandler godoc
 // @Router       /auth/access [get]
-// @Summary      gets refresh token in the header and returns access token after validation.
+// @Summary      gets refresh token in the header and returns access token in the cookie after validation.
 // @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
 // @Tags         auth
 // @Param        jwt header string true "Refresh token"
@@ -133,6 +132,10 @@ func (ac authApiController) AcessTokenRequestHandler(c echo.Context) error {
 
 	// Sign and get the complete encoded token as a string using the secret
 	tokenString, err := accessToken.SignedString(os.Getenv("HUS_AUTH_TOKEN_KEY"))
+	if err != nil {
+		log.Println("signing access token failed:%w", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	cookie := new(http.Cookie)
 	cookie.Name = "access_token"

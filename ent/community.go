@@ -17,27 +17,6 @@ type Community struct {
 	ID string `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the CommunityQuery when eager-loading is set.
-	Edges CommunityEdges `json:"edges"`
-}
-
-// CommunityEdges holds the relations/edges for other nodes in the graph.
-type CommunityEdges struct {
-	// Users holds the value of the users edge.
-	Users []*User `json:"users,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
-}
-
-// UsersOrErr returns the Users value or an error if the edge
-// was not loaded in eager-loading.
-func (e CommunityEdges) UsersOrErr() ([]*User, error) {
-	if e.loadedTypes[0] {
-		return e.Users, nil
-	}
-	return nil, &NotLoadedError{edge: "users"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -77,11 +56,6 @@ func (c *Community) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
-}
-
-// QueryUsers queries the "users" edge of the Community entity.
-func (c *Community) QueryUsers() *UserQuery {
-	return NewCommunityClient(c.config).QueryUsers(c)
 }
 
 // Update returns a builder for updating this Community.

@@ -4,14 +4,20 @@ import (
 	"regexp"
 
 	"entgo.io/ent"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
 // Group holds the schema definition for the Group entity.
 type Community struct {
 	ent.Schema
+}
+
+func (Community) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("id").Unique(),
+	}
 }
 
 // Fields of the Group.
@@ -25,7 +31,5 @@ func (Community) Fields() []ent.Field {
 
 // Edges of the Group.
 func (Community) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("users", User.Type),
-	}
+	return nil
 }

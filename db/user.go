@@ -6,18 +6,29 @@ import (
 	"hus-auth/ent"
 	"hus-auth/ent/user"
 	"log"
+
+	"google.golang.org/api/idtoken"
 )
 
 // CreateUserFromGoogle takes google ID token data and register new user to Project-Hus network.
-func CreateUserFromGoogle(ctx context.Context, client *ent.Client, gu ent.User) (*ent.User, error) {
+func CreateUserFromGoogle(ctx context.Context, client *ent.Client, payload idtoken.Payload) (*ent.User, error) {
+	// Google user information to use as Hus user information
+	sub := payload.Claims["sub"].(string)
+	email := payload.Claims["email"].(string)
+	emailVerified := payload.Claims["email_verified"].(bool)
+	name := payload.Claims["name"].(string)
+	picture := payload.Claims["picture"].(string)
+	givenName := payload.Claims["given_name"].(string)
+	familyName := payload.Claims["family_name"].(string)
 	u, err := client.User.
-		Create().SetGoogleSub(gu.GoogleSub).SetEmail(gu.Email).SetEmailVerified(gu.EmailVerified).
-		SetName(gu.Name).SetGoogleProfilePicture(gu.GoogleProfilePicture).SetFamilyName(gu.FamilyName).
-		SetGivenName(gu.GivenName).Save(ctx)
+		Create().SetGoogleSub(sub).SetEmail(email).SetEmailVerified(emailVerified).
+		SetName(name).SetGoogleProfilePicture(picture).SetFamilyName(familyName).
+		SetGivenName(givenName).Save(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed creating user: %w", err)
+		log.Printf("[F]creating user failed:%v", err)
+		return nil, fmt.Errorf("creating user failed:%w", err)
 	}
-	log.Println("user was created: ", u)
+	log.Printf("user(%s) is created by Google", u.ID)
 	return u, nil
 }
 
@@ -29,6 +40,9 @@ func QueryUserByGoogleSub(ctx context.Context, client *ent.Client, sub string) (
 		Only(ctx)
 	if ent.IsNotFound(err) {
 		return nil, nil
+	} else if err != nil {
+		log.Printf("[F]querying user failed:%v", err)
+		return nil, fmt.Errorf("querying user failed:%w", err)
 	}
 	return u, err
 }
