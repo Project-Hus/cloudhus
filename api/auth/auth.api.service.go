@@ -10,8 +10,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"google.golang.org/api/idtoken"
-
-	_ "net/http/httputil"
 )
 
 // GoogleAuthHandler godoc
