@@ -48,20 +48,6 @@ func (rtu *RefreshTokenUpdate) SetNillableRevoked(b *bool) *RefreshTokenUpdate {
 	return rtu
 }
 
-// SetLastUsedAt sets the "last_used_at" field.
-func (rtu *RefreshTokenUpdate) SetLastUsedAt(t time.Time) *RefreshTokenUpdate {
-	rtu.mutation.SetLastUsedAt(t)
-	return rtu
-}
-
-// SetNillableLastUsedAt sets the "last_used_at" field if the given value is not nil.
-func (rtu *RefreshTokenUpdate) SetNillableLastUsedAt(t *time.Time) *RefreshTokenUpdate {
-	if t != nil {
-		rtu.SetLastUsedAt(*t)
-	}
-	return rtu
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (rtu *RefreshTokenUpdate) SetCreatedAt(t time.Time) *RefreshTokenUpdate {
 	rtu.mutation.SetCreatedAt(t)
@@ -76,6 +62,12 @@ func (rtu *RefreshTokenUpdate) SetNillableCreatedAt(t *time.Time) *RefreshTokenU
 	return rtu
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (rtu *RefreshTokenUpdate) SetUpdatedAt(t time.Time) *RefreshTokenUpdate {
+	rtu.mutation.SetUpdatedAt(t)
+	return rtu
+}
+
 // Mutation returns the RefreshTokenMutation object of the builder.
 func (rtu *RefreshTokenUpdate) Mutation() *RefreshTokenMutation {
 	return rtu.mutation
@@ -83,6 +75,7 @@ func (rtu *RefreshTokenUpdate) Mutation() *RefreshTokenMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (rtu *RefreshTokenUpdate) Save(ctx context.Context) (int, error) {
+	rtu.defaults()
 	return withHooks[int, RefreshTokenMutation](ctx, rtu.sqlSave, rtu.mutation, rtu.hooks)
 }
 
@@ -108,8 +101,16 @@ func (rtu *RefreshTokenUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (rtu *RefreshTokenUpdate) defaults() {
+	if _, ok := rtu.mutation.UpdatedAt(); !ok {
+		v := refreshtoken.UpdateDefaultUpdatedAt()
+		rtu.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (rtu *RefreshTokenUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(refreshtoken.Table, refreshtoken.Columns, sqlgraph.NewFieldSpec(refreshtoken.FieldID, field.TypeString))
+	_spec := sqlgraph.NewUpdateSpec(refreshtoken.Table, refreshtoken.Columns, sqlgraph.NewFieldSpec(refreshtoken.FieldID, field.TypeUUID))
 	if ps := rtu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -123,11 +124,11 @@ func (rtu *RefreshTokenUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := rtu.mutation.Revoked(); ok {
 		_spec.SetField(refreshtoken.FieldRevoked, field.TypeBool, value)
 	}
-	if value, ok := rtu.mutation.LastUsedAt(); ok {
-		_spec.SetField(refreshtoken.FieldLastUsedAt, field.TypeTime, value)
-	}
 	if value, ok := rtu.mutation.CreatedAt(); ok {
 		_spec.SetField(refreshtoken.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := rtu.mutation.UpdatedAt(); ok {
+		_spec.SetField(refreshtoken.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, rtu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -169,20 +170,6 @@ func (rtuo *RefreshTokenUpdateOne) SetNillableRevoked(b *bool) *RefreshTokenUpda
 	return rtuo
 }
 
-// SetLastUsedAt sets the "last_used_at" field.
-func (rtuo *RefreshTokenUpdateOne) SetLastUsedAt(t time.Time) *RefreshTokenUpdateOne {
-	rtuo.mutation.SetLastUsedAt(t)
-	return rtuo
-}
-
-// SetNillableLastUsedAt sets the "last_used_at" field if the given value is not nil.
-func (rtuo *RefreshTokenUpdateOne) SetNillableLastUsedAt(t *time.Time) *RefreshTokenUpdateOne {
-	if t != nil {
-		rtuo.SetLastUsedAt(*t)
-	}
-	return rtuo
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (rtuo *RefreshTokenUpdateOne) SetCreatedAt(t time.Time) *RefreshTokenUpdateOne {
 	rtuo.mutation.SetCreatedAt(t)
@@ -194,6 +181,12 @@ func (rtuo *RefreshTokenUpdateOne) SetNillableCreatedAt(t *time.Time) *RefreshTo
 	if t != nil {
 		rtuo.SetCreatedAt(*t)
 	}
+	return rtuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (rtuo *RefreshTokenUpdateOne) SetUpdatedAt(t time.Time) *RefreshTokenUpdateOne {
+	rtuo.mutation.SetUpdatedAt(t)
 	return rtuo
 }
 
@@ -217,6 +210,7 @@ func (rtuo *RefreshTokenUpdateOne) Select(field string, fields ...string) *Refre
 
 // Save executes the query and returns the updated RefreshToken entity.
 func (rtuo *RefreshTokenUpdateOne) Save(ctx context.Context) (*RefreshToken, error) {
+	rtuo.defaults()
 	return withHooks[*RefreshToken, RefreshTokenMutation](ctx, rtuo.sqlSave, rtuo.mutation, rtuo.hooks)
 }
 
@@ -242,8 +236,16 @@ func (rtuo *RefreshTokenUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (rtuo *RefreshTokenUpdateOne) defaults() {
+	if _, ok := rtuo.mutation.UpdatedAt(); !ok {
+		v := refreshtoken.UpdateDefaultUpdatedAt()
+		rtuo.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (rtuo *RefreshTokenUpdateOne) sqlSave(ctx context.Context) (_node *RefreshToken, err error) {
-	_spec := sqlgraph.NewUpdateSpec(refreshtoken.Table, refreshtoken.Columns, sqlgraph.NewFieldSpec(refreshtoken.FieldID, field.TypeString))
+	_spec := sqlgraph.NewUpdateSpec(refreshtoken.Table, refreshtoken.Columns, sqlgraph.NewFieldSpec(refreshtoken.FieldID, field.TypeUUID))
 	id, ok := rtuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "RefreshToken.id" for update`)}
@@ -274,11 +276,11 @@ func (rtuo *RefreshTokenUpdateOne) sqlSave(ctx context.Context) (_node *RefreshT
 	if value, ok := rtuo.mutation.Revoked(); ok {
 		_spec.SetField(refreshtoken.FieldRevoked, field.TypeBool, value)
 	}
-	if value, ok := rtuo.mutation.LastUsedAt(); ok {
-		_spec.SetField(refreshtoken.FieldLastUsedAt, field.TypeTime, value)
-	}
 	if value, ok := rtuo.mutation.CreatedAt(); ok {
 		_spec.SetField(refreshtoken.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := rtuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(refreshtoken.FieldUpdatedAt, field.TypeTime, value)
 	}
 	_node = &RefreshToken{config: rtuo.config}
 	_spec.Assign = _node.assignValues

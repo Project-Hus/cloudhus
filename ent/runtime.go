@@ -22,34 +22,48 @@ func init() {
 	communityDescName := communityFields[1].Descriptor()
 	// community.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	community.NameValidator = communityDescName.Validators[0].(func(string) error)
+	// communityDescUpdatedAt is the schema descriptor for updated_at field.
+	communityDescUpdatedAt := communityFields[2].Descriptor()
+	// community.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	community.DefaultUpdatedAt = communityDescUpdatedAt.Default.(func() time.Time)
+	// community.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	community.UpdateDefaultUpdatedAt = communityDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// communityDescID is the schema descriptor for id field.
 	communityDescID := communityFields[0].Descriptor()
 	// community.DefaultID holds the default value on creation for the id field.
-	community.DefaultID = communityDescID.Default.(string)
+	community.DefaultID = communityDescID.Default.(func() uuid.UUID)
 	refreshtokenFields := schema.RefreshToken{}.Fields()
 	_ = refreshtokenFields
 	// refreshtokenDescRevoked is the schema descriptor for revoked field.
 	refreshtokenDescRevoked := refreshtokenFields[2].Descriptor()
 	// refreshtoken.DefaultRevoked holds the default value on creation for the revoked field.
 	refreshtoken.DefaultRevoked = refreshtokenDescRevoked.Default.(bool)
-	// refreshtokenDescLastUsedAt is the schema descriptor for last_used_at field.
-	refreshtokenDescLastUsedAt := refreshtokenFields[3].Descriptor()
-	// refreshtoken.DefaultLastUsedAt holds the default value on creation for the last_used_at field.
-	refreshtoken.DefaultLastUsedAt = refreshtokenDescLastUsedAt.Default.(time.Time)
 	// refreshtokenDescCreatedAt is the schema descriptor for created_at field.
-	refreshtokenDescCreatedAt := refreshtokenFields[4].Descriptor()
+	refreshtokenDescCreatedAt := refreshtokenFields[3].Descriptor()
 	// refreshtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
-	refreshtoken.DefaultCreatedAt = refreshtokenDescCreatedAt.Default.(time.Time)
+	refreshtoken.DefaultCreatedAt = refreshtokenDescCreatedAt.Default.(func() time.Time)
+	// refreshtokenDescUpdatedAt is the schema descriptor for updated_at field.
+	refreshtokenDescUpdatedAt := refreshtokenFields[4].Descriptor()
+	// refreshtoken.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	refreshtoken.DefaultUpdatedAt = refreshtokenDescUpdatedAt.Default.(func() time.Time)
+	// refreshtoken.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	refreshtoken.UpdateDefaultUpdatedAt = refreshtokenDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// refreshtokenDescID is the schema descriptor for id field.
+	refreshtokenDescID := refreshtokenFields[0].Descriptor()
+	// refreshtoken.DefaultID holds the default value on creation for the id field.
+	refreshtoken.DefaultID = refreshtokenDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for created_at field.
 	userDescCreatedAt := userFields[9].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
-	user.DefaultCreatedAt = userDescCreatedAt.Default.(time.Time)
+	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
 	userDescUpdatedAt := userFields[10].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(time.Time)
+	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
+	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// userDescID is the schema descriptor for id field.
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.

@@ -10,8 +10,9 @@ import (
 var (
 	// CommunitiesColumns holds the columns for the "communities" table.
 	CommunitiesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// CommunitiesTable holds the schema information for the "communities" table.
 	CommunitiesTable = &schema.Table{
@@ -28,11 +29,11 @@ var (
 	}
 	// RefreshTokensColumns holds the columns for the "refresh_tokens" table.
 	RefreshTokensColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "uid", Type: field.TypeString},
 		{Name: "revoked", Type: field.TypeBool, Default: false},
-		{Name: "last_used_at", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// RefreshTokensTable holds the schema information for the "refresh_tokens" table.
 	RefreshTokensTable = &schema.Table{

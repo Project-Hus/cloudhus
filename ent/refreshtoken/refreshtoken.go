@@ -4,6 +4,8 @@ package refreshtoken
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -15,10 +17,10 @@ const (
 	FieldUID = "uid"
 	// FieldRevoked holds the string denoting the revoked field in the database.
 	FieldRevoked = "revoked"
-	// FieldLastUsedAt holds the string denoting the last_used_at field in the database.
-	FieldLastUsedAt = "last_used_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the refreshtoken in the database.
 	Table = "refresh_tokens"
 )
@@ -28,8 +30,8 @@ var Columns = []string{
 	FieldID,
 	FieldUID,
 	FieldRevoked,
-	FieldLastUsedAt,
 	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -45,8 +47,12 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultRevoked holds the default value on creation for the "revoked" field.
 	DefaultRevoked bool
-	// DefaultLastUsedAt holds the default value on creation for the "last_used_at" field.
-	DefaultLastUsedAt time.Time
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt time.Time
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )

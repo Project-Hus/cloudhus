@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"hus-auth/db"
 	"hus-auth/helper"
 	"log"
@@ -24,6 +25,12 @@ import (
 // @Failure      401 "Unauthorized"
 // @Failure      500 "Internal Server Error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
+	ck, err := c.Cookie("hus-refresh-token")
+	if err != nil {
+		fmt.Println("no cookie")
+	} else {
+		fmt.Println(ck.Name, ck.Value)
+	}
 	// client ID that Google issued to lifthus
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 
@@ -73,14 +80,17 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	cookie := &http.Cookie{
 		Name:  "hus-refresh-token",
 		Value: refreshTokenSigned,
-		Path:  "/auth", // only sent with the request to /auth
+		//Path:  "/auth", // only sent with the request to /auth
 		//Secure:   true, // only sent over https
 		HttpOnly: true,
 		Expires:  time.Now().Add(time.Hour * 24 * 7),
+		//Domain:   os.Getenv("COOKIE_DOMAIN"),
+		SameSite: http.SameSiteNoneMode,
 	}
 	c.SetCookie(cookie)
 
-	return c.Redirect(http.StatusMovedPermanently, os.Getenv("LIFTHUS_URL")+"/auth/"+refreshTokenSigned)
+	return c.String(200, "heyo")
+	return c.Redirect(http.StatusMovedPermanently, os.Getenv("LIFTHUS_URL")+"/sign")
 }
 
 // AccessTokenRequestHandler godoc

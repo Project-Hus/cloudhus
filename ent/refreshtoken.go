@@ -9,21 +9,22 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // RefreshToken is the model entity for the RefreshToken schema.
 type RefreshToken struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID string `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// UID holds the value of the "uid" field.
 	UID string `json:"uid,omitempty"`
 	// Revoked holds the value of the "revoked" field.
 	Revoked bool `json:"revoked,omitempty"`
-	// LastUsedAt holds the value of the "last_used_at" field.
-	LastUsedAt time.Time `json:"last_used_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -33,10 +34,12 @@ func (*RefreshToken) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case refreshtoken.FieldRevoked:
 			values[i] = new(sql.NullBool)
-		case refreshtoken.FieldID, refreshtoken.FieldUID:
+		case refreshtoken.FieldUID:
 			values[i] = new(sql.NullString)
-		case refreshtoken.FieldLastUsedAt, refreshtoken.FieldCreatedAt:
+		case refreshtoken.FieldCreatedAt, refreshtoken.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case refreshtoken.FieldID:
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type RefreshToken", columns[i])
 		}
@@ -53,10 +56,10 @@ func (rt *RefreshToken) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case refreshtoken.FieldID:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value.Valid {
-				rt.ID = value.String
+			} else if value != nil {
+				rt.ID = *value
 			}
 		case refreshtoken.FieldUID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -70,17 +73,17 @@ func (rt *RefreshToken) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				rt.Revoked = value.Bool
 			}
-		case refreshtoken.FieldLastUsedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field last_used_at", values[i])
-			} else if value.Valid {
-				rt.LastUsedAt = value.Time
-			}
 		case refreshtoken.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				rt.CreatedAt = value.Time
+			}
+		case refreshtoken.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				rt.UpdatedAt = value.Time
 			}
 		}
 	}
@@ -116,11 +119,11 @@ func (rt *RefreshToken) String() string {
 	builder.WriteString("revoked=")
 	builder.WriteString(fmt.Sprintf("%v", rt.Revoked))
 	builder.WriteString(", ")
-	builder.WriteString("last_used_at=")
-	builder.WriteString(rt.LastUsedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(rt.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(rt.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

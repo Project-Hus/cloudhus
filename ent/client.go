@@ -205,7 +205,7 @@ func (c *CommunityClient) UpdateOne(co *Community) *CommunityUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *CommunityClient) UpdateOneID(id string) *CommunityUpdateOne {
+func (c *CommunityClient) UpdateOneID(id uuid.UUID) *CommunityUpdateOne {
 	mutation := newCommunityMutation(c.config, OpUpdateOne, withCommunityID(id))
 	return &CommunityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -222,7 +222,7 @@ func (c *CommunityClient) DeleteOne(co *Community) *CommunityDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *CommunityClient) DeleteOneID(id string) *CommunityDeleteOne {
+func (c *CommunityClient) DeleteOneID(id uuid.UUID) *CommunityDeleteOne {
 	builder := c.Delete().Where(community.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -239,12 +239,12 @@ func (c *CommunityClient) Query() *CommunityQuery {
 }
 
 // Get returns a Community entity by its id.
-func (c *CommunityClient) Get(ctx context.Context, id string) (*Community, error) {
+func (c *CommunityClient) Get(ctx context.Context, id uuid.UUID) (*Community, error) {
 	return c.Query().Where(community.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *CommunityClient) GetX(ctx context.Context, id string) *Community {
+func (c *CommunityClient) GetX(ctx context.Context, id uuid.UUID) *Community {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -323,7 +323,7 @@ func (c *RefreshTokenClient) UpdateOne(rt *RefreshToken) *RefreshTokenUpdateOne 
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *RefreshTokenClient) UpdateOneID(id string) *RefreshTokenUpdateOne {
+func (c *RefreshTokenClient) UpdateOneID(id uuid.UUID) *RefreshTokenUpdateOne {
 	mutation := newRefreshTokenMutation(c.config, OpUpdateOne, withRefreshTokenID(id))
 	return &RefreshTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -340,7 +340,7 @@ func (c *RefreshTokenClient) DeleteOne(rt *RefreshToken) *RefreshTokenDeleteOne 
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RefreshTokenClient) DeleteOneID(id string) *RefreshTokenDeleteOne {
+func (c *RefreshTokenClient) DeleteOneID(id uuid.UUID) *RefreshTokenDeleteOne {
 	builder := c.Delete().Where(refreshtoken.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -357,12 +357,12 @@ func (c *RefreshTokenClient) Query() *RefreshTokenQuery {
 }
 
 // Get returns a RefreshToken entity by its id.
-func (c *RefreshTokenClient) Get(ctx context.Context, id string) (*RefreshToken, error) {
+func (c *RefreshTokenClient) Get(ctx context.Context, id uuid.UUID) (*RefreshToken, error) {
 	return c.Query().Where(refreshtoken.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *RefreshTokenClient) GetX(ctx context.Context, id string) *RefreshToken {
+func (c *RefreshTokenClient) GetX(ctx context.Context, id uuid.UUID) *RefreshToken {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

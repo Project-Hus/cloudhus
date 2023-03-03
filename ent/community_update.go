@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"hus-auth/ent/community"
 	"hus-auth/ent/predicate"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -33,6 +34,12 @@ func (cu *CommunityUpdate) SetName(s string) *CommunityUpdate {
 	return cu
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (cu *CommunityUpdate) SetUpdatedAt(t time.Time) *CommunityUpdate {
+	cu.mutation.SetUpdatedAt(t)
+	return cu
+}
+
 // Mutation returns the CommunityMutation object of the builder.
 func (cu *CommunityUpdate) Mutation() *CommunityMutation {
 	return cu.mutation
@@ -40,6 +47,7 @@ func (cu *CommunityUpdate) Mutation() *CommunityMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (cu *CommunityUpdate) Save(ctx context.Context) (int, error) {
+	cu.defaults()
 	return withHooks[int, CommunityMutation](ctx, cu.sqlSave, cu.mutation, cu.hooks)
 }
 
@@ -65,6 +73,14 @@ func (cu *CommunityUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (cu *CommunityUpdate) defaults() {
+	if _, ok := cu.mutation.UpdatedAt(); !ok {
+		v := community.UpdateDefaultUpdatedAt()
+		cu.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (cu *CommunityUpdate) check() error {
 	if v, ok := cu.mutation.Name(); ok {
@@ -79,7 +95,7 @@ func (cu *CommunityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if err := cu.check(); err != nil {
 		return n, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(community.Table, community.Columns, sqlgraph.NewFieldSpec(community.FieldID, field.TypeString))
+	_spec := sqlgraph.NewUpdateSpec(community.Table, community.Columns, sqlgraph.NewFieldSpec(community.FieldID, field.TypeUUID))
 	if ps := cu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -89,6 +105,9 @@ func (cu *CommunityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := cu.mutation.Name(); ok {
 		_spec.SetField(community.FieldName, field.TypeString, value)
+	}
+	if value, ok := cu.mutation.UpdatedAt(); ok {
+		_spec.SetField(community.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -116,6 +135,12 @@ func (cuo *CommunityUpdateOne) SetName(s string) *CommunityUpdateOne {
 	return cuo
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (cuo *CommunityUpdateOne) SetUpdatedAt(t time.Time) *CommunityUpdateOne {
+	cuo.mutation.SetUpdatedAt(t)
+	return cuo
+}
+
 // Mutation returns the CommunityMutation object of the builder.
 func (cuo *CommunityUpdateOne) Mutation() *CommunityMutation {
 	return cuo.mutation
@@ -136,6 +161,7 @@ func (cuo *CommunityUpdateOne) Select(field string, fields ...string) *Community
 
 // Save executes the query and returns the updated Community entity.
 func (cuo *CommunityUpdateOne) Save(ctx context.Context) (*Community, error) {
+	cuo.defaults()
 	return withHooks[*Community, CommunityMutation](ctx, cuo.sqlSave, cuo.mutation, cuo.hooks)
 }
 
@@ -161,6 +187,14 @@ func (cuo *CommunityUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (cuo *CommunityUpdateOne) defaults() {
+	if _, ok := cuo.mutation.UpdatedAt(); !ok {
+		v := community.UpdateDefaultUpdatedAt()
+		cuo.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (cuo *CommunityUpdateOne) check() error {
 	if v, ok := cuo.mutation.Name(); ok {
@@ -175,7 +209,7 @@ func (cuo *CommunityUpdateOne) sqlSave(ctx context.Context) (_node *Community, e
 	if err := cuo.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(community.Table, community.Columns, sqlgraph.NewFieldSpec(community.FieldID, field.TypeString))
+	_spec := sqlgraph.NewUpdateSpec(community.Table, community.Columns, sqlgraph.NewFieldSpec(community.FieldID, field.TypeUUID))
 	id, ok := cuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Community.id" for update`)}
@@ -202,6 +236,9 @@ func (cuo *CommunityUpdateOne) sqlSave(ctx context.Context) (_node *Community, e
 	}
 	if value, ok := cuo.mutation.Name(); ok {
 		_spec.SetField(community.FieldName, field.TypeString, value)
+	}
+	if value, ok := cuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(community.FieldUpdatedAt, field.TypeTime, value)
 	}
 	_node = &Community{config: cuo.config}
 	_spec.Assign = _node.assignValues

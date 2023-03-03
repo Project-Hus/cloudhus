@@ -24,7 +24,7 @@ func GetNewAccessToken(c context.Context, client *ent.Client, uid string) (strin
 		"exp":     time.Now().Add(time.Minute * 10).Unix(),
 	})
 	// Sign and get the complete encoded token as a string using the secret
-	accessTokenSigned, err := accessToken.SignedString(os.Getenv("HUS_AUTH_TOKEN_KEY"))
+	accessTokenSigned, err := accessToken.SignedString([]byte(os.Getenv("HUS_AUTH_TOKEN_KEY")))
 	if err != nil {
 		log.Println("[F] signing access token failed: %w", err)
 		return "", err
@@ -39,7 +39,8 @@ func ValidateRefreshToken(c context.Context, client *ent.Client, token string) (
 			log.Printf("unexpected signing method: %v", token.Header["alg"])
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return os.Getenv("HUS_AUTH_TOKEN_KEY"), nil
+
+		return []byte(os.Getenv("HUS_AUTH_TOKEN_KEY")), nil
 	})
 	if err != nil {
 		log.Println("[F] invalid refresh token:%w", err)

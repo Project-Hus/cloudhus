@@ -2,6 +2,7 @@ package schema
 
 import (
 	"regexp"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
@@ -23,9 +24,10 @@ func (Community) Indexes() []ent.Index {
 // Fields of the Group.
 func (Community) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("id").Default(uuid.New().String()),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name").
 			Match(regexp.MustCompile("[a-zA-Z_]+$")),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 

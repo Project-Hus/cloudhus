@@ -1,8 +1,8 @@
 package main
 
 import (
+	"context"
 	"log"
-	"net/http"
 
 	"hus-auth/api/auth"
 	"hus-auth/db"
@@ -35,7 +35,7 @@ func main() {
 	// set .env
 	err := godotenv.Load() // now you can use os.Getenv("VAR_NAME")
 	if err != nil {
-		log.Fatalf("Error lading .env file: %s", err)
+		log.Fatalf("[F] loading .env file failed : %s", err)
 	}
 
 	// connecting to hus_auth_db with ent
@@ -44,6 +44,11 @@ func main() {
 		log.Fatal("%w", err)
 	}
 	defer client.Close()
+
+	// Run the auto migration tool.
+	if err := client.Schema.Create(context.Background()); err != nil {
+		log.Fatalf("[F] creating schema resources failed : %v", err)
+	}
 
 	// Set Controller
 	// hosts (such like subdomains)
@@ -71,13 +76,6 @@ func main() {
 
 	// provide api docs with swagger
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
-
-	// for all unhandled requests, send 404 response with handler by closure
-	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			return c.NoContent(http.StatusNotFound)
-		}
-	})
 
 	// Run the server
 	e.Logger.Fatal(e.Start(":9090"))

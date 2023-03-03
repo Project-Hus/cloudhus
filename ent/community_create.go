@@ -7,9 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"hus-auth/ent/community"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // CommunityCreate is the builder for creating a Community entity.
@@ -25,16 +27,30 @@ func (cc *CommunityCreate) SetName(s string) *CommunityCreate {
 	return cc
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (cc *CommunityCreate) SetUpdatedAt(t time.Time) *CommunityCreate {
+	cc.mutation.SetUpdatedAt(t)
+	return cc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (cc *CommunityCreate) SetNillableUpdatedAt(t *time.Time) *CommunityCreate {
+	if t != nil {
+		cc.SetUpdatedAt(*t)
+	}
+	return cc
+}
+
 // SetID sets the "id" field.
-func (cc *CommunityCreate) SetID(s string) *CommunityCreate {
-	cc.mutation.SetID(s)
+func (cc *CommunityCreate) SetID(u uuid.UUID) *CommunityCreate {
+	cc.mutation.SetID(u)
 	return cc
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (cc *CommunityCreate) SetNillableID(s *string) *CommunityCreate {
-	if s != nil {
-		cc.SetID(*s)
+func (cc *CommunityCreate) SetNillableID(u *uuid.UUID) *CommunityCreate {
+	if u != nil {
+		cc.SetID(*u)
 	}
 	return cc
 }
@@ -74,8 +90,12 @@ func (cc *CommunityCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (cc *CommunityCreate) defaults() {
+	if _, ok := cc.mutation.UpdatedAt(); !ok {
+		v := community.DefaultUpdatedAt()
+		cc.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := cc.mutation.ID(); !ok {
-		v := community.DefaultID
+		v := community.DefaultID()
 		cc.mutation.SetID(v)
 	}
 }
@@ -89,6 +109,9 @@ func (cc *CommunityCreate) check() error {
 		if err := community.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Community.name": %w`, err)}
 		}
+	}
+	if _, ok := cc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Community.updated_at"`)}
 	}
 	return nil
 }
@@ -105,10 +128,10 @@ func (cc *CommunityCreate) sqlSave(ctx context.Context) (*Community, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(string); ok {
-			_node.ID = id
-		} else {
-			return nil, fmt.Errorf("unexpected Community.ID type: %T", _spec.ID.Value)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
 		}
 	}
 	cc.mutation.id = &_node.ID
@@ -119,15 +142,19 @@ func (cc *CommunityCreate) sqlSave(ctx context.Context) (*Community, error) {
 func (cc *CommunityCreate) createSpec() (*Community, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Community{config: cc.config}
-		_spec = sqlgraph.NewCreateSpec(community.Table, sqlgraph.NewFieldSpec(community.FieldID, field.TypeString))
+		_spec = sqlgraph.NewCreateSpec(community.Table, sqlgraph.NewFieldSpec(community.FieldID, field.TypeUUID))
 	)
 	if id, ok := cc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := cc.mutation.Name(); ok {
 		_spec.SetField(community.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := cc.mutation.UpdatedAt(); ok {
+		_spec.SetField(community.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
 	}
 	return _node, _spec
 }

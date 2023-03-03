@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // CommunityQuery is the builder for querying Community entities.
@@ -81,8 +82,8 @@ func (cq *CommunityQuery) FirstX(ctx context.Context) *Community {
 
 // FirstID returns the first Community ID from the query.
 // Returns a *NotFoundError when no Community ID was found.
-func (cq *CommunityQuery) FirstID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (cq *CommunityQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(1).IDs(setContextOp(ctx, cq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -94,7 +95,7 @@ func (cq *CommunityQuery) FirstID(ctx context.Context) (id string, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (cq *CommunityQuery) FirstIDX(ctx context.Context) string {
+func (cq *CommunityQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -132,8 +133,8 @@ func (cq *CommunityQuery) OnlyX(ctx context.Context) *Community {
 // OnlyID is like Only, but returns the only Community ID in the query.
 // Returns a *NotSingularError when more than one Community ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (cq *CommunityQuery) OnlyID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (cq *CommunityQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(2).IDs(setContextOp(ctx, cq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -149,7 +150,7 @@ func (cq *CommunityQuery) OnlyID(ctx context.Context) (id string, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (cq *CommunityQuery) OnlyIDX(ctx context.Context) string {
+func (cq *CommunityQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,7 +178,7 @@ func (cq *CommunityQuery) AllX(ctx context.Context) []*Community {
 }
 
 // IDs executes the query and returns a list of Community IDs.
-func (cq *CommunityQuery) IDs(ctx context.Context) (ids []string, err error) {
+func (cq *CommunityQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if cq.ctx.Unique == nil && cq.path != nil {
 		cq.Unique(true)
 	}
@@ -189,7 +190,7 @@ func (cq *CommunityQuery) IDs(ctx context.Context) (ids []string, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (cq *CommunityQuery) IDsX(ctx context.Context) []string {
+func (cq *CommunityQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := cq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -364,7 +365,7 @@ func (cq *CommunityQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (cq *CommunityQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(community.Table, community.Columns, sqlgraph.NewFieldSpec(community.FieldID, field.TypeString))
+	_spec := sqlgraph.NewQuerySpec(community.Table, community.Columns, sqlgraph.NewFieldSpec(community.FieldID, field.TypeUUID))
 	_spec.From = cq.sql
 	if unique := cq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

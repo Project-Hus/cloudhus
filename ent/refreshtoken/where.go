@@ -7,50 +7,51 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id string) predicate.RefreshToken {
+func ID(id uuid.UUID) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id string) predicate.RefreshToken {
+func IDEQ(id uuid.UUID) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id string) predicate.RefreshToken {
+func IDNEQ(id uuid.UUID) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...string) predicate.RefreshToken {
+func IDIn(ids ...uuid.UUID) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...string) predicate.RefreshToken {
+func IDNotIn(ids ...uuid.UUID) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id string) predicate.RefreshToken {
+func IDGT(id uuid.UUID) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id string) predicate.RefreshToken {
+func IDGTE(id uuid.UUID) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id string) predicate.RefreshToken {
+func IDLT(id uuid.UUID) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id string) predicate.RefreshToken {
+func IDLTE(id uuid.UUID) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldLTE(FieldID, id))
 }
 
@@ -64,14 +65,14 @@ func Revoked(v bool) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldEQ(FieldRevoked, v))
 }
 
-// LastUsedAt applies equality check predicate on the "last_used_at" field. It's identical to LastUsedAtEQ.
-func LastUsedAt(v time.Time) predicate.RefreshToken {
-	return predicate.RefreshToken(sql.FieldEQ(FieldLastUsedAt, v))
-}
-
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
 // UIDEQ applies the EQ predicate on the "uid" field.
@@ -149,46 +150,6 @@ func RevokedNEQ(v bool) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldNEQ(FieldRevoked, v))
 }
 
-// LastUsedAtEQ applies the EQ predicate on the "last_used_at" field.
-func LastUsedAtEQ(v time.Time) predicate.RefreshToken {
-	return predicate.RefreshToken(sql.FieldEQ(FieldLastUsedAt, v))
-}
-
-// LastUsedAtNEQ applies the NEQ predicate on the "last_used_at" field.
-func LastUsedAtNEQ(v time.Time) predicate.RefreshToken {
-	return predicate.RefreshToken(sql.FieldNEQ(FieldLastUsedAt, v))
-}
-
-// LastUsedAtIn applies the In predicate on the "last_used_at" field.
-func LastUsedAtIn(vs ...time.Time) predicate.RefreshToken {
-	return predicate.RefreshToken(sql.FieldIn(FieldLastUsedAt, vs...))
-}
-
-// LastUsedAtNotIn applies the NotIn predicate on the "last_used_at" field.
-func LastUsedAtNotIn(vs ...time.Time) predicate.RefreshToken {
-	return predicate.RefreshToken(sql.FieldNotIn(FieldLastUsedAt, vs...))
-}
-
-// LastUsedAtGT applies the GT predicate on the "last_used_at" field.
-func LastUsedAtGT(v time.Time) predicate.RefreshToken {
-	return predicate.RefreshToken(sql.FieldGT(FieldLastUsedAt, v))
-}
-
-// LastUsedAtGTE applies the GTE predicate on the "last_used_at" field.
-func LastUsedAtGTE(v time.Time) predicate.RefreshToken {
-	return predicate.RefreshToken(sql.FieldGTE(FieldLastUsedAt, v))
-}
-
-// LastUsedAtLT applies the LT predicate on the "last_used_at" field.
-func LastUsedAtLT(v time.Time) predicate.RefreshToken {
-	return predicate.RefreshToken(sql.FieldLT(FieldLastUsedAt, v))
-}
-
-// LastUsedAtLTE applies the LTE predicate on the "last_used_at" field.
-func LastUsedAtLTE(v time.Time) predicate.RefreshToken {
-	return predicate.RefreshToken(sql.FieldLTE(FieldLastUsedAt, v))
-}
-
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldEQ(FieldCreatedAt, v))
@@ -227,6 +188,46 @@ func CreatedAtLT(v time.Time) predicate.RefreshToken {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // And groups predicates with the AND operator between them.

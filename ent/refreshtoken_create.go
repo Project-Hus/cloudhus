@@ -11,6 +11,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // RefreshTokenCreate is the builder for creating a RefreshToken entity.
@@ -40,20 +41,6 @@ func (rtc *RefreshTokenCreate) SetNillableRevoked(b *bool) *RefreshTokenCreate {
 	return rtc
 }
 
-// SetLastUsedAt sets the "last_used_at" field.
-func (rtc *RefreshTokenCreate) SetLastUsedAt(t time.Time) *RefreshTokenCreate {
-	rtc.mutation.SetLastUsedAt(t)
-	return rtc
-}
-
-// SetNillableLastUsedAt sets the "last_used_at" field if the given value is not nil.
-func (rtc *RefreshTokenCreate) SetNillableLastUsedAt(t *time.Time) *RefreshTokenCreate {
-	if t != nil {
-		rtc.SetLastUsedAt(*t)
-	}
-	return rtc
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (rtc *RefreshTokenCreate) SetCreatedAt(t time.Time) *RefreshTokenCreate {
 	rtc.mutation.SetCreatedAt(t)
@@ -68,9 +55,31 @@ func (rtc *RefreshTokenCreate) SetNillableCreatedAt(t *time.Time) *RefreshTokenC
 	return rtc
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (rtc *RefreshTokenCreate) SetUpdatedAt(t time.Time) *RefreshTokenCreate {
+	rtc.mutation.SetUpdatedAt(t)
+	return rtc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (rtc *RefreshTokenCreate) SetNillableUpdatedAt(t *time.Time) *RefreshTokenCreate {
+	if t != nil {
+		rtc.SetUpdatedAt(*t)
+	}
+	return rtc
+}
+
 // SetID sets the "id" field.
-func (rtc *RefreshTokenCreate) SetID(s string) *RefreshTokenCreate {
-	rtc.mutation.SetID(s)
+func (rtc *RefreshTokenCreate) SetID(u uuid.UUID) *RefreshTokenCreate {
+	rtc.mutation.SetID(u)
+	return rtc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (rtc *RefreshTokenCreate) SetNillableID(u *uuid.UUID) *RefreshTokenCreate {
+	if u != nil {
+		rtc.SetID(*u)
+	}
 	return rtc
 }
 
@@ -113,13 +122,17 @@ func (rtc *RefreshTokenCreate) defaults() {
 		v := refreshtoken.DefaultRevoked
 		rtc.mutation.SetRevoked(v)
 	}
-	if _, ok := rtc.mutation.LastUsedAt(); !ok {
-		v := refreshtoken.DefaultLastUsedAt
-		rtc.mutation.SetLastUsedAt(v)
-	}
 	if _, ok := rtc.mutation.CreatedAt(); !ok {
-		v := refreshtoken.DefaultCreatedAt
+		v := refreshtoken.DefaultCreatedAt()
 		rtc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := rtc.mutation.UpdatedAt(); !ok {
+		v := refreshtoken.DefaultUpdatedAt()
+		rtc.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := rtc.mutation.ID(); !ok {
+		v := refreshtoken.DefaultID()
+		rtc.mutation.SetID(v)
 	}
 }
 
@@ -131,11 +144,11 @@ func (rtc *RefreshTokenCreate) check() error {
 	if _, ok := rtc.mutation.Revoked(); !ok {
 		return &ValidationError{Name: "revoked", err: errors.New(`ent: missing required field "RefreshToken.revoked"`)}
 	}
-	if _, ok := rtc.mutation.LastUsedAt(); !ok {
-		return &ValidationError{Name: "last_used_at", err: errors.New(`ent: missing required field "RefreshToken.last_used_at"`)}
-	}
 	if _, ok := rtc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "RefreshToken.created_at"`)}
+	}
+	if _, ok := rtc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "RefreshToken.updated_at"`)}
 	}
 	return nil
 }
@@ -152,10 +165,10 @@ func (rtc *RefreshTokenCreate) sqlSave(ctx context.Context) (*RefreshToken, erro
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(string); ok {
-			_node.ID = id
-		} else {
-			return nil, fmt.Errorf("unexpected RefreshToken.ID type: %T", _spec.ID.Value)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
 		}
 	}
 	rtc.mutation.id = &_node.ID
@@ -166,11 +179,11 @@ func (rtc *RefreshTokenCreate) sqlSave(ctx context.Context) (*RefreshToken, erro
 func (rtc *RefreshTokenCreate) createSpec() (*RefreshToken, *sqlgraph.CreateSpec) {
 	var (
 		_node = &RefreshToken{config: rtc.config}
-		_spec = sqlgraph.NewCreateSpec(refreshtoken.Table, sqlgraph.NewFieldSpec(refreshtoken.FieldID, field.TypeString))
+		_spec = sqlgraph.NewCreateSpec(refreshtoken.Table, sqlgraph.NewFieldSpec(refreshtoken.FieldID, field.TypeUUID))
 	)
 	if id, ok := rtc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := rtc.mutation.UID(); ok {
 		_spec.SetField(refreshtoken.FieldUID, field.TypeString, value)
@@ -180,13 +193,13 @@ func (rtc *RefreshTokenCreate) createSpec() (*RefreshToken, *sqlgraph.CreateSpec
 		_spec.SetField(refreshtoken.FieldRevoked, field.TypeBool, value)
 		_node.Revoked = value
 	}
-	if value, ok := rtc.mutation.LastUsedAt(); ok {
-		_spec.SetField(refreshtoken.FieldLastUsedAt, field.TypeTime, value)
-		_node.LastUsedAt = value
-	}
 	if value, ok := rtc.mutation.CreatedAt(); ok {
 		_spec.SetField(refreshtoken.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := rtc.mutation.UpdatedAt(); ok {
+		_spec.SetField(refreshtoken.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
 	}
 	return _node, _spec
 }

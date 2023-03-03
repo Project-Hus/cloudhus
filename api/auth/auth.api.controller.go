@@ -10,8 +10,6 @@ import (
 func NewAuthApiController(client *ent.Client) *echo.Echo {
 	authApi := echo.New()
 
-	authApi.AcquireContext().Response().Header().Set("Access-Control-Allow-Origin", "*")
-
 	authApiController := newAuthApiController(client)
 
 	authApi.POST("/auth/google", authApiController.GoogleAuthHandler)

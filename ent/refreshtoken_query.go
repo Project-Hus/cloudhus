@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // RefreshTokenQuery is the builder for querying RefreshToken entities.
@@ -81,8 +82,8 @@ func (rtq *RefreshTokenQuery) FirstX(ctx context.Context) *RefreshToken {
 
 // FirstID returns the first RefreshToken ID from the query.
 // Returns a *NotFoundError when no RefreshToken ID was found.
-func (rtq *RefreshTokenQuery) FirstID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (rtq *RefreshTokenQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = rtq.Limit(1).IDs(setContextOp(ctx, rtq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -94,7 +95,7 @@ func (rtq *RefreshTokenQuery) FirstID(ctx context.Context) (id string, err error
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (rtq *RefreshTokenQuery) FirstIDX(ctx context.Context) string {
+func (rtq *RefreshTokenQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := rtq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -132,8 +133,8 @@ func (rtq *RefreshTokenQuery) OnlyX(ctx context.Context) *RefreshToken {
 // OnlyID is like Only, but returns the only RefreshToken ID in the query.
 // Returns a *NotSingularError when more than one RefreshToken ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (rtq *RefreshTokenQuery) OnlyID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (rtq *RefreshTokenQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = rtq.Limit(2).IDs(setContextOp(ctx, rtq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -149,7 +150,7 @@ func (rtq *RefreshTokenQuery) OnlyID(ctx context.Context) (id string, err error)
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (rtq *RefreshTokenQuery) OnlyIDX(ctx context.Context) string {
+func (rtq *RefreshTokenQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := rtq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,7 +178,7 @@ func (rtq *RefreshTokenQuery) AllX(ctx context.Context) []*RefreshToken {
 }
 
 // IDs executes the query and returns a list of RefreshToken IDs.
-func (rtq *RefreshTokenQuery) IDs(ctx context.Context) (ids []string, err error) {
+func (rtq *RefreshTokenQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if rtq.ctx.Unique == nil && rtq.path != nil {
 		rtq.Unique(true)
 	}
@@ -189,7 +190,7 @@ func (rtq *RefreshTokenQuery) IDs(ctx context.Context) (ids []string, err error)
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (rtq *RefreshTokenQuery) IDsX(ctx context.Context) []string {
+func (rtq *RefreshTokenQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := rtq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -364,7 +365,7 @@ func (rtq *RefreshTokenQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (rtq *RefreshTokenQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(refreshtoken.Table, refreshtoken.Columns, sqlgraph.NewFieldSpec(refreshtoken.FieldID, field.TypeString))
+	_spec := sqlgraph.NewQuerySpec(refreshtoken.Table, refreshtoken.Columns, sqlgraph.NewFieldSpec(refreshtoken.FieldID, field.TypeUUID))
 	_spec.From = rtq.sql
 	if unique := rtq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

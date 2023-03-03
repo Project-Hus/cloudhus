@@ -5,6 +5,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // RefreshToken holds the schema definition for the RefreshToken entity.
@@ -15,11 +16,11 @@ type RefreshToken struct {
 // Fields of the RefreshToken.
 func (RefreshToken) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("id"),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("uid"), // User ID
 		field.Bool("revoked").Default(false),
-		field.Time("last_used_at").Default(time.Time{}), //  January 1, year 1, 00:00:00.000000000 UTC
-		field.Time("created_at").Default(time.Now()),
+		field.Time("created_at").Default(time.Now),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
