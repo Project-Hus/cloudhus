@@ -2,6 +2,9 @@ package main
 
 import (
 	"log"
+	"net/http"
+	"os"
+	"time"
 
 	"hus-auth/api/auth"
 	"hus-auth/db"
@@ -31,8 +34,20 @@ import (
 // @host lifthus.com
 // @BasePath /auth
 func main() {
+	now := time.Now().Format("01-02-15-04-05-2006")
+
+	// set all logs to be stored in log{now}.txt
+	f, err := os.OpenFile("log"+now+".txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+	log.SetOutput(f)
+
+	log.Println("starting Hus auth server...")
+
 	// set .env
-	err := godotenv.Load()
+	err = godotenv.Load() // now you can use os.Getenv("VAR_NAME")
 	if err != nil {
 		log.Fatalf("Error lading .env file: %s", err)
 	}
@@ -45,20 +60,21 @@ func main() {
 	defer client.Close()
 
 	// Set Controller
-
-	// Hosts (subdomains)
+	// hosts (such like subdomains)
 	hosts := map[string]*Host{}
 
-	// gonna use api.lifthus.com later
+	// gonna use api.lifthus.com later and api.project-hus.com more later
 	authApi := auth.NewAuthApiController(client)
 	hosts["localhost:9090"] = &Host{Echo: authApi}
 
 	e := echo.New()
+	// set CORS headers
 	e.Use(middleware.SetHusCorsHeaders)
+	// get requset and process by its subdomain
 	e.Any("/*", func(c echo.Context) (err error) {
 		req := c.Request()
 		res := c.Response()
-		host := hosts[req.Host]
+		host := hosts[req.Host] // if the host is not registered, it will be nil.
 		if host == nil {
 			err = echo.ErrNotFound
 		} else {
@@ -69,6 +85,13 @@ func main() {
 
 	// provide api docs with swagger
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
+	// for all unhandled requests, send 404 response with handler by closure
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			return c.NoContent(http.StatusNotFound)
+		}
+	})
 
 	// Run the server
 	e.Logger.Fatal(e.Start(":9090"))
