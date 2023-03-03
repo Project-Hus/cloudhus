@@ -69,6 +69,17 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
+	// set cookie for refresh token with 7 days expiration by struct literal
+	cookie := &http.Cookie{
+		Name:  "hus-refresh-token",
+		Value: refreshTokenSigned,
+		Path:  "/auth", // only sent with the request to /auth
+		//Secure:   true, // only sent over https
+		HttpOnly: true,
+		Expires:  time.Now().Add(time.Hour * 24 * 7),
+	}
+	c.SetCookie(cookie)
+
 	return c.Redirect(http.StatusMovedPermanently, os.Getenv("LIFTHUS_URL")+"/auth/"+refreshTokenSigned)
 }
 

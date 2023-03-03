@@ -5,6 +5,7 @@ import (
 
 	"hus-auth/api/auth"
 	"hus-auth/db"
+	"hus-auth/middleware"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -53,6 +54,7 @@ func main() {
 	hosts["localhost:9090"] = &Host{Echo: authApi}
 
 	e := echo.New()
+	e.Use(middleware.SetHusCorsHeaders)
 	e.Any("/*", func(c echo.Context) (err error) {
 		req := c.Request()
 		res := c.Response()
