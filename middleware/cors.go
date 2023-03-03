@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// SetHusCorsHeaders sets headers for CORS.
 func SetHusCorsHeaders(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// If your Backend is deployed in AWS and using API Gateway to call through,

@@ -3,8 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
-	"time"
 
 	"hus-auth/api/auth"
 	"hus-auth/db"
@@ -34,20 +32,8 @@ import (
 // @host lifthus.com
 // @BasePath /auth
 func main() {
-	now := time.Now().Format("01-02-15-04-05-2006")
-
-	// set all logs to be stored in log{now}.txt
-	f, err := os.OpenFile("log"+now+".txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-	}
-	defer f.Close()
-	log.SetOutput(f)
-
-	log.Println("starting Hus auth server...")
-
 	// set .env
-	err = godotenv.Load() // now you can use os.Getenv("VAR_NAME")
+	err := godotenv.Load() // now you can use os.Getenv("VAR_NAME")
 	if err != nil {
 		log.Fatalf("Error lading .env file: %s", err)
 	}
