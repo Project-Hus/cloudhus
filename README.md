@@ -1,11 +1,11 @@
 # Project Hus auth server with Go
 
 ## Integrated authentication server ##
-'''
+```
 Cross-Domain Identity Federation
 Single Sign-On (SSO)
 System for Cross-domain Identity Management (SCIM)
-'''
+```
 
 ### Dev monitoring by nodemon
 
