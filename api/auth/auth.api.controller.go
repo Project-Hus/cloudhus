@@ -13,7 +13,10 @@ func NewAuthApiController(client *ent.Client) *echo.Echo {
 	authApiController := newAuthApiController(client)
 
 	authApi.POST("/auth/google", authApiController.GoogleAuthHandler)
+	authApi.GET("/auth/cookie", authApiController.TokenEmbeddingHandler)
 	authApi.GET("/auth/access", authApiController.AcessTokenRequestHandler)
+
+	authApi.GET("/auth/refresh", authApiController.RefreshTokenRequestHandler)
 
 	return authApi
 }
@@ -21,7 +24,10 @@ func NewAuthApiController(client *ent.Client) *echo.Echo {
 // authApis interface defines what auth api has to handle
 type authApis interface {
 	GoogleAuthHandler(c echo.Context) error
+	TokenEmbeddingHandler(c echo.Context) error
 	AcessTokenRequestHandler(c echo.Context) error
+
+	RefreshTokenRequestHandler(c echo.Context) error
 }
 
 // authApiController defines what auth api has to have and implements authApis interface at service file.

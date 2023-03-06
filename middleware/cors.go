@@ -16,7 +16,7 @@ func SetHusCorsHeaders(next echo.HandlerFunc) echo.HandlerFunc {
 		// Access-Control-Allow-Methodsand Access-Control-Allow-Headersshould contain the same value
 		//as requested in Access-Control-request-Methodsand Access-Control-request-Headersrespectively.
 		c.Response().Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Response().Header().Set("Access-Control-Allow-Headers", "Content-Type, *")
+		c.Response().Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, *")
 		return next(c)
 	}
 }

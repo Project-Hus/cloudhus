@@ -13,7 +13,8 @@ import (
 // CreateRefreshToken takes user's uuid and create signed refresh token and return it.
 // It can be called only when user is authenticated by Third-party service.
 func CreateRefreshToken(ctx context.Context, client *ent.Client, uid string) (string, error) {
-	// first create refresh token in database, and its default key is uuid
+
+	// create refresh token in database, and its default key is uuid
 	tk, err := client.RefreshToken.
 		Create().SetUID(uid).Save(ctx)
 	if err != nil {
