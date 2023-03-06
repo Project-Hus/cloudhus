@@ -25,10 +25,6 @@ import (
 // @Failure      401 "Unauthorized"
 // @Failure      500 "Internal Server Error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
-	// get the client's IP address
-	ip := c.RealIP()
-	fmt.Println(ip)
-
 	// client ID that Google issued to lifthus
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 
