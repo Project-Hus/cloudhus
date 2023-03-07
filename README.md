@@ -24,7 +24,7 @@ go generate ./ent
 go run -mod=mod entgo.io/ent/cmd/ent new User
 ```
 
-## Federated Login Protocol
+## Protocol Hus
 
 - Unsigned-Hus case ( Manual Login )<br>
   1 - The user who haven't gotten Hus token access one of Hus subservices.<br>
