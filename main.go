@@ -48,18 +48,16 @@ func main() {
 		log.Fatalf("[F] creating schema resources failed : %v", err)
 	}
 
-	// Set Controller
-	// hosts (such like subdomains)
+	// subdomains
 	hosts := map[string]*Host{}
 
-	// gonna use api.cloudhus.com later and api.project-hus.com more later
-	authApi := auth.NewAuthApiController(client)
-	hosts["localhost:9090"] = &Host{Echo: authApi}
-
+	//  Create echo web server instance and set CORS headers
 	e := echo.New()
-
-	// set CORS headers
 	e.Use(middleware.SetHusCorsHeaders)
+
+	// authApi, which controls auth all over the services
+	authApi := auth.NewAuthApiController(client)
+	hosts["localhost:9090"] = &Host{Echo: authApi} // gonna use auth.cloudhus.com later
 
 	// get requset and process by its subdomain
 	e.Any("/*", func(c echo.Context) (err error) {

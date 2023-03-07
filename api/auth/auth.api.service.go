@@ -14,7 +14,7 @@ import (
 )
 
 // GoogleAuthHandler godoc
-// @Router       /auth/google [post]
+// @Router       /google [post]
 // @Summary      processes google auth and redirect with refresh token in url.
 // @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
 // @Description the refresh token will be expired in 7 days.
@@ -88,7 +88,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 }
 
 // TokenEmbeddingHandler godoc
-// @Router       /auth/cookie [post]
+// @Router       /hus [post]
 // @Summary      processes google auth and redirect with refresh token in url.
 // @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
 // @Description the refresh token will be expired in 7 days.
@@ -131,7 +131,7 @@ func (ac authApiController) TokenEmbeddingHandler(c echo.Context) error {
 }
 
 // RefreshTokenRequestHandler godoc
-// @Router       /auth/refresh [get]
+// @Router       /refresh [get]
 // @Summary      gets refresh token in the header and returns access token in the cookie after validation.
 // @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
 // @Description the access token will be expired in 10 minutes.
@@ -151,7 +151,7 @@ func (ac authApiController) RefreshTokenRequestHandler(c echo.Context) error {
 }
 
 // AccessTokenRequestHandler godoc
-// @Router       /auth/access [get]
+// @Router       /access [get]
 // @Summary      gets refresh token in the header and returns access token in the cookie after validation.
 // @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
 // @Description the access token will be expired in 10 minutes.

@@ -12,11 +12,11 @@ func NewAuthApiController(client *ent.Client) *echo.Echo {
 
 	authApiController := newAuthApiController(client)
 
-	authApi.POST("/auth/google", authApiController.GoogleAuthHandler)
-	authApi.GET("/auth/cookie", authApiController.TokenEmbeddingHandler)
-	authApi.GET("/auth/access", authApiController.AcessTokenRequestHandler)
+	authApi.POST("/google", authApiController.GoogleAuthHandler)
+	authApi.GET("/hus", authApiController.TokenEmbeddingHandler)
+	authApi.GET("/access", authApiController.AcessTokenRequestHandler)
 
-	authApi.GET("/auth/refresh", authApiController.RefreshTokenRequestHandler)
+	authApi.GET("/refresh", authApiController.RefreshTokenRequestHandler)
 
 	return authApi
 }
