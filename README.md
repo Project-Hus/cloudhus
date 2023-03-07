@@ -27,12 +27,12 @@ go run -mod=mod entgo.io/ent/cmd/ent new User
 ## Protocol Hus
 
 - Unsigned-Hus case ( Manual Login )<br>
-  1 - The user who haven't gotten Hus token access one of Hus subservices.<br>
+  1 - A user who haven't gotten Hus token accesses one of Hus subservices.<br>
   2 - The SPA proceeds authentication(Third-party etc.) with Hus, and Hus sets Hus session cookie with response.<br>
   3 - Now go to No.2 of following case.<br>
 
 - Signed-Hus case<br>
-  1 - The user who got Hus session cookie in Hus' domain accesses one of its subservices(SS).<br>
+  1 - A user who got Hus session cookie in Hus' domain accesses one of its subservices(SS).<br>
   2 - The SPA requests a **unique key to identify the session from SS. and SS sets the cookie the same as that.**<br>
   3 - Now the SPA **transfers the key with its Hus session cookie to Hus.**<br>
   4 - Hus validates and reset(for rotating) the session cookie and **transfer the user info with key to SS.**<br>

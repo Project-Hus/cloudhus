@@ -25,10 +25,8 @@ import (
 // @contact.name API Support
 // @contact.url lifthus531@gmail.com
 // @contact.email lifthus531@gmail.com
-
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-
 // @host lifthus.com
 // @BasePath /auth
 func main() {
@@ -54,13 +52,15 @@ func main() {
 	// hosts (such like subdomains)
 	hosts := map[string]*Host{}
 
-	// gonna use api.lifthus.com later and api.project-hus.com more later
+	// gonna use api.cloudhus.com later and api.project-hus.com more later
 	authApi := auth.NewAuthApiController(client)
 	hosts["localhost:9090"] = &Host{Echo: authApi}
 
 	e := echo.New()
+
 	// set CORS headers
 	e.Use(middleware.SetHusCorsHeaders)
+
 	// get requset and process by its subdomain
 	e.Any("/*", func(c echo.Context) (err error) {
 		req := c.Request()
@@ -74,7 +74,7 @@ func main() {
 		return err
 	})
 
-	// provide api docs with swagger
+	// provide api docs with swagger 2.0
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Run the server
