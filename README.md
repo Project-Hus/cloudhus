@@ -42,6 +42,14 @@ go run -mod=mod entgo.io/ent/cmd/ent new User
   7 - Now the **SPA requests the token cookie from SS.**<br>
 
 - Generating access token ( both non-token and expired token cases )
+
   1 - A user without valid access token requests any access token needed resource.<br>
   2 - The server notices the user got no access token. and validate the refresh token.(both in cookie)<br>
-  3 - If the refresh token is valid, the server generates the access token and sets it to cookie.
+  ~ - The refresh token validation needs to be done by Hus, to check whether it is revoked.<br>
+  3 - If the refresh token is valid, the server generates the access token and sets it to cookie.<br>
+  4 - While the access token is alive, the root Hus server would get some rest.<br>
+
+- Expired, expiring refresh token
+
+  1 - If the user requests with invalid access token and expired refresh token, server informs the client that the login session is done.<br>
+  2 - It may be vulerable, but the subservice could automatically refresh the refresh token based on the user's last access. At the profile setting, we may give the user an option to set the refresh token to be refreshed.
