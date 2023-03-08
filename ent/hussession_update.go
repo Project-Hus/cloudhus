@@ -30,57 +30,63 @@ func (hsu *HusSessionUpdate) Where(ps ...predicate.HusSession) *HusSessionUpdate
 	return hsu
 }
 
-// SetExpiredAt sets the "expired_at" field.
-func (hsu *HusSessionUpdate) SetExpiredAt(t time.Time) *HusSessionUpdate {
-	hsu.mutation.SetExpiredAt(t)
+// SetUID sets the "uid" field.
+func (hsu *HusSessionUpdate) SetUID(u uuid.UUID) *HusSessionUpdate {
+	hsu.mutation.SetUID(u)
 	return hsu
 }
 
-// SetNillableExpiredAt sets the "expired_at" field if the given value is not nil.
-func (hsu *HusSessionUpdate) SetNillableExpiredAt(t *time.Time) *HusSessionUpdate {
+// SetHld sets the "hld" field.
+func (hsu *HusSessionUpdate) SetHld(b bool) *HusSessionUpdate {
+	hsu.mutation.SetHld(b)
+	return hsu
+}
+
+// SetNillableHld sets the "hld" field if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableHld(b *bool) *HusSessionUpdate {
+	if b != nil {
+		hsu.SetHld(*b)
+	}
+	return hsu
+}
+
+// SetExp sets the "exp" field.
+func (hsu *HusSessionUpdate) SetExp(t time.Time) *HusSessionUpdate {
+	hsu.mutation.SetExp(t)
+	return hsu
+}
+
+// SetNillableExp sets the "exp" field if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableExp(t *time.Time) *HusSessionUpdate {
 	if t != nil {
-		hsu.SetExpiredAt(*t)
+		hsu.SetExp(*t)
 	}
 	return hsu
 }
 
-// ClearExpiredAt clears the value of the "expired_at" field.
-func (hsu *HusSessionUpdate) ClearExpiredAt() *HusSessionUpdate {
-	hsu.mutation.ClearExpiredAt()
+// SetIat sets the "iat" field.
+func (hsu *HusSessionUpdate) SetIat(t time.Time) *HusSessionUpdate {
+	hsu.mutation.SetIat(t)
 	return hsu
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (hsu *HusSessionUpdate) SetCreatedAt(t time.Time) *HusSessionUpdate {
-	hsu.mutation.SetCreatedAt(t)
-	return hsu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (hsu *HusSessionUpdate) SetNillableCreatedAt(t *time.Time) *HusSessionUpdate {
+// SetNillableIat sets the "iat" field if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableIat(t *time.Time) *HusSessionUpdate {
 	if t != nil {
-		hsu.SetCreatedAt(*t)
+		hsu.SetIat(*t)
 	}
 	return hsu
 }
 
-// SetOwnerID sets the "owner" edge to the User entity by ID.
-func (hsu *HusSessionUpdate) SetOwnerID(id uuid.UUID) *HusSessionUpdate {
-	hsu.mutation.SetOwnerID(id)
+// SetUserID sets the "user" edge to the User entity by ID.
+func (hsu *HusSessionUpdate) SetUserID(id uuid.UUID) *HusSessionUpdate {
+	hsu.mutation.SetUserID(id)
 	return hsu
 }
 
-// SetNillableOwnerID sets the "owner" edge to the User entity by ID if the given value is not nil.
-func (hsu *HusSessionUpdate) SetNillableOwnerID(id *uuid.UUID) *HusSessionUpdate {
-	if id != nil {
-		hsu = hsu.SetOwnerID(*id)
-	}
-	return hsu
-}
-
-// SetOwner sets the "owner" edge to the User entity.
-func (hsu *HusSessionUpdate) SetOwner(u *User) *HusSessionUpdate {
-	return hsu.SetOwnerID(u.ID)
+// SetUser sets the "user" edge to the User entity.
+func (hsu *HusSessionUpdate) SetUser(u *User) *HusSessionUpdate {
+	return hsu.SetUserID(u.ID)
 }
 
 // Mutation returns the HusSessionMutation object of the builder.
@@ -88,9 +94,9 @@ func (hsu *HusSessionUpdate) Mutation() *HusSessionMutation {
 	return hsu.mutation
 }
 
-// ClearOwner clears the "owner" edge to the User entity.
-func (hsu *HusSessionUpdate) ClearOwner() *HusSessionUpdate {
-	hsu.mutation.ClearOwner()
+// ClearUser clears the "user" edge to the User entity.
+func (hsu *HusSessionUpdate) ClearUser() *HusSessionUpdate {
+	hsu.mutation.ClearUser()
 	return hsu
 }
 
@@ -121,7 +127,18 @@ func (hsu *HusSessionUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (hsu *HusSessionUpdate) check() error {
+	if _, ok := hsu.mutation.UserID(); hsu.mutation.UserCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "HusSession.user"`)
+	}
+	return nil
+}
+
 func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := hsu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(hussession.Table, hussession.Columns, sqlgraph.NewFieldSpec(hussession.FieldID, field.TypeUUID))
 	if ps := hsu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -130,21 +147,21 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := hsu.mutation.ExpiredAt(); ok {
-		_spec.SetField(hussession.FieldExpiredAt, field.TypeTime, value)
+	if value, ok := hsu.mutation.Hld(); ok {
+		_spec.SetField(hussession.FieldHld, field.TypeBool, value)
 	}
-	if hsu.mutation.ExpiredAtCleared() {
-		_spec.ClearField(hussession.FieldExpiredAt, field.TypeTime)
+	if value, ok := hsu.mutation.Exp(); ok {
+		_spec.SetField(hussession.FieldExp, field.TypeTime, value)
 	}
-	if value, ok := hsu.mutation.CreatedAt(); ok {
-		_spec.SetField(hussession.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := hsu.mutation.Iat(); ok {
+		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
 	}
-	if hsu.mutation.OwnerCleared() {
+	if hsu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   hussession.OwnerTable,
-			Columns: []string{hussession.OwnerColumn},
+			Table:   hussession.UserTable,
+			Columns: []string{hussession.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -155,12 +172,12 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := hsu.mutation.OwnerIDs(); len(nodes) > 0 {
+	if nodes := hsu.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   hussession.OwnerTable,
-			Columns: []string{hussession.OwnerColumn},
+			Table:   hussession.UserTable,
+			Columns: []string{hussession.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -194,57 +211,63 @@ type HusSessionUpdateOne struct {
 	mutation *HusSessionMutation
 }
 
-// SetExpiredAt sets the "expired_at" field.
-func (hsuo *HusSessionUpdateOne) SetExpiredAt(t time.Time) *HusSessionUpdateOne {
-	hsuo.mutation.SetExpiredAt(t)
+// SetUID sets the "uid" field.
+func (hsuo *HusSessionUpdateOne) SetUID(u uuid.UUID) *HusSessionUpdateOne {
+	hsuo.mutation.SetUID(u)
 	return hsuo
 }
 
-// SetNillableExpiredAt sets the "expired_at" field if the given value is not nil.
-func (hsuo *HusSessionUpdateOne) SetNillableExpiredAt(t *time.Time) *HusSessionUpdateOne {
+// SetHld sets the "hld" field.
+func (hsuo *HusSessionUpdateOne) SetHld(b bool) *HusSessionUpdateOne {
+	hsuo.mutation.SetHld(b)
+	return hsuo
+}
+
+// SetNillableHld sets the "hld" field if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableHld(b *bool) *HusSessionUpdateOne {
+	if b != nil {
+		hsuo.SetHld(*b)
+	}
+	return hsuo
+}
+
+// SetExp sets the "exp" field.
+func (hsuo *HusSessionUpdateOne) SetExp(t time.Time) *HusSessionUpdateOne {
+	hsuo.mutation.SetExp(t)
+	return hsuo
+}
+
+// SetNillableExp sets the "exp" field if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableExp(t *time.Time) *HusSessionUpdateOne {
 	if t != nil {
-		hsuo.SetExpiredAt(*t)
+		hsuo.SetExp(*t)
 	}
 	return hsuo
 }
 
-// ClearExpiredAt clears the value of the "expired_at" field.
-func (hsuo *HusSessionUpdateOne) ClearExpiredAt() *HusSessionUpdateOne {
-	hsuo.mutation.ClearExpiredAt()
+// SetIat sets the "iat" field.
+func (hsuo *HusSessionUpdateOne) SetIat(t time.Time) *HusSessionUpdateOne {
+	hsuo.mutation.SetIat(t)
 	return hsuo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (hsuo *HusSessionUpdateOne) SetCreatedAt(t time.Time) *HusSessionUpdateOne {
-	hsuo.mutation.SetCreatedAt(t)
-	return hsuo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (hsuo *HusSessionUpdateOne) SetNillableCreatedAt(t *time.Time) *HusSessionUpdateOne {
+// SetNillableIat sets the "iat" field if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableIat(t *time.Time) *HusSessionUpdateOne {
 	if t != nil {
-		hsuo.SetCreatedAt(*t)
+		hsuo.SetIat(*t)
 	}
 	return hsuo
 }
 
-// SetOwnerID sets the "owner" edge to the User entity by ID.
-func (hsuo *HusSessionUpdateOne) SetOwnerID(id uuid.UUID) *HusSessionUpdateOne {
-	hsuo.mutation.SetOwnerID(id)
+// SetUserID sets the "user" edge to the User entity by ID.
+func (hsuo *HusSessionUpdateOne) SetUserID(id uuid.UUID) *HusSessionUpdateOne {
+	hsuo.mutation.SetUserID(id)
 	return hsuo
 }
 
-// SetNillableOwnerID sets the "owner" edge to the User entity by ID if the given value is not nil.
-func (hsuo *HusSessionUpdateOne) SetNillableOwnerID(id *uuid.UUID) *HusSessionUpdateOne {
-	if id != nil {
-		hsuo = hsuo.SetOwnerID(*id)
-	}
-	return hsuo
-}
-
-// SetOwner sets the "owner" edge to the User entity.
-func (hsuo *HusSessionUpdateOne) SetOwner(u *User) *HusSessionUpdateOne {
-	return hsuo.SetOwnerID(u.ID)
+// SetUser sets the "user" edge to the User entity.
+func (hsuo *HusSessionUpdateOne) SetUser(u *User) *HusSessionUpdateOne {
+	return hsuo.SetUserID(u.ID)
 }
 
 // Mutation returns the HusSessionMutation object of the builder.
@@ -252,9 +275,9 @@ func (hsuo *HusSessionUpdateOne) Mutation() *HusSessionMutation {
 	return hsuo.mutation
 }
 
-// ClearOwner clears the "owner" edge to the User entity.
-func (hsuo *HusSessionUpdateOne) ClearOwner() *HusSessionUpdateOne {
-	hsuo.mutation.ClearOwner()
+// ClearUser clears the "user" edge to the User entity.
+func (hsuo *HusSessionUpdateOne) ClearUser() *HusSessionUpdateOne {
+	hsuo.mutation.ClearUser()
 	return hsuo
 }
 
@@ -298,7 +321,18 @@ func (hsuo *HusSessionUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (hsuo *HusSessionUpdateOne) check() error {
+	if _, ok := hsuo.mutation.UserID(); hsuo.mutation.UserCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "HusSession.user"`)
+	}
+	return nil
+}
+
 func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession, err error) {
+	if err := hsuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(hussession.Table, hussession.Columns, sqlgraph.NewFieldSpec(hussession.FieldID, field.TypeUUID))
 	id, ok := hsuo.mutation.ID()
 	if !ok {
@@ -324,21 +358,21 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 			}
 		}
 	}
-	if value, ok := hsuo.mutation.ExpiredAt(); ok {
-		_spec.SetField(hussession.FieldExpiredAt, field.TypeTime, value)
+	if value, ok := hsuo.mutation.Hld(); ok {
+		_spec.SetField(hussession.FieldHld, field.TypeBool, value)
 	}
-	if hsuo.mutation.ExpiredAtCleared() {
-		_spec.ClearField(hussession.FieldExpiredAt, field.TypeTime)
+	if value, ok := hsuo.mutation.Exp(); ok {
+		_spec.SetField(hussession.FieldExp, field.TypeTime, value)
 	}
-	if value, ok := hsuo.mutation.CreatedAt(); ok {
-		_spec.SetField(hussession.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := hsuo.mutation.Iat(); ok {
+		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
 	}
-	if hsuo.mutation.OwnerCleared() {
+	if hsuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   hussession.OwnerTable,
-			Columns: []string{hussession.OwnerColumn},
+			Table:   hussession.UserTable,
+			Columns: []string{hussession.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -349,12 +383,12 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := hsuo.mutation.OwnerIDs(); len(nodes) > 0 {
+	if nodes := hsuo.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   hussession.OwnerTable,
-			Columns: []string{hussession.OwnerColumn},
+			Table:   hussession.UserTable,
+			Columns: []string{hussession.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

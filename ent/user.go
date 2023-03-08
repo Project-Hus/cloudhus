@@ -16,7 +16,7 @@ import (
 type User struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
+	ID uuid.UUID `json:"uid,omitempty"`
 	// GoogleSub holds the value of the "google_sub" field.
 	GoogleSub string `json:"google_sub,omitempty"`
 	// Email holds the value of the "email" field.
@@ -25,14 +25,14 @@ type User struct {
 	EmailVerified bool `json:"email_verified,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Birthdate holds the value of the "birthdate" field.
-	Birthdate *time.Time `json:"birthdate,omitempty"`
 	// GivenName holds the value of the "given_name" field.
 	GivenName string `json:"given_name,omitempty"`
 	// FamilyName holds the value of the "family_name" field.
 	FamilyName string `json:"family_name,omitempty"`
-	// GoogleProfilePicture holds the value of the "google_profile_picture" field.
-	GoogleProfilePicture string `json:"google_profile_picture,omitempty"`
+	// Birthdate holds the value of the "birthdate" field.
+	Birthdate *time.Time `json:"birthdate,omitempty"`
+	// ProfilePictureURL holds the value of the "profile_picture_url" field.
+	ProfilePictureURL *string `json:"profile_picture_url,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -67,7 +67,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldEmailVerified:
 			values[i] = new(sql.NullBool)
-		case user.FieldGoogleSub, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldGoogleProfilePicture:
+		case user.FieldGoogleSub, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldProfilePictureURL:
 			values[i] = new(sql.NullString)
 		case user.FieldBirthdate, user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -118,13 +118,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Name = value.String
 			}
-		case user.FieldBirthdate:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field birthdate", values[i])
-			} else if value.Valid {
-				u.Birthdate = new(time.Time)
-				*u.Birthdate = value.Time
-			}
 		case user.FieldGivenName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field given_name", values[i])
@@ -137,11 +130,19 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.FamilyName = value.String
 			}
-		case user.FieldGoogleProfilePicture:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field google_profile_picture", values[i])
+		case user.FieldBirthdate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field birthdate", values[i])
 			} else if value.Valid {
-				u.GoogleProfilePicture = value.String
+				u.Birthdate = new(time.Time)
+				*u.Birthdate = value.Time
+			}
+		case user.FieldProfilePictureURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field profile_picture_url", values[i])
+			} else if value.Valid {
+				u.ProfilePictureURL = new(string)
+				*u.ProfilePictureURL = value.String
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -200,19 +201,21 @@ func (u *User) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(u.Name)
 	builder.WriteString(", ")
-	if v := u.Birthdate; v != nil {
-		builder.WriteString("birthdate=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
-	builder.WriteString(", ")
 	builder.WriteString("given_name=")
 	builder.WriteString(u.GivenName)
 	builder.WriteString(", ")
 	builder.WriteString("family_name=")
 	builder.WriteString(u.FamilyName)
 	builder.WriteString(", ")
-	builder.WriteString("google_profile_picture=")
-	builder.WriteString(u.GoogleProfilePicture)
+	if v := u.Birthdate; v != nil {
+		builder.WriteString("birthdate=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := u.ProfilePictureURL; v != nil {
+		builder.WriteString("profile_picture_url=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))

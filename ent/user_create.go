@@ -46,6 +46,18 @@ func (uc *UserCreate) SetName(s string) *UserCreate {
 	return uc
 }
 
+// SetGivenName sets the "given_name" field.
+func (uc *UserCreate) SetGivenName(s string) *UserCreate {
+	uc.mutation.SetGivenName(s)
+	return uc
+}
+
+// SetFamilyName sets the "family_name" field.
+func (uc *UserCreate) SetFamilyName(s string) *UserCreate {
+	uc.mutation.SetFamilyName(s)
+	return uc
+}
+
 // SetBirthdate sets the "birthdate" field.
 func (uc *UserCreate) SetBirthdate(t time.Time) *UserCreate {
 	uc.mutation.SetBirthdate(t)
@@ -60,21 +72,17 @@ func (uc *UserCreate) SetNillableBirthdate(t *time.Time) *UserCreate {
 	return uc
 }
 
-// SetGivenName sets the "given_name" field.
-func (uc *UserCreate) SetGivenName(s string) *UserCreate {
-	uc.mutation.SetGivenName(s)
+// SetProfilePictureURL sets the "profile_picture_url" field.
+func (uc *UserCreate) SetProfilePictureURL(s string) *UserCreate {
+	uc.mutation.SetProfilePictureURL(s)
 	return uc
 }
 
-// SetFamilyName sets the "family_name" field.
-func (uc *UserCreate) SetFamilyName(s string) *UserCreate {
-	uc.mutation.SetFamilyName(s)
-	return uc
-}
-
-// SetGoogleProfilePicture sets the "google_profile_picture" field.
-func (uc *UserCreate) SetGoogleProfilePicture(s string) *UserCreate {
-	uc.mutation.SetGoogleProfilePicture(s)
+// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
+func (uc *UserCreate) SetNillableProfilePictureURL(s *string) *UserCreate {
+	if s != nil {
+		uc.SetProfilePictureURL(*s)
+	}
 	return uc
 }
 
@@ -204,9 +212,6 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.FamilyName(); !ok {
 		return &ValidationError{Name: "family_name", err: errors.New(`ent: missing required field "User.family_name"`)}
 	}
-	if _, ok := uc.mutation.GoogleProfilePicture(); !ok {
-		return &ValidationError{Name: "google_profile_picture", err: errors.New(`ent: missing required field "User.google_profile_picture"`)}
-	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
 	}
@@ -264,10 +269,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := uc.mutation.Birthdate(); ok {
-		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
-		_node.Birthdate = &value
-	}
 	if value, ok := uc.mutation.GivenName(); ok {
 		_spec.SetField(user.FieldGivenName, field.TypeString, value)
 		_node.GivenName = value
@@ -276,9 +277,13 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldFamilyName, field.TypeString, value)
 		_node.FamilyName = value
 	}
-	if value, ok := uc.mutation.GoogleProfilePicture(); ok {
-		_spec.SetField(user.FieldGoogleProfilePicture, field.TypeString, value)
-		_node.GoogleProfilePicture = value
+	if value, ok := uc.mutation.Birthdate(); ok {
+		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
+		_node.Birthdate = &value
+	}
+	if value, ok := uc.mutation.ProfilePictureURL(); ok {
+		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
+		_node.ProfilePictureURL = &value
 	}
 	if value, ok := uc.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

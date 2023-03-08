@@ -21,14 +21,14 @@ const (
 	FieldEmailVerified = "email_verified"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldBirthdate holds the string denoting the birthdate field in the database.
-	FieldBirthdate = "birthdate"
 	// FieldGivenName holds the string denoting the given_name field in the database.
 	FieldGivenName = "given_name"
 	// FieldFamilyName holds the string denoting the family_name field in the database.
 	FieldFamilyName = "family_name"
-	// FieldGoogleProfilePicture holds the string denoting the google_profile_picture field in the database.
-	FieldGoogleProfilePicture = "google_profile_picture"
+	// FieldBirthdate holds the string denoting the birthdate field in the database.
+	FieldBirthdate = "birthdate"
+	// FieldProfilePictureURL holds the string denoting the profile_picture_url field in the database.
+	FieldProfilePictureURL = "profile_picture_url"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -43,7 +43,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "hussession" package.
 	HusSessionsInverseTable = "hus_sessions"
 	// HusSessionsColumn is the table column denoting the hus_sessions relation/edge.
-	HusSessionsColumn = "user_id"
+	HusSessionsColumn = "uid"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -53,10 +53,10 @@ var Columns = []string{
 	FieldEmail,
 	FieldEmailVerified,
 	FieldName,
-	FieldBirthdate,
 	FieldGivenName,
 	FieldFamilyName,
-	FieldGoogleProfilePicture,
+	FieldBirthdate,
+	FieldProfilePictureURL,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }

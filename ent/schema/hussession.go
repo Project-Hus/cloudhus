@@ -17,15 +17,17 @@ type HusSession struct {
 // Fields of the HusSession.
 func (HusSession) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).Unique(),
-		field.Time("expired_at").Optional().Nillable(),
-		field.Time("created_at").Default(time.Now),
+		field.UUID("id", uuid.UUID{}).StructTag(`json:"sid,omitempty"`).Default(uuid.New).Unique(),
+		field.UUID("uid", uuid.UUID{}),
+		field.Bool("hld").Default(false),                              // holded
+		field.Time("exp").Default(time.Now().Add(time.Hour * 24 * 7)), // expires at
+		field.Time("iat").Default(time.Now),                           // issued at
 	}
 }
 
 // Edges of the HusSession.
 func (HusSession) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("owner", User.Type).Ref("hus_sessions").Unique(),
+		edge.From("user", User.Type).Ref("hus_sessions").Unique().Field("uid").Required(),
 	}
 }

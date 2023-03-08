@@ -30,9 +30,10 @@ var (
 	// HusSessionsColumns holds the columns for the "hus_sessions" table.
 	HusSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "expired_at", Type: field.TypeTime, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "hld", Type: field.TypeBool, Default: false},
+		{Name: "exp", Type: field.TypeTime},
+		{Name: "iat", Type: field.TypeTime},
+		{Name: "uid", Type: field.TypeUUID},
 	}
 	// HusSessionsTable holds the schema information for the "hus_sessions" table.
 	HusSessionsTable = &schema.Table{
@@ -42,9 +43,9 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "hus_sessions_users_hus_sessions",
-				Columns:    []*schema.Column{HusSessionsColumns[3]},
+				Columns:    []*schema.Column{HusSessionsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -69,10 +70,10 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "email_verified", Type: field.TypeBool},
 		{Name: "name", Type: field.TypeString},
-		{Name: "birthdate", Type: field.TypeTime, Nullable: true},
 		{Name: "given_name", Type: field.TypeString},
 		{Name: "family_name", Type: field.TypeString},
-		{Name: "google_profile_picture", Type: field.TypeString, Size: 2147483647},
+		{Name: "birthdate", Type: field.TypeTime, Nullable: true},
+		{Name: "profile_picture_url", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -81,13 +82,6 @@ var (
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
-		Indexes: []*schema.Index{
-			{
-				Name:    "user_id",
-				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[0]},
-			},
-		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{

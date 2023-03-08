@@ -35,10 +35,18 @@ func init() {
 	community.DefaultID = communityDescID.Default.(func() uuid.UUID)
 	hussessionFields := schema.HusSession{}.Fields()
 	_ = hussessionFields
-	// hussessionDescCreatedAt is the schema descriptor for created_at field.
-	hussessionDescCreatedAt := hussessionFields[2].Descriptor()
-	// hussession.DefaultCreatedAt holds the default value on creation for the created_at field.
-	hussession.DefaultCreatedAt = hussessionDescCreatedAt.Default.(func() time.Time)
+	// hussessionDescHld is the schema descriptor for hld field.
+	hussessionDescHld := hussessionFields[2].Descriptor()
+	// hussession.DefaultHld holds the default value on creation for the hld field.
+	hussession.DefaultHld = hussessionDescHld.Default.(bool)
+	// hussessionDescExp is the schema descriptor for exp field.
+	hussessionDescExp := hussessionFields[3].Descriptor()
+	// hussession.DefaultExp holds the default value on creation for the exp field.
+	hussession.DefaultExp = hussessionDescExp.Default.(time.Time)
+	// hussessionDescIat is the schema descriptor for iat field.
+	hussessionDescIat := hussessionFields[4].Descriptor()
+	// hussession.DefaultIat holds the default value on creation for the iat field.
+	hussession.DefaultIat = hussessionDescIat.Default.(func() time.Time)
 	// hussessionDescID is the schema descriptor for id field.
 	hussessionDescID := hussessionFields[0].Descriptor()
 	// hussession.DefaultID holds the default value on creation for the id field.

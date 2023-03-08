@@ -13,34 +13,34 @@ const (
 	Label = "hus_session"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldExpiredAt holds the string denoting the expired_at field in the database.
-	FieldExpiredAt = "expired_at"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
-	// EdgeOwner holds the string denoting the owner edge name in mutations.
-	EdgeOwner = "owner"
+	// FieldUID holds the string denoting the uid field in the database.
+	FieldUID = "uid"
+	// FieldHld holds the string denoting the hld field in the database.
+	FieldHld = "hld"
+	// FieldExp holds the string denoting the exp field in the database.
+	FieldExp = "exp"
+	// FieldIat holds the string denoting the iat field in the database.
+	FieldIat = "iat"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// Table holds the table name of the hussession in the database.
 	Table = "hus_sessions"
-	// OwnerTable is the table that holds the owner relation/edge.
-	OwnerTable = "hus_sessions"
-	// OwnerInverseTable is the table name for the User entity.
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "hus_sessions"
+	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	OwnerInverseTable = "users"
-	// OwnerColumn is the table column denoting the owner relation/edge.
-	OwnerColumn = "user_id"
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "uid"
 )
 
 // Columns holds all SQL columns for hussession fields.
 var Columns = []string{
 	FieldID,
-	FieldExpiredAt,
-	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "hus_sessions"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"user_id",
+	FieldUID,
+	FieldHld,
+	FieldExp,
+	FieldIat,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -50,17 +50,16 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
-			return true
-		}
-	}
 	return false
 }
 
 var (
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
+	// DefaultHld holds the default value on creation for the "hld" field.
+	DefaultHld bool
+	// DefaultExp holds the default value on creation for the "exp" field.
+	DefaultExp time.Time
+	// DefaultIat holds the default value on creation for the "iat" field.
+	DefaultIat func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

@@ -17,37 +17,40 @@ import (
 type HusSession struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
-	// ExpiredAt holds the value of the "expired_at" field.
-	ExpiredAt *time.Time `json:"expired_at,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	ID uuid.UUID `json:"sid,omitempty"`
+	// UID holds the value of the "uid" field.
+	UID uuid.UUID `json:"uid,omitempty"`
+	// Hld holds the value of the "hld" field.
+	Hld bool `json:"hld,omitempty"`
+	// Exp holds the value of the "exp" field.
+	Exp time.Time `json:"exp,omitempty"`
+	// Iat holds the value of the "iat" field.
+	Iat time.Time `json:"iat,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the HusSessionQuery when eager-loading is set.
-	Edges   HusSessionEdges `json:"edges"`
-	user_id *uuid.UUID
+	Edges HusSessionEdges `json:"edges"`
 }
 
 // HusSessionEdges holds the relations/edges for other nodes in the graph.
 type HusSessionEdges struct {
-	// Owner holds the value of the owner edge.
-	Owner *User `json:"owner,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// OwnerOrErr returns the Owner value or an error if the edge
+// UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e HusSessionEdges) OwnerOrErr() (*User, error) {
+func (e HusSessionEdges) UserOrErr() (*User, error) {
 	if e.loadedTypes[0] {
-		if e.Owner == nil {
+		if e.User == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: user.Label}
 		}
-		return e.Owner, nil
+		return e.User, nil
 	}
-	return nil, &NotLoadedError{edge: "owner"}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -55,12 +58,12 @@ func (*HusSession) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case hussession.FieldExpiredAt, hussession.FieldCreatedAt:
+		case hussession.FieldHld:
+			values[i] = new(sql.NullBool)
+		case hussession.FieldExp, hussession.FieldIat:
 			values[i] = new(sql.NullTime)
-		case hussession.FieldID:
+		case hussession.FieldID, hussession.FieldUID:
 			values[i] = new(uuid.UUID)
-		case hussession.ForeignKeys[0]: // user_id
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type HusSession", columns[i])
 		}
@@ -82,34 +85,38 @@ func (hs *HusSession) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				hs.ID = *value
 			}
-		case hussession.FieldExpiredAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field expired_at", values[i])
-			} else if value.Valid {
-				hs.ExpiredAt = new(time.Time)
-				*hs.ExpiredAt = value.Time
+		case hussession.FieldUID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field uid", values[i])
+			} else if value != nil {
+				hs.UID = *value
 			}
-		case hussession.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+		case hussession.FieldHld:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field hld", values[i])
 			} else if value.Valid {
-				hs.CreatedAt = value.Time
+				hs.Hld = value.Bool
 			}
-		case hussession.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+		case hussession.FieldExp:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field exp", values[i])
 			} else if value.Valid {
-				hs.user_id = new(uuid.UUID)
-				*hs.user_id = *value.S.(*uuid.UUID)
+				hs.Exp = value.Time
+			}
+		case hussession.FieldIat:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field iat", values[i])
+			} else if value.Valid {
+				hs.Iat = value.Time
 			}
 		}
 	}
 	return nil
 }
 
-// QueryOwner queries the "owner" edge of the HusSession entity.
-func (hs *HusSession) QueryOwner() *UserQuery {
-	return NewHusSessionClient(hs.config).QueryOwner(hs)
+// QueryUser queries the "user" edge of the HusSession entity.
+func (hs *HusSession) QueryUser() *UserQuery {
+	return NewHusSessionClient(hs.config).QueryUser(hs)
 }
 
 // Update returns a builder for updating this HusSession.
@@ -135,13 +142,17 @@ func (hs *HusSession) String() string {
 	var builder strings.Builder
 	builder.WriteString("HusSession(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", hs.ID))
-	if v := hs.ExpiredAt; v != nil {
-		builder.WriteString("expired_at=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("uid=")
+	builder.WriteString(fmt.Sprintf("%v", hs.UID))
 	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(hs.CreatedAt.Format(time.ANSIC))
+	builder.WriteString("hld=")
+	builder.WriteString(fmt.Sprintf("%v", hs.Hld))
+	builder.WriteString(", ")
+	builder.WriteString("exp=")
+	builder.WriteString(hs.Exp.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("iat=")
+	builder.WriteString(hs.Iat.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

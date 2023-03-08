@@ -23,8 +23,7 @@ type HusSessionQuery struct {
 	order      []OrderFunc
 	inters     []Interceptor
 	predicates []predicate.HusSession
-	withOwner  *UserQuery
-	withFKs    bool
+	withUser   *UserQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,8 +60,8 @@ func (hsq *HusSessionQuery) Order(o ...OrderFunc) *HusSessionQuery {
 	return hsq
 }
 
-// QueryOwner chains the current query on the "owner" edge.
-func (hsq *HusSessionQuery) QueryOwner() *UserQuery {
+// QueryUser chains the current query on the "user" edge.
+func (hsq *HusSessionQuery) QueryUser() *UserQuery {
 	query := (&UserClient{config: hsq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := hsq.prepareQuery(ctx); err != nil {
@@ -75,7 +74,7 @@ func (hsq *HusSessionQuery) QueryOwner() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(hussession.Table, hussession.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, hussession.OwnerTable, hussession.OwnerColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, hussession.UserTable, hussession.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(hsq.driver.Dialect(), step)
 		return fromU, nil
@@ -275,21 +274,21 @@ func (hsq *HusSessionQuery) Clone() *HusSessionQuery {
 		order:      append([]OrderFunc{}, hsq.order...),
 		inters:     append([]Interceptor{}, hsq.inters...),
 		predicates: append([]predicate.HusSession{}, hsq.predicates...),
-		withOwner:  hsq.withOwner.Clone(),
+		withUser:   hsq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  hsq.sql.Clone(),
 		path: hsq.path,
 	}
 }
 
-// WithOwner tells the query-builder to eager-load the nodes that are connected to
-// the "owner" edge. The optional arguments are used to configure the query builder of the edge.
-func (hsq *HusSessionQuery) WithOwner(opts ...func(*UserQuery)) *HusSessionQuery {
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (hsq *HusSessionQuery) WithUser(opts ...func(*UserQuery)) *HusSessionQuery {
 	query := (&UserClient{config: hsq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	hsq.withOwner = query
+	hsq.withUser = query
 	return hsq
 }
 
@@ -299,12 +298,12 @@ func (hsq *HusSessionQuery) WithOwner(opts ...func(*UserQuery)) *HusSessionQuery
 // Example:
 //
 //	var v []struct {
-//		ExpiredAt time.Time `json:"expired_at,omitempty"`
+//		UID uuid.UUID `json:"uid,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.HusSession.Query().
-//		GroupBy(hussession.FieldExpiredAt).
+//		GroupBy(hussession.FieldUID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (hsq *HusSessionQuery) GroupBy(field string, fields ...string) *HusSessionGroupBy {
@@ -322,11 +321,11 @@ func (hsq *HusSessionQuery) GroupBy(field string, fields ...string) *HusSessionG
 // Example:
 //
 //	var v []struct {
-//		ExpiredAt time.Time `json:"expired_at,omitempty"`
+//		UID uuid.UUID `json:"uid,omitempty"`
 //	}
 //
 //	client.HusSession.Query().
-//		Select(hussession.FieldExpiredAt).
+//		Select(hussession.FieldUID).
 //		Scan(ctx, &v)
 func (hsq *HusSessionQuery) Select(fields ...string) *HusSessionSelect {
 	hsq.ctx.Fields = append(hsq.ctx.Fields, fields...)
@@ -370,18 +369,11 @@ func (hsq *HusSessionQuery) prepareQuery(ctx context.Context) error {
 func (hsq *HusSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*HusSession, error) {
 	var (
 		nodes       = []*HusSession{}
-		withFKs     = hsq.withFKs
 		_spec       = hsq.querySpec()
 		loadedTypes = [1]bool{
-			hsq.withOwner != nil,
+			hsq.withUser != nil,
 		}
 	)
-	if hsq.withOwner != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, hussession.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*HusSession).scanValues(nil, columns)
 	}
@@ -400,23 +392,20 @@ func (hsq *HusSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := hsq.withOwner; query != nil {
-		if err := hsq.loadOwner(ctx, query, nodes, nil,
-			func(n *HusSession, e *User) { n.Edges.Owner = e }); err != nil {
+	if query := hsq.withUser; query != nil {
+		if err := hsq.loadUser(ctx, query, nodes, nil,
+			func(n *HusSession, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (hsq *HusSessionQuery) loadOwner(ctx context.Context, query *UserQuery, nodes []*HusSession, init func(*HusSession), assign func(*HusSession, *User)) error {
+func (hsq *HusSessionQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*HusSession, init func(*HusSession), assign func(*HusSession, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*HusSession)
 	for i := range nodes {
-		if nodes[i].user_id == nil {
-			continue
-		}
-		fk := *nodes[i].user_id
+		fk := nodes[i].UID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -433,7 +422,7 @@ func (hsq *HusSessionQuery) loadOwner(ctx context.Context, query *UserQuery, nod
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "uid" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

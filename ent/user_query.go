@@ -413,7 +413,6 @@ func (uq *UserQuery) loadHusSessions(ctx context.Context, query *HusSessionQuery
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
 	query.Where(predicate.HusSession(func(s *sql.Selector) {
 		s.Where(sql.InValues(user.HusSessionsColumn, fks...))
 	}))
@@ -422,13 +421,10 @@ func (uq *UserQuery) loadHusSessions(ctx context.Context, query *HusSessionQuery
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.user_id
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_id" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "uid" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

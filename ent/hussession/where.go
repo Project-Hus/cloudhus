@@ -56,124 +56,154 @@ func IDLTE(id uuid.UUID) predicate.HusSession {
 	return predicate.HusSession(sql.FieldLTE(FieldID, id))
 }
 
-// ExpiredAt applies equality check predicate on the "expired_at" field. It's identical to ExpiredAtEQ.
-func ExpiredAt(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldExpiredAt, v))
+// UID applies equality check predicate on the "uid" field. It's identical to UIDEQ.
+func UID(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldUID, v))
 }
 
-// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldCreatedAt, v))
+// Hld applies equality check predicate on the "hld" field. It's identical to HldEQ.
+func Hld(v bool) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldHld, v))
 }
 
-// ExpiredAtEQ applies the EQ predicate on the "expired_at" field.
-func ExpiredAtEQ(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldExpiredAt, v))
+// Exp applies equality check predicate on the "exp" field. It's identical to ExpEQ.
+func Exp(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldExp, v))
 }
 
-// ExpiredAtNEQ applies the NEQ predicate on the "expired_at" field.
-func ExpiredAtNEQ(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNEQ(FieldExpiredAt, v))
+// Iat applies equality check predicate on the "iat" field. It's identical to IatEQ.
+func Iat(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldIat, v))
 }
 
-// ExpiredAtIn applies the In predicate on the "expired_at" field.
-func ExpiredAtIn(vs ...time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldIn(FieldExpiredAt, vs...))
+// UIDEQ applies the EQ predicate on the "uid" field.
+func UIDEQ(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldUID, v))
 }
 
-// ExpiredAtNotIn applies the NotIn predicate on the "expired_at" field.
-func ExpiredAtNotIn(vs ...time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNotIn(FieldExpiredAt, vs...))
+// UIDNEQ applies the NEQ predicate on the "uid" field.
+func UIDNEQ(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldUID, v))
 }
 
-// ExpiredAtGT applies the GT predicate on the "expired_at" field.
-func ExpiredAtGT(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldGT(FieldExpiredAt, v))
+// UIDIn applies the In predicate on the "uid" field.
+func UIDIn(vs ...uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldIn(FieldUID, vs...))
 }
 
-// ExpiredAtGTE applies the GTE predicate on the "expired_at" field.
-func ExpiredAtGTE(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldGTE(FieldExpiredAt, v))
+// UIDNotIn applies the NotIn predicate on the "uid" field.
+func UIDNotIn(vs ...uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotIn(FieldUID, vs...))
 }
 
-// ExpiredAtLT applies the LT predicate on the "expired_at" field.
-func ExpiredAtLT(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldLT(FieldExpiredAt, v))
+// HldEQ applies the EQ predicate on the "hld" field.
+func HldEQ(v bool) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldHld, v))
 }
 
-// ExpiredAtLTE applies the LTE predicate on the "expired_at" field.
-func ExpiredAtLTE(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldLTE(FieldExpiredAt, v))
+// HldNEQ applies the NEQ predicate on the "hld" field.
+func HldNEQ(v bool) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldHld, v))
 }
 
-// ExpiredAtIsNil applies the IsNil predicate on the "expired_at" field.
-func ExpiredAtIsNil() predicate.HusSession {
-	return predicate.HusSession(sql.FieldIsNull(FieldExpiredAt))
+// ExpEQ applies the EQ predicate on the "exp" field.
+func ExpEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldExp, v))
 }
 
-// ExpiredAtNotNil applies the NotNil predicate on the "expired_at" field.
-func ExpiredAtNotNil() predicate.HusSession {
-	return predicate.HusSession(sql.FieldNotNull(FieldExpiredAt))
+// ExpNEQ applies the NEQ predicate on the "exp" field.
+func ExpNEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldExp, v))
 }
 
-// CreatedAtEQ applies the EQ predicate on the "created_at" field.
-func CreatedAtEQ(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldCreatedAt, v))
+// ExpIn applies the In predicate on the "exp" field.
+func ExpIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldIn(FieldExp, vs...))
 }
 
-// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
-func CreatedAtNEQ(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNEQ(FieldCreatedAt, v))
+// ExpNotIn applies the NotIn predicate on the "exp" field.
+func ExpNotIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotIn(FieldExp, vs...))
 }
 
-// CreatedAtIn applies the In predicate on the "created_at" field.
-func CreatedAtIn(vs ...time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldIn(FieldCreatedAt, vs...))
+// ExpGT applies the GT predicate on the "exp" field.
+func ExpGT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGT(FieldExp, v))
 }
 
-// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNotIn(FieldCreatedAt, vs...))
+// ExpGTE applies the GTE predicate on the "exp" field.
+func ExpGTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGTE(FieldExp, v))
 }
 
-// CreatedAtGT applies the GT predicate on the "created_at" field.
-func CreatedAtGT(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldGT(FieldCreatedAt, v))
+// ExpLT applies the LT predicate on the "exp" field.
+func ExpLT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLT(FieldExp, v))
 }
 
-// CreatedAtGTE applies the GTE predicate on the "created_at" field.
-func CreatedAtGTE(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldGTE(FieldCreatedAt, v))
+// ExpLTE applies the LTE predicate on the "exp" field.
+func ExpLTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLTE(FieldExp, v))
 }
 
-// CreatedAtLT applies the LT predicate on the "created_at" field.
-func CreatedAtLT(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldLT(FieldCreatedAt, v))
+// IatEQ applies the EQ predicate on the "iat" field.
+func IatEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldIat, v))
 }
 
-// CreatedAtLTE applies the LTE predicate on the "created_at" field.
-func CreatedAtLTE(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldLTE(FieldCreatedAt, v))
+// IatNEQ applies the NEQ predicate on the "iat" field.
+func IatNEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldIat, v))
 }
 
-// HasOwner applies the HasEdge predicate on the "owner" edge.
-func HasOwner() predicate.HusSession {
+// IatIn applies the In predicate on the "iat" field.
+func IatIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldIn(FieldIat, vs...))
+}
+
+// IatNotIn applies the NotIn predicate on the "iat" field.
+func IatNotIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotIn(FieldIat, vs...))
+}
+
+// IatGT applies the GT predicate on the "iat" field.
+func IatGT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGT(FieldIat, v))
+}
+
+// IatGTE applies the GTE predicate on the "iat" field.
+func IatGTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGTE(FieldIat, v))
+}
+
+// IatLT applies the LT predicate on the "iat" field.
+func IatLT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLT(FieldIat, v))
+}
+
+// IatLTE applies the LTE predicate on the "iat" field.
+func IatLTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLTE(FieldIat, v))
+}
+
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.HusSession {
 	return predicate.HusSession(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, OwnerTable, OwnerColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasOwnerWith applies the HasEdge predicate on the "owner" edge with a given conditions (other predicates).
-func HasOwnerWith(preds ...predicate.User) predicate.HusSession {
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.HusSession {
 	return predicate.HusSession(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(OwnerInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, OwnerTable, OwnerColumn),
+			sqlgraph.To(UserInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

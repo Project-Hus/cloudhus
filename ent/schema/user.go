@@ -6,7 +6,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -15,16 +14,11 @@ type User struct {
 	ent.Schema
 }
 
-func (User) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("id").Unique(),
-	}
-}
-
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).Unique(),
+		field.UUID("id", uuid.UUID{}).StructTag(`json:"uid,omitempty"`).Default(uuid.New).Unique(),
+
 		field.String("google_sub").Unique(),
 
 		field.String("email").Unique(),
@@ -32,12 +26,12 @@ func (User) Fields() []ent.Field {
 
 		// User real info
 		field.String("name"),
-		field.Time("birthdate").Optional().Nillable(),
 		field.String("given_name"),
 		field.String("family_name"),
+		field.Time("birthdate").Optional().Nillable(),
 
 		// User Info in the service
-		field.Text("google_profile_picture"),
+		field.Text("profile_picture_url").Optional().Nillable(),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
@@ -46,6 +40,6 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("hus_sessions", HusSession.Type).StorageKey(edge.Column("user_id")),
+		edge.To("hus_sessions", HusSession.Type),
 	}
 }

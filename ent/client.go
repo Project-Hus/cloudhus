@@ -381,15 +381,15 @@ func (c *HusSessionClient) GetX(ctx context.Context, id uuid.UUID) *HusSession {
 	return obj
 }
 
-// QueryOwner queries the owner edge of a HusSession.
-func (c *HusSessionClient) QueryOwner(hs *HusSession) *UserQuery {
+// QueryUser queries the user edge of a HusSession.
+func (c *HusSessionClient) QueryUser(hs *HusSession) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := hs.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(hussession.Table, hussession.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, hussession.OwnerTable, hussession.OwnerColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, hussession.UserTable, hussession.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(hs.driver.Dialect(), step)
 		return fromV, nil

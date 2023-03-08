@@ -22,30 +22,50 @@ type HusSessionCreate struct {
 	hooks    []Hook
 }
 
-// SetExpiredAt sets the "expired_at" field.
-func (hsc *HusSessionCreate) SetExpiredAt(t time.Time) *HusSessionCreate {
-	hsc.mutation.SetExpiredAt(t)
+// SetUID sets the "uid" field.
+func (hsc *HusSessionCreate) SetUID(u uuid.UUID) *HusSessionCreate {
+	hsc.mutation.SetUID(u)
 	return hsc
 }
 
-// SetNillableExpiredAt sets the "expired_at" field if the given value is not nil.
-func (hsc *HusSessionCreate) SetNillableExpiredAt(t *time.Time) *HusSessionCreate {
-	if t != nil {
-		hsc.SetExpiredAt(*t)
+// SetHld sets the "hld" field.
+func (hsc *HusSessionCreate) SetHld(b bool) *HusSessionCreate {
+	hsc.mutation.SetHld(b)
+	return hsc
+}
+
+// SetNillableHld sets the "hld" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableHld(b *bool) *HusSessionCreate {
+	if b != nil {
+		hsc.SetHld(*b)
 	}
 	return hsc
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (hsc *HusSessionCreate) SetCreatedAt(t time.Time) *HusSessionCreate {
-	hsc.mutation.SetCreatedAt(t)
+// SetExp sets the "exp" field.
+func (hsc *HusSessionCreate) SetExp(t time.Time) *HusSessionCreate {
+	hsc.mutation.SetExp(t)
 	return hsc
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (hsc *HusSessionCreate) SetNillableCreatedAt(t *time.Time) *HusSessionCreate {
+// SetNillableExp sets the "exp" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableExp(t *time.Time) *HusSessionCreate {
 	if t != nil {
-		hsc.SetCreatedAt(*t)
+		hsc.SetExp(*t)
+	}
+	return hsc
+}
+
+// SetIat sets the "iat" field.
+func (hsc *HusSessionCreate) SetIat(t time.Time) *HusSessionCreate {
+	hsc.mutation.SetIat(t)
+	return hsc
+}
+
+// SetNillableIat sets the "iat" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableIat(t *time.Time) *HusSessionCreate {
+	if t != nil {
+		hsc.SetIat(*t)
 	}
 	return hsc
 }
@@ -64,23 +84,15 @@ func (hsc *HusSessionCreate) SetNillableID(u *uuid.UUID) *HusSessionCreate {
 	return hsc
 }
 
-// SetOwnerID sets the "owner" edge to the User entity by ID.
-func (hsc *HusSessionCreate) SetOwnerID(id uuid.UUID) *HusSessionCreate {
-	hsc.mutation.SetOwnerID(id)
+// SetUserID sets the "user" edge to the User entity by ID.
+func (hsc *HusSessionCreate) SetUserID(id uuid.UUID) *HusSessionCreate {
+	hsc.mutation.SetUserID(id)
 	return hsc
 }
 
-// SetNillableOwnerID sets the "owner" edge to the User entity by ID if the given value is not nil.
-func (hsc *HusSessionCreate) SetNillableOwnerID(id *uuid.UUID) *HusSessionCreate {
-	if id != nil {
-		hsc = hsc.SetOwnerID(*id)
-	}
-	return hsc
-}
-
-// SetOwner sets the "owner" edge to the User entity.
-func (hsc *HusSessionCreate) SetOwner(u *User) *HusSessionCreate {
-	return hsc.SetOwnerID(u.ID)
+// SetUser sets the "user" edge to the User entity.
+func (hsc *HusSessionCreate) SetUser(u *User) *HusSessionCreate {
+	return hsc.SetUserID(u.ID)
 }
 
 // Mutation returns the HusSessionMutation object of the builder.
@@ -118,9 +130,17 @@ func (hsc *HusSessionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (hsc *HusSessionCreate) defaults() {
-	if _, ok := hsc.mutation.CreatedAt(); !ok {
-		v := hussession.DefaultCreatedAt()
-		hsc.mutation.SetCreatedAt(v)
+	if _, ok := hsc.mutation.Hld(); !ok {
+		v := hussession.DefaultHld
+		hsc.mutation.SetHld(v)
+	}
+	if _, ok := hsc.mutation.Exp(); !ok {
+		v := hussession.DefaultExp
+		hsc.mutation.SetExp(v)
+	}
+	if _, ok := hsc.mutation.Iat(); !ok {
+		v := hussession.DefaultIat()
+		hsc.mutation.SetIat(v)
 	}
 	if _, ok := hsc.mutation.ID(); !ok {
 		v := hussession.DefaultID()
@@ -130,8 +150,20 @@ func (hsc *HusSessionCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (hsc *HusSessionCreate) check() error {
-	if _, ok := hsc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "HusSession.created_at"`)}
+	if _, ok := hsc.mutation.UID(); !ok {
+		return &ValidationError{Name: "uid", err: errors.New(`ent: missing required field "HusSession.uid"`)}
+	}
+	if _, ok := hsc.mutation.Hld(); !ok {
+		return &ValidationError{Name: "hld", err: errors.New(`ent: missing required field "HusSession.hld"`)}
+	}
+	if _, ok := hsc.mutation.Exp(); !ok {
+		return &ValidationError{Name: "exp", err: errors.New(`ent: missing required field "HusSession.exp"`)}
+	}
+	if _, ok := hsc.mutation.Iat(); !ok {
+		return &ValidationError{Name: "iat", err: errors.New(`ent: missing required field "HusSession.iat"`)}
+	}
+	if _, ok := hsc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "HusSession.user"`)}
 	}
 	return nil
 }
@@ -168,20 +200,24 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := hsc.mutation.ExpiredAt(); ok {
-		_spec.SetField(hussession.FieldExpiredAt, field.TypeTime, value)
-		_node.ExpiredAt = &value
+	if value, ok := hsc.mutation.Hld(); ok {
+		_spec.SetField(hussession.FieldHld, field.TypeBool, value)
+		_node.Hld = value
 	}
-	if value, ok := hsc.mutation.CreatedAt(); ok {
-		_spec.SetField(hussession.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
+	if value, ok := hsc.mutation.Exp(); ok {
+		_spec.SetField(hussession.FieldExp, field.TypeTime, value)
+		_node.Exp = value
 	}
-	if nodes := hsc.mutation.OwnerIDs(); len(nodes) > 0 {
+	if value, ok := hsc.mutation.Iat(); ok {
+		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
+		_node.Iat = value
+	}
+	if nodes := hsc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   hussession.OwnerTable,
-			Columns: []string{hussession.OwnerColumn},
+			Table:   hussession.UserTable,
+			Columns: []string{hussession.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -193,7 +229,7 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_id = &nodes[0]
+		_node.UID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

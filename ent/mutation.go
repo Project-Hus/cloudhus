@@ -427,11 +427,12 @@ type HusSessionMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
-	expired_at    *time.Time
-	created_at    *time.Time
+	hld           *bool
+	exp           *time.Time
+	iat           *time.Time
 	clearedFields map[string]struct{}
-	owner         *uuid.UUID
-	clearedowner  bool
+	user          *uuid.UUID
+	cleareduser   bool
 	done          bool
 	oldValue      func(context.Context) (*HusSession, error)
 	predicates    []predicate.HusSession
@@ -541,128 +542,187 @@ func (m *HusSessionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetExpiredAt sets the "expired_at" field.
-func (m *HusSessionMutation) SetExpiredAt(t time.Time) {
-	m.expired_at = &t
+// SetUID sets the "uid" field.
+func (m *HusSessionMutation) SetUID(u uuid.UUID) {
+	m.user = &u
 }
 
-// ExpiredAt returns the value of the "expired_at" field in the mutation.
-func (m *HusSessionMutation) ExpiredAt() (r time.Time, exists bool) {
-	v := m.expired_at
+// UID returns the value of the "uid" field in the mutation.
+func (m *HusSessionMutation) UID() (r uuid.UUID, exists bool) {
+	v := m.user
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldExpiredAt returns the old "expired_at" field's value of the HusSession entity.
+// OldUID returns the old "uid" field's value of the HusSession entity.
 // If the HusSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HusSessionMutation) OldExpiredAt(ctx context.Context) (v *time.Time, err error) {
+func (m *HusSessionMutation) OldUID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExpiredAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldUID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExpiredAt requires an ID field in the mutation")
+		return v, errors.New("OldUID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExpiredAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldUID: %w", err)
 	}
-	return oldValue.ExpiredAt, nil
+	return oldValue.UID, nil
 }
 
-// ClearExpiredAt clears the value of the "expired_at" field.
-func (m *HusSessionMutation) ClearExpiredAt() {
-	m.expired_at = nil
-	m.clearedFields[hussession.FieldExpiredAt] = struct{}{}
+// ResetUID resets all changes to the "uid" field.
+func (m *HusSessionMutation) ResetUID() {
+	m.user = nil
 }
 
-// ExpiredAtCleared returns if the "expired_at" field was cleared in this mutation.
-func (m *HusSessionMutation) ExpiredAtCleared() bool {
-	_, ok := m.clearedFields[hussession.FieldExpiredAt]
-	return ok
+// SetHld sets the "hld" field.
+func (m *HusSessionMutation) SetHld(b bool) {
+	m.hld = &b
 }
 
-// ResetExpiredAt resets all changes to the "expired_at" field.
-func (m *HusSessionMutation) ResetExpiredAt() {
-	m.expired_at = nil
-	delete(m.clearedFields, hussession.FieldExpiredAt)
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *HusSessionMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *HusSessionMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
+// Hld returns the value of the "hld" field in the mutation.
+func (m *HusSessionMutation) Hld() (r bool, exists bool) {
+	v := m.hld
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the HusSession entity.
+// OldHld returns the old "hld" field's value of the HusSession entity.
 // If the HusSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HusSessionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *HusSessionMutation) OldHld(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldHld is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+		return v, errors.New("OldHld requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldHld: %w", err)
 	}
-	return oldValue.CreatedAt, nil
+	return oldValue.Hld, nil
 }
 
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *HusSessionMutation) ResetCreatedAt() {
-	m.created_at = nil
+// ResetHld resets all changes to the "hld" field.
+func (m *HusSessionMutation) ResetHld() {
+	m.hld = nil
 }
 
-// SetOwnerID sets the "owner" edge to the User entity by id.
-func (m *HusSessionMutation) SetOwnerID(id uuid.UUID) {
-	m.owner = &id
+// SetExp sets the "exp" field.
+func (m *HusSessionMutation) SetExp(t time.Time) {
+	m.exp = &t
 }
 
-// ClearOwner clears the "owner" edge to the User entity.
-func (m *HusSessionMutation) ClearOwner() {
-	m.clearedowner = true
+// Exp returns the value of the "exp" field in the mutation.
+func (m *HusSessionMutation) Exp() (r time.Time, exists bool) {
+	v := m.exp
+	if v == nil {
+		return
+	}
+	return *v, true
 }
 
-// OwnerCleared reports if the "owner" edge to the User entity was cleared.
-func (m *HusSessionMutation) OwnerCleared() bool {
-	return m.clearedowner
+// OldExp returns the old "exp" field's value of the HusSession entity.
+// If the HusSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HusSessionMutation) OldExp(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExp is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExp: %w", err)
+	}
+	return oldValue.Exp, nil
 }
 
-// OwnerID returns the "owner" edge ID in the mutation.
-func (m *HusSessionMutation) OwnerID() (id uuid.UUID, exists bool) {
-	if m.owner != nil {
-		return *m.owner, true
+// ResetExp resets all changes to the "exp" field.
+func (m *HusSessionMutation) ResetExp() {
+	m.exp = nil
+}
+
+// SetIat sets the "iat" field.
+func (m *HusSessionMutation) SetIat(t time.Time) {
+	m.iat = &t
+}
+
+// Iat returns the value of the "iat" field in the mutation.
+func (m *HusSessionMutation) Iat() (r time.Time, exists bool) {
+	v := m.iat
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIat returns the old "iat" field's value of the HusSession entity.
+// If the HusSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HusSessionMutation) OldIat(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIat is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIat requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIat: %w", err)
+	}
+	return oldValue.Iat, nil
+}
+
+// ResetIat resets all changes to the "iat" field.
+func (m *HusSessionMutation) ResetIat() {
+	m.iat = nil
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *HusSessionMutation) SetUserID(id uuid.UUID) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *HusSessionMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *HusSessionMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *HusSessionMutation) UserID() (id uuid.UUID, exists bool) {
+	if m.user != nil {
+		return *m.user, true
 	}
 	return
 }
 
-// OwnerIDs returns the "owner" edge IDs in the mutation.
+// UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// OwnerID instead. It exists only for internal usage by the builders.
-func (m *HusSessionMutation) OwnerIDs() (ids []uuid.UUID) {
-	if id := m.owner; id != nil {
+// UserID instead. It exists only for internal usage by the builders.
+func (m *HusSessionMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetOwner resets all changes to the "owner" edge.
-func (m *HusSessionMutation) ResetOwner() {
-	m.owner = nil
-	m.clearedowner = false
+// ResetUser resets all changes to the "user" edge.
+func (m *HusSessionMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
 }
 
 // Where appends a list predicates to the HusSessionMutation builder.
@@ -699,12 +759,18 @@ func (m *HusSessionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *HusSessionMutation) Fields() []string {
-	fields := make([]string, 0, 2)
-	if m.expired_at != nil {
-		fields = append(fields, hussession.FieldExpiredAt)
+	fields := make([]string, 0, 4)
+	if m.user != nil {
+		fields = append(fields, hussession.FieldUID)
 	}
-	if m.created_at != nil {
-		fields = append(fields, hussession.FieldCreatedAt)
+	if m.hld != nil {
+		fields = append(fields, hussession.FieldHld)
+	}
+	if m.exp != nil {
+		fields = append(fields, hussession.FieldExp)
+	}
+	if m.iat != nil {
+		fields = append(fields, hussession.FieldIat)
 	}
 	return fields
 }
@@ -714,10 +780,14 @@ func (m *HusSessionMutation) Fields() []string {
 // schema.
 func (m *HusSessionMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case hussession.FieldExpiredAt:
-		return m.ExpiredAt()
-	case hussession.FieldCreatedAt:
-		return m.CreatedAt()
+	case hussession.FieldUID:
+		return m.UID()
+	case hussession.FieldHld:
+		return m.Hld()
+	case hussession.FieldExp:
+		return m.Exp()
+	case hussession.FieldIat:
+		return m.Iat()
 	}
 	return nil, false
 }
@@ -727,10 +797,14 @@ func (m *HusSessionMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *HusSessionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case hussession.FieldExpiredAt:
-		return m.OldExpiredAt(ctx)
-	case hussession.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
+	case hussession.FieldUID:
+		return m.OldUID(ctx)
+	case hussession.FieldHld:
+		return m.OldHld(ctx)
+	case hussession.FieldExp:
+		return m.OldExp(ctx)
+	case hussession.FieldIat:
+		return m.OldIat(ctx)
 	}
 	return nil, fmt.Errorf("unknown HusSession field %s", name)
 }
@@ -740,19 +814,33 @@ func (m *HusSessionMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *HusSessionMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case hussession.FieldExpiredAt:
-		v, ok := value.(time.Time)
+	case hussession.FieldUID:
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetExpiredAt(v)
+		m.SetUID(v)
 		return nil
-	case hussession.FieldCreatedAt:
+	case hussession.FieldHld:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHld(v)
+		return nil
+	case hussession.FieldExp:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCreatedAt(v)
+		m.SetExp(v)
+		return nil
+	case hussession.FieldIat:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIat(v)
 		return nil
 	}
 	return fmt.Errorf("unknown HusSession field %s", name)
@@ -783,11 +871,7 @@ func (m *HusSessionMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *HusSessionMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(hussession.FieldExpiredAt) {
-		fields = append(fields, hussession.FieldExpiredAt)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -800,11 +884,6 @@ func (m *HusSessionMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *HusSessionMutation) ClearField(name string) error {
-	switch name {
-	case hussession.FieldExpiredAt:
-		m.ClearExpiredAt()
-		return nil
-	}
 	return fmt.Errorf("unknown HusSession nullable field %s", name)
 }
 
@@ -812,11 +891,17 @@ func (m *HusSessionMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *HusSessionMutation) ResetField(name string) error {
 	switch name {
-	case hussession.FieldExpiredAt:
-		m.ResetExpiredAt()
+	case hussession.FieldUID:
+		m.ResetUID()
 		return nil
-	case hussession.FieldCreatedAt:
-		m.ResetCreatedAt()
+	case hussession.FieldHld:
+		m.ResetHld()
+		return nil
+	case hussession.FieldExp:
+		m.ResetExp()
+		return nil
+	case hussession.FieldIat:
+		m.ResetIat()
 		return nil
 	}
 	return fmt.Errorf("unknown HusSession field %s", name)
@@ -825,8 +910,8 @@ func (m *HusSessionMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *HusSessionMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.owner != nil {
-		edges = append(edges, hussession.EdgeOwner)
+	if m.user != nil {
+		edges = append(edges, hussession.EdgeUser)
 	}
 	return edges
 }
@@ -835,8 +920,8 @@ func (m *HusSessionMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *HusSessionMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case hussession.EdgeOwner:
-		if id := m.owner; id != nil {
+	case hussession.EdgeUser:
+		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -858,8 +943,8 @@ func (m *HusSessionMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *HusSessionMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedowner {
-		edges = append(edges, hussession.EdgeOwner)
+	if m.cleareduser {
+		edges = append(edges, hussession.EdgeUser)
 	}
 	return edges
 }
@@ -868,8 +953,8 @@ func (m *HusSessionMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *HusSessionMutation) EdgeCleared(name string) bool {
 	switch name {
-	case hussession.EdgeOwner:
-		return m.clearedowner
+	case hussession.EdgeUser:
+		return m.cleareduser
 	}
 	return false
 }
@@ -878,8 +963,8 @@ func (m *HusSessionMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *HusSessionMutation) ClearEdge(name string) error {
 	switch name {
-	case hussession.EdgeOwner:
-		m.ClearOwner()
+	case hussession.EdgeUser:
+		m.ClearUser()
 		return nil
 	}
 	return fmt.Errorf("unknown HusSession unique edge %s", name)
@@ -889,8 +974,8 @@ func (m *HusSessionMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *HusSessionMutation) ResetEdge(name string) error {
 	switch name {
-	case hussession.EdgeOwner:
-		m.ResetOwner()
+	case hussession.EdgeUser:
+		m.ResetUser()
 		return nil
 	}
 	return fmt.Errorf("unknown HusSession edge %s", name)
@@ -1393,26 +1478,26 @@ func (m *RefreshTokenMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *uuid.UUID
-	google_sub             *string
-	email                  *string
-	email_verified         *bool
-	name                   *string
-	birthdate              *time.Time
-	given_name             *string
-	family_name            *string
-	google_profile_picture *string
-	created_at             *time.Time
-	updated_at             *time.Time
-	clearedFields          map[string]struct{}
-	hus_sessions           map[uuid.UUID]struct{}
-	removedhus_sessions    map[uuid.UUID]struct{}
-	clearedhus_sessions    bool
-	done                   bool
-	oldValue               func(context.Context) (*User, error)
-	predicates             []predicate.User
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	google_sub          *string
+	email               *string
+	email_verified      *bool
+	name                *string
+	given_name          *string
+	family_name         *string
+	birthdate           *time.Time
+	profile_picture_url *string
+	created_at          *time.Time
+	updated_at          *time.Time
+	clearedFields       map[string]struct{}
+	hus_sessions        map[uuid.UUID]struct{}
+	removedhus_sessions map[uuid.UUID]struct{}
+	clearedhus_sessions bool
+	done                bool
+	oldValue            func(context.Context) (*User, error)
+	predicates          []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -1663,55 +1748,6 @@ func (m *UserMutation) ResetName() {
 	m.name = nil
 }
 
-// SetBirthdate sets the "birthdate" field.
-func (m *UserMutation) SetBirthdate(t time.Time) {
-	m.birthdate = &t
-}
-
-// Birthdate returns the value of the "birthdate" field in the mutation.
-func (m *UserMutation) Birthdate() (r time.Time, exists bool) {
-	v := m.birthdate
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldBirthdate returns the old "birthdate" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldBirthdate(ctx context.Context) (v *time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldBirthdate is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldBirthdate requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldBirthdate: %w", err)
-	}
-	return oldValue.Birthdate, nil
-}
-
-// ClearBirthdate clears the value of the "birthdate" field.
-func (m *UserMutation) ClearBirthdate() {
-	m.birthdate = nil
-	m.clearedFields[user.FieldBirthdate] = struct{}{}
-}
-
-// BirthdateCleared returns if the "birthdate" field was cleared in this mutation.
-func (m *UserMutation) BirthdateCleared() bool {
-	_, ok := m.clearedFields[user.FieldBirthdate]
-	return ok
-}
-
-// ResetBirthdate resets all changes to the "birthdate" field.
-func (m *UserMutation) ResetBirthdate() {
-	m.birthdate = nil
-	delete(m.clearedFields, user.FieldBirthdate)
-}
-
 // SetGivenName sets the "given_name" field.
 func (m *UserMutation) SetGivenName(s string) {
 	m.given_name = &s
@@ -1784,40 +1820,102 @@ func (m *UserMutation) ResetFamilyName() {
 	m.family_name = nil
 }
 
-// SetGoogleProfilePicture sets the "google_profile_picture" field.
-func (m *UserMutation) SetGoogleProfilePicture(s string) {
-	m.google_profile_picture = &s
+// SetBirthdate sets the "birthdate" field.
+func (m *UserMutation) SetBirthdate(t time.Time) {
+	m.birthdate = &t
 }
 
-// GoogleProfilePicture returns the value of the "google_profile_picture" field in the mutation.
-func (m *UserMutation) GoogleProfilePicture() (r string, exists bool) {
-	v := m.google_profile_picture
+// Birthdate returns the value of the "birthdate" field in the mutation.
+func (m *UserMutation) Birthdate() (r time.Time, exists bool) {
+	v := m.birthdate
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldGoogleProfilePicture returns the old "google_profile_picture" field's value of the User entity.
+// OldBirthdate returns the old "birthdate" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldGoogleProfilePicture(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldBirthdate(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldGoogleProfilePicture is only allowed on UpdateOne operations")
+		return v, errors.New("OldBirthdate is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldGoogleProfilePicture requires an ID field in the mutation")
+		return v, errors.New("OldBirthdate requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldGoogleProfilePicture: %w", err)
+		return v, fmt.Errorf("querying old value for OldBirthdate: %w", err)
 	}
-	return oldValue.GoogleProfilePicture, nil
+	return oldValue.Birthdate, nil
 }
 
-// ResetGoogleProfilePicture resets all changes to the "google_profile_picture" field.
-func (m *UserMutation) ResetGoogleProfilePicture() {
-	m.google_profile_picture = nil
+// ClearBirthdate clears the value of the "birthdate" field.
+func (m *UserMutation) ClearBirthdate() {
+	m.birthdate = nil
+	m.clearedFields[user.FieldBirthdate] = struct{}{}
+}
+
+// BirthdateCleared returns if the "birthdate" field was cleared in this mutation.
+func (m *UserMutation) BirthdateCleared() bool {
+	_, ok := m.clearedFields[user.FieldBirthdate]
+	return ok
+}
+
+// ResetBirthdate resets all changes to the "birthdate" field.
+func (m *UserMutation) ResetBirthdate() {
+	m.birthdate = nil
+	delete(m.clearedFields, user.FieldBirthdate)
+}
+
+// SetProfilePictureURL sets the "profile_picture_url" field.
+func (m *UserMutation) SetProfilePictureURL(s string) {
+	m.profile_picture_url = &s
+}
+
+// ProfilePictureURL returns the value of the "profile_picture_url" field in the mutation.
+func (m *UserMutation) ProfilePictureURL() (r string, exists bool) {
+	v := m.profile_picture_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProfilePictureURL returns the old "profile_picture_url" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldProfilePictureURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProfilePictureURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProfilePictureURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProfilePictureURL: %w", err)
+	}
+	return oldValue.ProfilePictureURL, nil
+}
+
+// ClearProfilePictureURL clears the value of the "profile_picture_url" field.
+func (m *UserMutation) ClearProfilePictureURL() {
+	m.profile_picture_url = nil
+	m.clearedFields[user.FieldProfilePictureURL] = struct{}{}
+}
+
+// ProfilePictureURLCleared returns if the "profile_picture_url" field was cleared in this mutation.
+func (m *UserMutation) ProfilePictureURLCleared() bool {
+	_, ok := m.clearedFields[user.FieldProfilePictureURL]
+	return ok
+}
+
+// ResetProfilePictureURL resets all changes to the "profile_picture_url" field.
+func (m *UserMutation) ResetProfilePictureURL() {
+	m.profile_picture_url = nil
+	delete(m.clearedFields, user.FieldProfilePictureURL)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -1993,17 +2091,17 @@ func (m *UserMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, user.FieldName)
 	}
-	if m.birthdate != nil {
-		fields = append(fields, user.FieldBirthdate)
-	}
 	if m.given_name != nil {
 		fields = append(fields, user.FieldGivenName)
 	}
 	if m.family_name != nil {
 		fields = append(fields, user.FieldFamilyName)
 	}
-	if m.google_profile_picture != nil {
-		fields = append(fields, user.FieldGoogleProfilePicture)
+	if m.birthdate != nil {
+		fields = append(fields, user.FieldBirthdate)
+	}
+	if m.profile_picture_url != nil {
+		fields = append(fields, user.FieldProfilePictureURL)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -2027,14 +2125,14 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.EmailVerified()
 	case user.FieldName:
 		return m.Name()
-	case user.FieldBirthdate:
-		return m.Birthdate()
 	case user.FieldGivenName:
 		return m.GivenName()
 	case user.FieldFamilyName:
 		return m.FamilyName()
-	case user.FieldGoogleProfilePicture:
-		return m.GoogleProfilePicture()
+	case user.FieldBirthdate:
+		return m.Birthdate()
+	case user.FieldProfilePictureURL:
+		return m.ProfilePictureURL()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	case user.FieldUpdatedAt:
@@ -2056,14 +2154,14 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldEmailVerified(ctx)
 	case user.FieldName:
 		return m.OldName(ctx)
-	case user.FieldBirthdate:
-		return m.OldBirthdate(ctx)
 	case user.FieldGivenName:
 		return m.OldGivenName(ctx)
 	case user.FieldFamilyName:
 		return m.OldFamilyName(ctx)
-	case user.FieldGoogleProfilePicture:
-		return m.OldGoogleProfilePicture(ctx)
+	case user.FieldBirthdate:
+		return m.OldBirthdate(ctx)
+	case user.FieldProfilePictureURL:
+		return m.OldProfilePictureURL(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case user.FieldUpdatedAt:
@@ -2105,13 +2203,6 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case user.FieldBirthdate:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetBirthdate(v)
-		return nil
 	case user.FieldGivenName:
 		v, ok := value.(string)
 		if !ok {
@@ -2126,12 +2217,19 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetFamilyName(v)
 		return nil
-	case user.FieldGoogleProfilePicture:
+	case user.FieldBirthdate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBirthdate(v)
+		return nil
+	case user.FieldProfilePictureURL:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetGoogleProfilePicture(v)
+		m.SetProfilePictureURL(v)
 		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -2180,6 +2278,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldBirthdate) {
 		fields = append(fields, user.FieldBirthdate)
 	}
+	if m.FieldCleared(user.FieldProfilePictureURL) {
+		fields = append(fields, user.FieldProfilePictureURL)
+	}
 	return fields
 }
 
@@ -2196,6 +2297,9 @@ func (m *UserMutation) ClearField(name string) error {
 	switch name {
 	case user.FieldBirthdate:
 		m.ClearBirthdate()
+		return nil
+	case user.FieldProfilePictureURL:
+		m.ClearProfilePictureURL()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -2217,17 +2321,17 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldName:
 		m.ResetName()
 		return nil
-	case user.FieldBirthdate:
-		m.ResetBirthdate()
-		return nil
 	case user.FieldGivenName:
 		m.ResetGivenName()
 		return nil
 	case user.FieldFamilyName:
 		m.ResetFamilyName()
 		return nil
-	case user.FieldGoogleProfilePicture:
-		m.ResetGoogleProfilePicture()
+	case user.FieldBirthdate:
+		m.ResetBirthdate()
+		return nil
+	case user.FieldProfilePictureURL:
+		m.ResetProfilePictureURL()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()

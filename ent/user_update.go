@@ -54,6 +54,18 @@ func (uu *UserUpdate) SetName(s string) *UserUpdate {
 	return uu
 }
 
+// SetGivenName sets the "given_name" field.
+func (uu *UserUpdate) SetGivenName(s string) *UserUpdate {
+	uu.mutation.SetGivenName(s)
+	return uu
+}
+
+// SetFamilyName sets the "family_name" field.
+func (uu *UserUpdate) SetFamilyName(s string) *UserUpdate {
+	uu.mutation.SetFamilyName(s)
+	return uu
+}
+
 // SetBirthdate sets the "birthdate" field.
 func (uu *UserUpdate) SetBirthdate(t time.Time) *UserUpdate {
 	uu.mutation.SetBirthdate(t)
@@ -74,21 +86,23 @@ func (uu *UserUpdate) ClearBirthdate() *UserUpdate {
 	return uu
 }
 
-// SetGivenName sets the "given_name" field.
-func (uu *UserUpdate) SetGivenName(s string) *UserUpdate {
-	uu.mutation.SetGivenName(s)
+// SetProfilePictureURL sets the "profile_picture_url" field.
+func (uu *UserUpdate) SetProfilePictureURL(s string) *UserUpdate {
+	uu.mutation.SetProfilePictureURL(s)
 	return uu
 }
 
-// SetFamilyName sets the "family_name" field.
-func (uu *UserUpdate) SetFamilyName(s string) *UserUpdate {
-	uu.mutation.SetFamilyName(s)
+// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableProfilePictureURL(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetProfilePictureURL(*s)
+	}
 	return uu
 }
 
-// SetGoogleProfilePicture sets the "google_profile_picture" field.
-func (uu *UserUpdate) SetGoogleProfilePicture(s string) *UserUpdate {
-	uu.mutation.SetGoogleProfilePicture(s)
+// ClearProfilePictureURL clears the value of the "profile_picture_url" field.
+func (uu *UserUpdate) ClearProfilePictureURL() *UserUpdate {
+	uu.mutation.ClearProfilePictureURL()
 	return uu
 }
 
@@ -210,20 +224,23 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.Birthdate(); ok {
-		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
-	}
-	if uu.mutation.BirthdateCleared() {
-		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
-	}
 	if value, ok := uu.mutation.GivenName(); ok {
 		_spec.SetField(user.FieldGivenName, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.FamilyName(); ok {
 		_spec.SetField(user.FieldFamilyName, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.GoogleProfilePicture(); ok {
-		_spec.SetField(user.FieldGoogleProfilePicture, field.TypeString, value)
+	if value, ok := uu.mutation.Birthdate(); ok {
+		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
+	}
+	if uu.mutation.BirthdateCleared() {
+		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
+	}
+	if value, ok := uu.mutation.ProfilePictureURL(); ok {
+		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
+	}
+	if uu.mutation.ProfilePictureURLCleared() {
+		_spec.ClearField(user.FieldProfilePictureURL, field.TypeString)
 	}
 	if value, ok := uu.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
@@ -329,6 +346,18 @@ func (uuo *UserUpdateOne) SetName(s string) *UserUpdateOne {
 	return uuo
 }
 
+// SetGivenName sets the "given_name" field.
+func (uuo *UserUpdateOne) SetGivenName(s string) *UserUpdateOne {
+	uuo.mutation.SetGivenName(s)
+	return uuo
+}
+
+// SetFamilyName sets the "family_name" field.
+func (uuo *UserUpdateOne) SetFamilyName(s string) *UserUpdateOne {
+	uuo.mutation.SetFamilyName(s)
+	return uuo
+}
+
 // SetBirthdate sets the "birthdate" field.
 func (uuo *UserUpdateOne) SetBirthdate(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetBirthdate(t)
@@ -349,21 +378,23 @@ func (uuo *UserUpdateOne) ClearBirthdate() *UserUpdateOne {
 	return uuo
 }
 
-// SetGivenName sets the "given_name" field.
-func (uuo *UserUpdateOne) SetGivenName(s string) *UserUpdateOne {
-	uuo.mutation.SetGivenName(s)
+// SetProfilePictureURL sets the "profile_picture_url" field.
+func (uuo *UserUpdateOne) SetProfilePictureURL(s string) *UserUpdateOne {
+	uuo.mutation.SetProfilePictureURL(s)
 	return uuo
 }
 
-// SetFamilyName sets the "family_name" field.
-func (uuo *UserUpdateOne) SetFamilyName(s string) *UserUpdateOne {
-	uuo.mutation.SetFamilyName(s)
+// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableProfilePictureURL(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetProfilePictureURL(*s)
+	}
 	return uuo
 }
 
-// SetGoogleProfilePicture sets the "google_profile_picture" field.
-func (uuo *UserUpdateOne) SetGoogleProfilePicture(s string) *UserUpdateOne {
-	uuo.mutation.SetGoogleProfilePicture(s)
+// ClearProfilePictureURL clears the value of the "profile_picture_url" field.
+func (uuo *UserUpdateOne) ClearProfilePictureURL() *UserUpdateOne {
+	uuo.mutation.ClearProfilePictureURL()
 	return uuo
 }
 
@@ -515,20 +546,23 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.Birthdate(); ok {
-		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
-	}
-	if uuo.mutation.BirthdateCleared() {
-		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
-	}
 	if value, ok := uuo.mutation.GivenName(); ok {
 		_spec.SetField(user.FieldGivenName, field.TypeString, value)
 	}
 	if value, ok := uuo.mutation.FamilyName(); ok {
 		_spec.SetField(user.FieldFamilyName, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.GoogleProfilePicture(); ok {
-		_spec.SetField(user.FieldGoogleProfilePicture, field.TypeString, value)
+	if value, ok := uuo.mutation.Birthdate(); ok {
+		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
+	}
+	if uuo.mutation.BirthdateCleared() {
+		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
+	}
+	if value, ok := uuo.mutation.ProfilePictureURL(); ok {
+		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
+	}
+	if uuo.mutation.ProfilePictureURLCleared() {
+		_spec.ClearField(user.FieldProfilePictureURL, field.TypeString)
 	}
 	if value, ok := uuo.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
