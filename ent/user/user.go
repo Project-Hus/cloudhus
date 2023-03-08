@@ -33,8 +33,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeHusSessions holds the string denoting the hus_sessions edge name in mutations.
+	EdgeHusSessions = "hus_sessions"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// HusSessionsTable is the table that holds the hus_sessions relation/edge.
+	HusSessionsTable = "hus_sessions"
+	// HusSessionsInverseTable is the table name for the HusSession entity.
+	// It exists in this package in order to avoid circular dependency with the "hussession" package.
+	HusSessionsInverseTable = "hus_sessions"
+	// HusSessionsColumn is the table column denoting the hus_sessions relation/edge.
+	HusSessionsColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.

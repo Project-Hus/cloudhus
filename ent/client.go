@@ -11,11 +11,13 @@ import (
 	"hus-auth/ent/migrate"
 
 	"hus-auth/ent/community"
+	"hus-auth/ent/hussession"
 	"hus-auth/ent/refreshtoken"
 	"hus-auth/ent/user"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -26,6 +28,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Community is the client for interacting with the Community builders.
 	Community *CommunityClient
+	// HusSession is the client for interacting with the HusSession builders.
+	HusSession *HusSessionClient
 	// RefreshToken is the client for interacting with the RefreshToken builders.
 	RefreshToken *RefreshTokenClient
 	// User is the client for interacting with the User builders.
@@ -44,6 +48,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Community = NewCommunityClient(c.config)
+	c.HusSession = NewHusSessionClient(c.config)
 	c.RefreshToken = NewRefreshTokenClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -80,6 +85,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:          ctx,
 		config:       cfg,
 		Community:    NewCommunityClient(cfg),
+		HusSession:   NewHusSessionClient(cfg),
 		RefreshToken: NewRefreshTokenClient(cfg),
 		User:         NewUserClient(cfg),
 	}, nil
@@ -102,6 +108,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:          ctx,
 		config:       cfg,
 		Community:    NewCommunityClient(cfg),
+		HusSession:   NewHusSessionClient(cfg),
 		RefreshToken: NewRefreshTokenClient(cfg),
 		User:         NewUserClient(cfg),
 	}, nil
@@ -133,6 +140,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Community.Use(hooks...)
+	c.HusSession.Use(hooks...)
 	c.RefreshToken.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -141,6 +149,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Community.Intercept(interceptors...)
+	c.HusSession.Intercept(interceptors...)
 	c.RefreshToken.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
@@ -150,6 +159,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *CommunityMutation:
 		return c.Community.mutate(ctx, m)
+	case *HusSessionMutation:
+		return c.HusSession.mutate(ctx, m)
 	case *RefreshTokenMutation:
 		return c.RefreshToken.mutate(ctx, m)
 	case *UserMutation:
@@ -274,6 +285,140 @@ func (c *CommunityClient) mutate(ctx context.Context, m *CommunityMutation) (Val
 		return (&CommunityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Community mutation op: %q", m.Op())
+	}
+}
+
+// HusSessionClient is a client for the HusSession schema.
+type HusSessionClient struct {
+	config
+}
+
+// NewHusSessionClient returns a client for the HusSession from the given config.
+func NewHusSessionClient(c config) *HusSessionClient {
+	return &HusSessionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `hussession.Hooks(f(g(h())))`.
+func (c *HusSessionClient) Use(hooks ...Hook) {
+	c.hooks.HusSession = append(c.hooks.HusSession, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `hussession.Intercept(f(g(h())))`.
+func (c *HusSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.HusSession = append(c.inters.HusSession, interceptors...)
+}
+
+// Create returns a builder for creating a HusSession entity.
+func (c *HusSessionClient) Create() *HusSessionCreate {
+	mutation := newHusSessionMutation(c.config, OpCreate)
+	return &HusSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of HusSession entities.
+func (c *HusSessionClient) CreateBulk(builders ...*HusSessionCreate) *HusSessionCreateBulk {
+	return &HusSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for HusSession.
+func (c *HusSessionClient) Update() *HusSessionUpdate {
+	mutation := newHusSessionMutation(c.config, OpUpdate)
+	return &HusSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *HusSessionClient) UpdateOne(hs *HusSession) *HusSessionUpdateOne {
+	mutation := newHusSessionMutation(c.config, OpUpdateOne, withHusSession(hs))
+	return &HusSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *HusSessionClient) UpdateOneID(id uuid.UUID) *HusSessionUpdateOne {
+	mutation := newHusSessionMutation(c.config, OpUpdateOne, withHusSessionID(id))
+	return &HusSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for HusSession.
+func (c *HusSessionClient) Delete() *HusSessionDelete {
+	mutation := newHusSessionMutation(c.config, OpDelete)
+	return &HusSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *HusSessionClient) DeleteOne(hs *HusSession) *HusSessionDeleteOne {
+	return c.DeleteOneID(hs.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *HusSessionClient) DeleteOneID(id uuid.UUID) *HusSessionDeleteOne {
+	builder := c.Delete().Where(hussession.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &HusSessionDeleteOne{builder}
+}
+
+// Query returns a query builder for HusSession.
+func (c *HusSessionClient) Query() *HusSessionQuery {
+	return &HusSessionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeHusSession},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a HusSession entity by its id.
+func (c *HusSessionClient) Get(ctx context.Context, id uuid.UUID) (*HusSession, error) {
+	return c.Query().Where(hussession.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *HusSessionClient) GetX(ctx context.Context, id uuid.UUID) *HusSession {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a HusSession.
+func (c *HusSessionClient) QueryOwner(hs *HusSession) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := hs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hussession.Table, hussession.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, hussession.OwnerTable, hussession.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(hs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *HusSessionClient) Hooks() []Hook {
+	return c.hooks.HusSession
+}
+
+// Interceptors returns the client interceptors.
+func (c *HusSessionClient) Interceptors() []Interceptor {
+	return c.inters.HusSession
+}
+
+func (c *HusSessionClient) mutate(ctx context.Context, m *HusSessionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&HusSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&HusSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&HusSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&HusSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown HusSession mutation op: %q", m.Op())
 	}
 }
 
@@ -486,6 +631,22 @@ func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryHusSessions queries the hus_sessions edge of a User.
+func (c *UserClient) QueryHusSessions(u *User) *HusSessionQuery {
+	query := (&HusSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(hussession.Table, hussession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.HusSessionsTable, user.HusSessionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

@@ -18,13 +18,13 @@
     "host": "lifthus.com",
     "basePath": "/auth",
     "paths": {
-        "/auth/access": {
+        "/access": {
             "get": {
-                "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.",
+                "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.\nthe access token will be expired in 10 minutes.",
                 "tags": [
                     "auth"
                 ],
-                "summary": "gets refresh token in the header and returns access token after validation.",
+                "summary": "gets refresh token in the header and returns access token in the cookie after validation.",
                 "parameters": [
                     {
                         "type": "string",
@@ -47,9 +47,9 @@
                 }
             }
         },
-        "/auth/google": {
+        "/google": {
             "post": {
-                "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.",
+                "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.\nthe refresh token will be expired in 7 days.",
                 "consumes": [
                     "application/json"
                 ],
@@ -71,6 +71,69 @@
                 "responses": {
                     "301": {
                         "description": "to /auth/{token_string}"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/hus": {
+            "post": {
+                "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.\nthe refresh token will be expired in 7 days.",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "processes google auth and redirect with refresh token in url.",
+                "parameters": [
+                    {
+                        "description": "Google ID token",
+                        "name": "jwt",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "to /auth/{token_string}"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/refresh": {
+            "get": {
+                "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.\nthe access token will be expired in 10 minutes.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "gets refresh token in the header and returns access token in the cookie after validation.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Refresh token",
+                        "name": "jwt",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Access token created"
                     },
                     "401": {
                         "description": "Unauthorized"

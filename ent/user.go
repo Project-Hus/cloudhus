@@ -37,6 +37,27 @@ type User struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges UserEdges `json:"edges"`
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// HusSessions holds the value of the hus_sessions edge.
+	HusSessions []*HusSession `json:"hus_sessions,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// HusSessionsOrErr returns the HusSessions value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) HusSessionsOrErr() ([]*HusSession, error) {
+	if e.loadedTypes[0] {
+		return e.HusSessions, nil
+	}
+	return nil, &NotLoadedError{edge: "hus_sessions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -137,6 +158,11 @@ func (u *User) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
+}
+
+// QueryHusSessions queries the "hus_sessions" edge of the User entity.
+func (u *User) QueryHusSessions() *HusSessionQuery {
+	return NewUserClient(u.config).QueryHusSessions(u)
 }
 
 // Update returns a builder for updating this User.

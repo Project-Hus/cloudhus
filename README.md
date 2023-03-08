@@ -19,9 +19,9 @@ nodemon --watch './**/*.go' --signal SIGTERM --exec 'go' run ./main.go
 ### ent
 
 ```
-go generate ./ent
-
 go run -mod=mod entgo.io/ent/cmd/ent new User
+
+go generate ./ent
 ```
 
 ## Protocol Hus

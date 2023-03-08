@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hus-auth/ent/hussession"
 	"hus-auth/ent/user"
 	"time"
 
@@ -117,6 +118,21 @@ func (uc *UserCreate) SetNillableID(u *uuid.UUID) *UserCreate {
 		uc.SetID(*u)
 	}
 	return uc
+}
+
+// AddHusSessionIDs adds the "hus_sessions" edge to the HusSession entity by IDs.
+func (uc *UserCreate) AddHusSessionIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddHusSessionIDs(ids...)
+	return uc
+}
+
+// AddHusSessions adds the "hus_sessions" edges to the HusSession entity.
+func (uc *UserCreate) AddHusSessions(h ...*HusSession) *UserCreate {
+	ids := make([]uuid.UUID, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return uc.AddHusSessionIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -271,6 +287,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := uc.mutation.HusSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.HusSessionsTable,
+			Columns: []string{user.HusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: hussession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

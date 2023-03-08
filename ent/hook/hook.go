@@ -20,6 +20,18 @@ func (f CommunityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommunityMutation", m)
 }
 
+// The HusSessionFunc type is an adapter to allow the use of ordinary
+// function as HusSession mutator.
+type HusSessionFunc func(context.Context, *ent.HusSessionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f HusSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.HusSessionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.HusSessionMutation", m)
+}
+
 // The RefreshTokenFunc type is an adapter to allow the use of ordinary
 // function as RefreshToken mutator.
 type RefreshTokenFunc func(context.Context, *ent.RefreshTokenMutation) (ent.Value, error)

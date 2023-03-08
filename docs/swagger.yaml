@@ -14,10 +14,11 @@ info:
   title: Project-Hus auth server
   version: 0.0.0
 paths:
-  /auth/access:
+  /access:
     get:
-      description: validates the google ID token and redirects with hus refresh token
-        to /auth/{token_string}.
+      description: |-
+        validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
+        the access token will be expired in 10 minutes.
       parameters:
       - description: Refresh token
         in: header
@@ -31,15 +32,17 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-      summary: gets refresh token in the header and returns access token after validation.
+      summary: gets refresh token in the header and returns access token in the cookie
+        after validation.
       tags:
       - auth
-  /auth/google:
+  /google:
     post:
       consumes:
       - application/json
-      description: validates the google ID token and redirects with hus refresh token
-        to /auth/{token_string}.
+      description: |-
+        validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
+        the refresh token will be expired in 7 days.
       parameters:
       - description: Google ID token
         in: body
@@ -55,6 +58,52 @@ paths:
         "500":
           description: Internal Server Error
       summary: processes google auth and redirect with refresh token in url.
+      tags:
+      - auth
+  /hus:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
+        the refresh token will be expired in 7 days.
+      parameters:
+      - description: Google ID token
+        in: body
+        name: jwt
+        required: true
+        schema:
+          type: string
+      responses:
+        "301":
+          description: to /auth/{token_string}
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: processes google auth and redirect with refresh token in url.
+      tags:
+      - auth
+  /refresh:
+    get:
+      description: |-
+        validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
+        the access token will be expired in 10 minutes.
+      parameters:
+      - description: Refresh token
+        in: header
+        name: jwt
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Access token created
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: gets refresh token in the header and returns access token in the cookie
+        after validation.
       tags:
       - auth
 swagger: "2.0"

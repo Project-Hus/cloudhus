@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hus-auth/ent/hussession"
 	"hus-auth/ent/predicate"
 	"hus-auth/ent/user"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -110,9 +112,45 @@ func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
 	return uu
 }
 
+// AddHusSessionIDs adds the "hus_sessions" edge to the HusSession entity by IDs.
+func (uu *UserUpdate) AddHusSessionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddHusSessionIDs(ids...)
+	return uu
+}
+
+// AddHusSessions adds the "hus_sessions" edges to the HusSession entity.
+func (uu *UserUpdate) AddHusSessions(h ...*HusSession) *UserUpdate {
+	ids := make([]uuid.UUID, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return uu.AddHusSessionIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
+}
+
+// ClearHusSessions clears all "hus_sessions" edges to the HusSession entity.
+func (uu *UserUpdate) ClearHusSessions() *UserUpdate {
+	uu.mutation.ClearHusSessions()
+	return uu
+}
+
+// RemoveHusSessionIDs removes the "hus_sessions" edge to HusSession entities by IDs.
+func (uu *UserUpdate) RemoveHusSessionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveHusSessionIDs(ids...)
+	return uu
+}
+
+// RemoveHusSessions removes "hus_sessions" edges to HusSession entities.
+func (uu *UserUpdate) RemoveHusSessions(h ...*HusSession) *UserUpdate {
+	ids := make([]uuid.UUID, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return uu.RemoveHusSessionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -192,6 +230,60 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if uu.mutation.HusSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.HusSessionsTable,
+			Columns: []string{user.HusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: hussession.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedHusSessionsIDs(); len(nodes) > 0 && !uu.mutation.HusSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.HusSessionsTable,
+			Columns: []string{user.HusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: hussession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.HusSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.HusSessionsTable,
+			Columns: []string{user.HusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: hussession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -295,9 +387,45 @@ func (uuo *UserUpdateOne) SetUpdatedAt(t time.Time) *UserUpdateOne {
 	return uuo
 }
 
+// AddHusSessionIDs adds the "hus_sessions" edge to the HusSession entity by IDs.
+func (uuo *UserUpdateOne) AddHusSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddHusSessionIDs(ids...)
+	return uuo
+}
+
+// AddHusSessions adds the "hus_sessions" edges to the HusSession entity.
+func (uuo *UserUpdateOne) AddHusSessions(h ...*HusSession) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return uuo.AddHusSessionIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
+}
+
+// ClearHusSessions clears all "hus_sessions" edges to the HusSession entity.
+func (uuo *UserUpdateOne) ClearHusSessions() *UserUpdateOne {
+	uuo.mutation.ClearHusSessions()
+	return uuo
+}
+
+// RemoveHusSessionIDs removes the "hus_sessions" edge to HusSession entities by IDs.
+func (uuo *UserUpdateOne) RemoveHusSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveHusSessionIDs(ids...)
+	return uuo
+}
+
+// RemoveHusSessions removes "hus_sessions" edges to HusSession entities.
+func (uuo *UserUpdateOne) RemoveHusSessions(h ...*HusSession) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return uuo.RemoveHusSessionIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -407,6 +535,60 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if uuo.mutation.HusSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.HusSessionsTable,
+			Columns: []string{user.HusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: hussession.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedHusSessionsIDs(); len(nodes) > 0 && !uuo.mutation.HusSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.HusSessionsTable,
+			Columns: []string{user.HusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: hussession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.HusSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.HusSessionsTable,
+			Columns: []string{user.HusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: hussession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues

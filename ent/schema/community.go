@@ -24,7 +24,7 @@ func (Community) Indexes() []ent.Index {
 // Fields of the Group.
 func (Community) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New).Unique(),
 		field.String("name").
 			Match(regexp.MustCompile("[a-zA-Z_]+$")),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),

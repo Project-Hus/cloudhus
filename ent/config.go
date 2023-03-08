@@ -28,11 +28,13 @@ type config struct {
 type (
 	hooks struct {
 		Community    []ent.Hook
+		HusSession   []ent.Hook
 		RefreshToken []ent.Hook
 		User         []ent.Hook
 	}
 	inters struct {
 		Community    []ent.Interceptor
+		HusSession   []ent.Interceptor
 		RefreshToken []ent.Interceptor
 		User         []ent.Interceptor
 	}

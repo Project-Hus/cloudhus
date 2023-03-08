@@ -4,6 +4,7 @@ package ent
 
 import (
 	"hus-auth/ent/community"
+	"hus-auth/ent/hussession"
 	"hus-auth/ent/refreshtoken"
 	"hus-auth/ent/schema"
 	"hus-auth/ent/user"
@@ -32,6 +33,16 @@ func init() {
 	communityDescID := communityFields[0].Descriptor()
 	// community.DefaultID holds the default value on creation for the id field.
 	community.DefaultID = communityDescID.Default.(func() uuid.UUID)
+	hussessionFields := schema.HusSession{}.Fields()
+	_ = hussessionFields
+	// hussessionDescCreatedAt is the schema descriptor for created_at field.
+	hussessionDescCreatedAt := hussessionFields[2].Descriptor()
+	// hussession.DefaultCreatedAt holds the default value on creation for the created_at field.
+	hussession.DefaultCreatedAt = hussessionDescCreatedAt.Default.(func() time.Time)
+	// hussessionDescID is the schema descriptor for id field.
+	hussessionDescID := hussessionFields[0].Descriptor()
+	// hussession.DefaultID holds the default value on creation for the id field.
+	hussession.DefaultID = hussessionDescID.Default.(func() uuid.UUID)
 	refreshtokenFields := schema.RefreshToken{}.Fields()
 	_ = refreshtokenFields
 	// refreshtokenDescRevoked is the schema descriptor for revoked field.

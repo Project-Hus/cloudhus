@@ -15,7 +15,7 @@ import (
 
 // GoogleAuthHandler godoc
 // @Router       /google [post]
-// @Summary      processes google auth and redirect with refresh token in url.
+// @Summary      gets google IDtoken and redirect with refresh token in url.
 // @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
 // @Description the refresh token will be expired in 7 days.
 // @Tags         auth

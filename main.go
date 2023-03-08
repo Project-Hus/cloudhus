@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 
 	"hus-auth/api/auth"
 	"hus-auth/db"
@@ -61,11 +62,10 @@ func main() {
 
 	// get requset and process by its subdomain
 	e.Any("/*", func(c echo.Context) (err error) {
-		req := c.Request()
-		res := c.Response()
-		host := hosts[req.Host] // if the host is not registered, it will be nil.
-		if host == nil {
-			err = echo.ErrNotFound
+		req, res := c.Request(), c.Response()
+		host, ok := hosts[req.Host] // if the host is not registered, it will be nil.
+		if !ok {
+			return c.NoContent(http.StatusNotFound)
 		} else {
 			host.Echo.ServeHTTP(res, req)
 		}

@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Community is the client for interacting with the Community builders.
 	Community *CommunityClient
+	// HusSession is the client for interacting with the HusSession builders.
+	HusSession *HusSessionClient
 	// RefreshToken is the client for interacting with the RefreshToken builders.
 	RefreshToken *RefreshTokenClient
 	// User is the client for interacting with the User builders.
@@ -150,6 +152,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Community = NewCommunityClient(tx.config)
+	tx.HusSession = NewHusSessionClient(tx.config)
 	tx.RefreshToken = NewRefreshTokenClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"hus-auth/ent/community"
+	"hus-auth/ent/hussession"
 	"hus-auth/ent/predicate"
 	"hus-auth/ent/refreshtoken"
 	"hus-auth/ent/user"
@@ -29,6 +30,7 @@ const (
 
 	// Node types.
 	TypeCommunity    = "Community"
+	TypeHusSession   = "HusSession"
 	TypeRefreshToken = "RefreshToken"
 	TypeUser         = "User"
 )
@@ -417,6 +419,481 @@ func (m *CommunityMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *CommunityMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Community edge %s", name)
+}
+
+// HusSessionMutation represents an operation that mutates the HusSession nodes in the graph.
+type HusSessionMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	expired_at    *time.Time
+	created_at    *time.Time
+	clearedFields map[string]struct{}
+	owner         *uuid.UUID
+	clearedowner  bool
+	done          bool
+	oldValue      func(context.Context) (*HusSession, error)
+	predicates    []predicate.HusSession
+}
+
+var _ ent.Mutation = (*HusSessionMutation)(nil)
+
+// hussessionOption allows management of the mutation configuration using functional options.
+type hussessionOption func(*HusSessionMutation)
+
+// newHusSessionMutation creates new mutation for the HusSession entity.
+func newHusSessionMutation(c config, op Op, opts ...hussessionOption) *HusSessionMutation {
+	m := &HusSessionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeHusSession,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withHusSessionID sets the ID field of the mutation.
+func withHusSessionID(id uuid.UUID) hussessionOption {
+	return func(m *HusSessionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *HusSession
+		)
+		m.oldValue = func(ctx context.Context) (*HusSession, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().HusSession.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withHusSession sets the old HusSession of the mutation.
+func withHusSession(node *HusSession) hussessionOption {
+	return func(m *HusSessionMutation) {
+		m.oldValue = func(context.Context) (*HusSession, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m HusSessionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m HusSessionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of HusSession entities.
+func (m *HusSessionMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *HusSessionMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *HusSessionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().HusSession.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetExpiredAt sets the "expired_at" field.
+func (m *HusSessionMutation) SetExpiredAt(t time.Time) {
+	m.expired_at = &t
+}
+
+// ExpiredAt returns the value of the "expired_at" field in the mutation.
+func (m *HusSessionMutation) ExpiredAt() (r time.Time, exists bool) {
+	v := m.expired_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiredAt returns the old "expired_at" field's value of the HusSession entity.
+// If the HusSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HusSessionMutation) OldExpiredAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiredAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiredAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiredAt: %w", err)
+	}
+	return oldValue.ExpiredAt, nil
+}
+
+// ClearExpiredAt clears the value of the "expired_at" field.
+func (m *HusSessionMutation) ClearExpiredAt() {
+	m.expired_at = nil
+	m.clearedFields[hussession.FieldExpiredAt] = struct{}{}
+}
+
+// ExpiredAtCleared returns if the "expired_at" field was cleared in this mutation.
+func (m *HusSessionMutation) ExpiredAtCleared() bool {
+	_, ok := m.clearedFields[hussession.FieldExpiredAt]
+	return ok
+}
+
+// ResetExpiredAt resets all changes to the "expired_at" field.
+func (m *HusSessionMutation) ResetExpiredAt() {
+	m.expired_at = nil
+	delete(m.clearedFields, hussession.FieldExpiredAt)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *HusSessionMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *HusSessionMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the HusSession entity.
+// If the HusSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HusSessionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *HusSessionMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetOwnerID sets the "owner" edge to the User entity by id.
+func (m *HusSessionMutation) SetOwnerID(id uuid.UUID) {
+	m.owner = &id
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (m *HusSessionMutation) ClearOwner() {
+	m.clearedowner = true
+}
+
+// OwnerCleared reports if the "owner" edge to the User entity was cleared.
+func (m *HusSessionMutation) OwnerCleared() bool {
+	return m.clearedowner
+}
+
+// OwnerID returns the "owner" edge ID in the mutation.
+func (m *HusSessionMutation) OwnerID() (id uuid.UUID, exists bool) {
+	if m.owner != nil {
+		return *m.owner, true
+	}
+	return
+}
+
+// OwnerIDs returns the "owner" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OwnerID instead. It exists only for internal usage by the builders.
+func (m *HusSessionMutation) OwnerIDs() (ids []uuid.UUID) {
+	if id := m.owner; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetOwner resets all changes to the "owner" edge.
+func (m *HusSessionMutation) ResetOwner() {
+	m.owner = nil
+	m.clearedowner = false
+}
+
+// Where appends a list predicates to the HusSessionMutation builder.
+func (m *HusSessionMutation) Where(ps ...predicate.HusSession) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the HusSessionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *HusSessionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.HusSession, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *HusSessionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *HusSessionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (HusSession).
+func (m *HusSessionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *HusSessionMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.expired_at != nil {
+		fields = append(fields, hussession.FieldExpiredAt)
+	}
+	if m.created_at != nil {
+		fields = append(fields, hussession.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *HusSessionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case hussession.FieldExpiredAt:
+		return m.ExpiredAt()
+	case hussession.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *HusSessionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case hussession.FieldExpiredAt:
+		return m.OldExpiredAt(ctx)
+	case hussession.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown HusSession field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *HusSessionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case hussession.FieldExpiredAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiredAt(v)
+		return nil
+	case hussession.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown HusSession field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *HusSessionMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *HusSessionMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *HusSessionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown HusSession numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *HusSessionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(hussession.FieldExpiredAt) {
+		fields = append(fields, hussession.FieldExpiredAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *HusSessionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *HusSessionMutation) ClearField(name string) error {
+	switch name {
+	case hussession.FieldExpiredAt:
+		m.ClearExpiredAt()
+		return nil
+	}
+	return fmt.Errorf("unknown HusSession nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *HusSessionMutation) ResetField(name string) error {
+	switch name {
+	case hussession.FieldExpiredAt:
+		m.ResetExpiredAt()
+		return nil
+	case hussession.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown HusSession field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *HusSessionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.owner != nil {
+		edges = append(edges, hussession.EdgeOwner)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *HusSessionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case hussession.EdgeOwner:
+		if id := m.owner; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *HusSessionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *HusSessionMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *HusSessionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedowner {
+		edges = append(edges, hussession.EdgeOwner)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *HusSessionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case hussession.EdgeOwner:
+		return m.clearedowner
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *HusSessionMutation) ClearEdge(name string) error {
+	switch name {
+	case hussession.EdgeOwner:
+		m.ClearOwner()
+		return nil
+	}
+	return fmt.Errorf("unknown HusSession unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *HusSessionMutation) ResetEdge(name string) error {
+	switch name {
+	case hussession.EdgeOwner:
+		m.ResetOwner()
+		return nil
+	}
+	return fmt.Errorf("unknown HusSession edge %s", name)
 }
 
 // RefreshTokenMutation represents an operation that mutates the RefreshToken nodes in the graph.
@@ -930,6 +1407,9 @@ type UserMutation struct {
 	created_at             *time.Time
 	updated_at             *time.Time
 	clearedFields          map[string]struct{}
+	hus_sessions           map[uuid.UUID]struct{}
+	removedhus_sessions    map[uuid.UUID]struct{}
+	clearedhus_sessions    bool
 	done                   bool
 	oldValue               func(context.Context) (*User, error)
 	predicates             []predicate.User
@@ -1412,6 +1892,60 @@ func (m *UserMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// AddHusSessionIDs adds the "hus_sessions" edge to the HusSession entity by ids.
+func (m *UserMutation) AddHusSessionIDs(ids ...uuid.UUID) {
+	if m.hus_sessions == nil {
+		m.hus_sessions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.hus_sessions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearHusSessions clears the "hus_sessions" edge to the HusSession entity.
+func (m *UserMutation) ClearHusSessions() {
+	m.clearedhus_sessions = true
+}
+
+// HusSessionsCleared reports if the "hus_sessions" edge to the HusSession entity was cleared.
+func (m *UserMutation) HusSessionsCleared() bool {
+	return m.clearedhus_sessions
+}
+
+// RemoveHusSessionIDs removes the "hus_sessions" edge to the HusSession entity by IDs.
+func (m *UserMutation) RemoveHusSessionIDs(ids ...uuid.UUID) {
+	if m.removedhus_sessions == nil {
+		m.removedhus_sessions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.hus_sessions, ids[i])
+		m.removedhus_sessions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHusSessions returns the removed IDs of the "hus_sessions" edge to the HusSession entity.
+func (m *UserMutation) RemovedHusSessionsIDs() (ids []uuid.UUID) {
+	for id := range m.removedhus_sessions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// HusSessionsIDs returns the "hus_sessions" edge IDs in the mutation.
+func (m *UserMutation) HusSessionsIDs() (ids []uuid.UUID) {
+	for id := range m.hus_sessions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetHusSessions resets all changes to the "hus_sessions" edge.
+func (m *UserMutation) ResetHusSessions() {
+	m.hus_sessions = nil
+	m.clearedhus_sessions = false
+	m.removedhus_sessions = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -1707,48 +2241,84 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.hus_sessions != nil {
+		edges = append(edges, user.EdgeHusSessions)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgeHusSessions:
+		ids := make([]ent.Value, 0, len(m.hus_sessions))
+		for id := range m.hus_sessions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedhus_sessions != nil {
+		edges = append(edges, user.EdgeHusSessions)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgeHusSessions:
+		ids := make([]ent.Value, 0, len(m.removedhus_sessions))
+		for id := range m.removedhus_sessions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedhus_sessions {
+		edges = append(edges, user.EdgeHusSessions)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
+	switch name {
+	case user.EdgeHusSessions:
+		return m.clearedhus_sessions
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
+	switch name {
+	case user.EdgeHusSessions:
+		m.ResetHusSessions()
+		return nil
+	}
 	return fmt.Errorf("unknown User edge %s", name)
 }

@@ -10,7 +10,7 @@ import (
 var (
 	// CommunitiesColumns holds the columns for the "communities" table.
 	CommunitiesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
+		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -24,6 +24,27 @@ var (
 				Name:    "community_id",
 				Unique:  true,
 				Columns: []*schema.Column{CommunitiesColumns[0]},
+			},
+		},
+	}
+	// HusSessionsColumns holds the columns for the "hus_sessions" table.
+	HusSessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "expired_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// HusSessionsTable holds the schema information for the "hus_sessions" table.
+	HusSessionsTable = &schema.Table{
+		Name:       "hus_sessions",
+		Columns:    HusSessionsColumns,
+		PrimaryKey: []*schema.Column{HusSessionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "hus_sessions_users_hus_sessions",
+				Columns:    []*schema.Column{HusSessionsColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -71,10 +92,12 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CommunitiesTable,
+		HusSessionsTable,
 		RefreshTokensTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	HusSessionsTable.ForeignKeys[0].RefTable = UsersTable
 }
