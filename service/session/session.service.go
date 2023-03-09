@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"fmt"
 	"hus-auth/ent"
 	"log"
 	"os"
@@ -13,9 +14,10 @@ import (
 
 // CreateHusSession takes user's uuid and create new hus session and return it.
 // and it also takes previous session ids as optional argument to revoke them.
-func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID, exp bool, pastSid ...string) (string, error) {
+func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID, exp bool, pastSid []string) (string, error) {
 	// Revoke given past sessions in prevSid
 	for _, sid := range pastSid {
+		fmt.Println(sid)
 		sid, err := uuid.FromBytes([]byte(sid))
 		if err != nil {
 			log.Println("[F] converting sid to uuid failed:", err)
@@ -41,7 +43,7 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 	// using created session's UUID, create session token
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid":     hs.ID,                     // refresh token's uuid
-		"purpose": "hus_session",             // purpose
+		"purpose": "hus_session",             // purpose"
 		"iss":     os.Getenv("HUS_AUTH_URL"), // issuer
 		"uid":     uid,                       // user's uuid
 		"iat":     hs.Iat,                    // issued at

@@ -3,13 +3,13 @@ package auth
 import (
 	"fmt"
 	"hus-auth/db"
+	"hus-auth/helper"
 	"hus-auth/service/session"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/api/idtoken"
 )
@@ -76,19 +76,22 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	}
 
 	// get hus_st from cookie
-	hus_st, _ := c.Cookie("hus_st")
-	sessionToken := hus_st.Value
-
+	hus_st, _ := c.Cookie("hus_st") // google redirection doesn't send cookie
 	// if hus_st exists, get the sid from jwt hus_st
+	sids := []string{}
 	if hus_st != nil {
-		token, err := jwt.Parse(sessionToken, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf()
-			}
-		})
+		sessionToken := hus_st.Value
+		claims, err := helper.ParseJWTwithHMAC(sessionToken)
+		if err != nil {
+			return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
+		}
+		sid, ok := claims["sid"]
+		if ok {
+			sids = append(sids, sid.(string))
+		}
 	}
 
-	HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.Client, u.ID, false)
+	HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.Client, u.ID, false, sids)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
@@ -101,7 +104,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		//Secure:   true, // only sent over https
 		HttpOnly: true,
 		Expires:  time.Now().Add(time.Hour * 24 * 7),
-		//Domain:   os.Getenv("COOKIE_DOMAIN"),
+		Domain:   os.Getenv("HUS_AUTH_DOMAIN"),
 		SameSite: http.SameSiteLaxMode,
 	}
 	c.SetCookie(cookie)

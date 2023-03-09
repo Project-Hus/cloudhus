@@ -2,7 +2,7 @@ package auth
 
 import (
 	"fmt"
-	"hus-auth/helper"
+	"hus-auth/service"
 	"net/http"
 	"time"
 
@@ -24,7 +24,7 @@ func (ac authApiController) TokenEmbeddingHandler(c echo.Context) error {
 	// get refresh token from header
 	refreshToken := c.Request().Header.Get("Authorization")
 	// validate refresh token
-	_, err := helper.ValidateRefreshToken(c.Request().Context(), ac.Client, refreshToken)
+	_, err := service.ValidateRefreshToken(c.Request().Context(), ac.Client, refreshToken)
 	if err != nil {
 		return c.NoContent(http.StatusUnauthorized)
 	}
