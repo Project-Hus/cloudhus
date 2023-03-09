@@ -86,7 +86,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 
 	// set cookie for refresh token with 7 days expiration by struct literal
 	cookie := &http.Cookie{
-		Name:  "hus-refresh-token",
+		Name:  "hus_st",
 		Value: HusSessionTokenSigned,
 		Path:  "/",
 		//Secure:   true, // only sent over https
