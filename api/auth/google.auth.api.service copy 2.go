@@ -13,14 +13,8 @@ import (
 	"google.golang.org/api/idtoken"
 )
 
-// Subservices to redirect after login
-var subservices = map[string]string{
-	"lifthus": os.Getenv("LIFTHUS_URL"),
-	"surfhus": os.Getenv("SURFHUS_URL"),
-}
-
 // GoogleAuthHandler godoc
-// @Router       /social/google/lifthus [post]
+// @Router       /social/google/{subservice_name} [post]
 // @Summary      gets google IDtoken and redirect with hus session cookie.
 // @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
 // @Description the refresh token will be expired in 7 days.
@@ -34,9 +28,10 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 
 	serviceParam := c.Param("service")
-	serviceUrl, ok := subservices[serviceParam]
-	if !ok {
-		return c.Redirect(http.StatusMovedPermanently, os.Getenv("LIFTHUS_URL")+"/error")
+	var serviceUrl string
+	switch serviceParam {
+	case "lifthus":
+		serviceUrl = os.Getenv("LIFTHUS_URL")
 	}
 
 	// credential sent from Google

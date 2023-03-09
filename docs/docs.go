@@ -53,40 +53,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/google": {
-            "post": {
-                "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.\nthe refresh token will be expired in 7 days.",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "processes google auth and redirect with refresh token in url.",
-                "parameters": [
-                    {
-                        "description": "Google ID token",
-                        "name": "jwt",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "301": {
-                        "description": "to /auth/{token_string}"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
         "/hus": {
             "post": {
                 "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.\nthe refresh token will be expired in 7 days.",
@@ -146,6 +112,34 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/social/google/{subservice_name}": {
+            "post": {
+                "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.\nthe refresh token will be expired in 7 days.",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "gets google IDtoken and redirect with hus session cookie.",
+                "parameters": [
+                    {
+                        "description": "Google ID token",
+                        "name": "jwt",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "to /error"
                     }
                 }
             }

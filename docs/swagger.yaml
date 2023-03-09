@@ -36,30 +36,6 @@ paths:
         after validation.
       tags:
       - auth
-  /google:
-    post:
-      consumes:
-      - application/json
-      description: |-
-        validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
-        the refresh token will be expired in 7 days.
-      parameters:
-      - description: Google ID token
-        in: body
-        name: jwt
-        required: true
-        schema:
-          type: string
-      responses:
-        "301":
-          description: to /auth/{token_string}
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-      summary: processes google auth and redirect with refresh token in url.
-      tags:
-      - auth
   /hus:
     post:
       consumes:
@@ -104,6 +80,26 @@ paths:
           description: Internal Server Error
       summary: gets refresh token in the header and returns access token in the cookie
         after validation.
+      tags:
+      - auth
+  /social/google/{subservice_name}:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
+        the refresh token will be expired in 7 days.
+      parameters:
+      - description: Google ID token
+        in: body
+        name: jwt
+        required: true
+        schema:
+          type: string
+      responses:
+        "301":
+          description: to /error
+      summary: gets google IDtoken and redirect with hus session cookie.
       tags:
       - auth
 swagger: "2.0"

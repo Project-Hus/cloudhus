@@ -40,7 +40,7 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 
 	// using created session's UUID, create session token
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"tid":     hs.ID,                     // refresh token's uuid
+		"sid":     hs.ID,                     // refresh token's uuid
 		"purpose": "hus_session",             // purpose
 		"iss":     os.Getenv("HUS_AUTH_URL"), // issuer
 		"uid":     uid,                       // user's uuid
@@ -58,4 +58,10 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 	log.Printf("hus-session created by (%s)", uid)
 	// Sign and return the complete encoded token as a string
 	return rts, nil
+}
+
+// ValidateHusSessionToken takes hus-session token and validate it.
+// and it also revokes validated token and return new token.
+func ValidateHusSessionToken(ctx context.Context, client *ent.Client, st string) (new_token string, err error) {
+	return "", nil
 }
