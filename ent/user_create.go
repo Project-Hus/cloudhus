@@ -22,6 +22,12 @@ type UserCreate struct {
 	hooks    []Hook
 }
 
+// SetProvider sets the "provider" field.
+func (uc *UserCreate) SetProvider(u user.Provider) *UserCreate {
+	uc.mutation.SetProvider(u)
+	return uc
+}
+
 // SetGoogleSub sets the "google_sub" field.
 func (uc *UserCreate) SetGoogleSub(s string) *UserCreate {
 	uc.mutation.SetGoogleSub(s)
@@ -194,6 +200,14 @@ func (uc *UserCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
+	if _, ok := uc.mutation.Provider(); !ok {
+		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "User.provider"`)}
+	}
+	if v, ok := uc.mutation.Provider(); ok {
+		if err := user.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "User.provider": %w`, err)}
+		}
+	}
 	if _, ok := uc.mutation.GoogleSub(); !ok {
 		return &ValidationError{Name: "google_sub", err: errors.New(`ent: missing required field "User.google_sub"`)}
 	}
@@ -252,6 +266,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if id, ok := uc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := uc.mutation.Provider(); ok {
+		_spec.SetField(user.FieldProvider, field.TypeEnum, value)
+		_node.Provider = value
 	}
 	if value, ok := uc.mutation.GoogleSub(); ok {
 		_spec.SetField(user.FieldGoogleSub, field.TypeString, value)

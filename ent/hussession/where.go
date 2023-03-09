@@ -56,14 +56,9 @@ func IDLTE(id uuid.UUID) predicate.HusSession {
 	return predicate.HusSession(sql.FieldLTE(FieldID, id))
 }
 
-// UID applies equality check predicate on the "uid" field. It's identical to UIDEQ.
-func UID(v uuid.UUID) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldUID, v))
-}
-
-// Hld applies equality check predicate on the "hld" field. It's identical to HldEQ.
-func Hld(v bool) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldHld, v))
+// Iat applies equality check predicate on the "iat" field. It's identical to IatEQ.
+func Iat(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldIat, v))
 }
 
 // Exp applies equality check predicate on the "exp" field. It's identical to ExpEQ.
@@ -71,39 +66,49 @@ func Exp(v time.Time) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldExp, v))
 }
 
-// Iat applies equality check predicate on the "iat" field. It's identical to IatEQ.
-func Iat(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldIat, v))
-}
-
-// UIDEQ applies the EQ predicate on the "uid" field.
-func UIDEQ(v uuid.UUID) predicate.HusSession {
+// UID applies equality check predicate on the "uid" field. It's identical to UIDEQ.
+func UID(v uuid.UUID) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldUID, v))
 }
 
-// UIDNEQ applies the NEQ predicate on the "uid" field.
-func UIDNEQ(v uuid.UUID) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNEQ(FieldUID, v))
+// IatEQ applies the EQ predicate on the "iat" field.
+func IatEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldIat, v))
 }
 
-// UIDIn applies the In predicate on the "uid" field.
-func UIDIn(vs ...uuid.UUID) predicate.HusSession {
-	return predicate.HusSession(sql.FieldIn(FieldUID, vs...))
+// IatNEQ applies the NEQ predicate on the "iat" field.
+func IatNEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldIat, v))
 }
 
-// UIDNotIn applies the NotIn predicate on the "uid" field.
-func UIDNotIn(vs ...uuid.UUID) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNotIn(FieldUID, vs...))
+// IatIn applies the In predicate on the "iat" field.
+func IatIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldIn(FieldIat, vs...))
 }
 
-// HldEQ applies the EQ predicate on the "hld" field.
-func HldEQ(v bool) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldHld, v))
+// IatNotIn applies the NotIn predicate on the "iat" field.
+func IatNotIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotIn(FieldIat, vs...))
 }
 
-// HldNEQ applies the NEQ predicate on the "hld" field.
-func HldNEQ(v bool) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNEQ(FieldHld, v))
+// IatGT applies the GT predicate on the "iat" field.
+func IatGT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGT(FieldIat, v))
+}
+
+// IatGTE applies the GTE predicate on the "iat" field.
+func IatGTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGTE(FieldIat, v))
+}
+
+// IatLT applies the LT predicate on the "iat" field.
+func IatLT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLT(FieldIat, v))
+}
+
+// IatLTE applies the LTE predicate on the "iat" field.
+func IatLTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLTE(FieldIat, v))
 }
 
 // ExpEQ applies the EQ predicate on the "exp" field.
@@ -146,44 +151,34 @@ func ExpLTE(v time.Time) predicate.HusSession {
 	return predicate.HusSession(sql.FieldLTE(FieldExp, v))
 }
 
-// IatEQ applies the EQ predicate on the "iat" field.
-func IatEQ(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldIat, v))
+// ExpIsNil applies the IsNil predicate on the "exp" field.
+func ExpIsNil() predicate.HusSession {
+	return predicate.HusSession(sql.FieldIsNull(FieldExp))
 }
 
-// IatNEQ applies the NEQ predicate on the "iat" field.
-func IatNEQ(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNEQ(FieldIat, v))
+// ExpNotNil applies the NotNil predicate on the "exp" field.
+func ExpNotNil() predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotNull(FieldExp))
 }
 
-// IatIn applies the In predicate on the "iat" field.
-func IatIn(vs ...time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldIn(FieldIat, vs...))
+// UIDEQ applies the EQ predicate on the "uid" field.
+func UIDEQ(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldUID, v))
 }
 
-// IatNotIn applies the NotIn predicate on the "iat" field.
-func IatNotIn(vs ...time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNotIn(FieldIat, vs...))
+// UIDNEQ applies the NEQ predicate on the "uid" field.
+func UIDNEQ(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldUID, v))
 }
 
-// IatGT applies the GT predicate on the "iat" field.
-func IatGT(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldGT(FieldIat, v))
+// UIDIn applies the In predicate on the "uid" field.
+func UIDIn(vs ...uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldIn(FieldUID, vs...))
 }
 
-// IatGTE applies the GTE predicate on the "iat" field.
-func IatGTE(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldGTE(FieldIat, v))
-}
-
-// IatLT applies the LT predicate on the "iat" field.
-func IatLT(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldLT(FieldIat, v))
-}
-
-// IatLTE applies the LTE predicate on the "iat" field.
-func IatLTE(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldLTE(FieldIat, v))
+// UIDNotIn applies the NotIn predicate on the "uid" field.
+func UIDNotIn(vs ...uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotIn(FieldUID, vs...))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

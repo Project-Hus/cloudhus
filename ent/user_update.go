@@ -30,6 +30,12 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
+// SetProvider sets the "provider" field.
+func (uu *UserUpdate) SetProvider(u user.Provider) *UserUpdate {
+	uu.mutation.SetProvider(u)
+	return uu
+}
+
 // SetGoogleSub sets the "google_sub" field.
 func (uu *UserUpdate) SetGoogleSub(s string) *UserUpdate {
 	uu.mutation.SetGoogleSub(s)
@@ -203,7 +209,20 @@ func (uu *UserUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (uu *UserUpdate) check() error {
+	if v, ok := uu.mutation.Provider(); ok {
+		if err := user.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "User.provider": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := uu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID))
 	if ps := uu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -211,6 +230,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := uu.mutation.Provider(); ok {
+		_spec.SetField(user.FieldProvider, field.TypeEnum, value)
 	}
 	if value, ok := uu.mutation.GoogleSub(); ok {
 		_spec.SetField(user.FieldGoogleSub, field.TypeString, value)
@@ -320,6 +342,12 @@ type UserUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *UserMutation
+}
+
+// SetProvider sets the "provider" field.
+func (uuo *UserUpdateOne) SetProvider(u user.Provider) *UserUpdateOne {
+	uuo.mutation.SetProvider(u)
+	return uuo
 }
 
 // SetGoogleSub sets the "google_sub" field.
@@ -508,7 +536,20 @@ func (uuo *UserUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (uuo *UserUpdateOne) check() error {
+	if v, ok := uuo.mutation.Provider(); ok {
+		if err := user.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "User.provider": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
+	if err := uuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID))
 	id, ok := uuo.mutation.ID()
 	if !ok {
@@ -533,6 +574,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := uuo.mutation.Provider(); ok {
+		_spec.SetField(user.FieldProvider, field.TypeEnum, value)
 	}
 	if value, ok := uuo.mutation.GoogleSub(); ok {
 		_spec.SetField(user.FieldGoogleSub, field.TypeString, value)

@@ -30,9 +30,8 @@ var (
 	// HusSessionsColumns holds the columns for the "hus_sessions" table.
 	HusSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "hld", Type: field.TypeBool, Default: false},
-		{Name: "exp", Type: field.TypeTime},
 		{Name: "iat", Type: field.TypeTime},
+		{Name: "exp", Type: field.TypeTime, Nullable: true},
 		{Name: "uid", Type: field.TypeUUID},
 	}
 	// HusSessionsTable holds the schema information for the "hus_sessions" table.
@@ -43,7 +42,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "hus_sessions_users_hus_sessions",
-				Columns:    []*schema.Column{HusSessionsColumns[4]},
+				Columns:    []*schema.Column{HusSessionsColumns[3]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -66,6 +65,7 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "provider", Type: field.TypeEnum, Enums: []string{"hus", "google"}},
 		{Name: "google_sub", Type: field.TypeString, Unique: true},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "email_verified", Type: field.TypeBool},

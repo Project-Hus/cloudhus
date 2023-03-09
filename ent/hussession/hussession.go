@@ -13,14 +13,12 @@ const (
 	Label = "hus_session"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldUID holds the string denoting the uid field in the database.
-	FieldUID = "uid"
-	// FieldHld holds the string denoting the hld field in the database.
-	FieldHld = "hld"
-	// FieldExp holds the string denoting the exp field in the database.
-	FieldExp = "exp"
 	// FieldIat holds the string denoting the iat field in the database.
 	FieldIat = "iat"
+	// FieldExp holds the string denoting the exp field in the database.
+	FieldExp = "exp"
+	// FieldUID holds the string denoting the uid field in the database.
+	FieldUID = "uid"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the hussession in the database.
@@ -37,10 +35,9 @@ const (
 // Columns holds all SQL columns for hussession fields.
 var Columns = []string{
 	FieldID,
-	FieldUID,
-	FieldHld,
-	FieldExp,
 	FieldIat,
+	FieldExp,
+	FieldUID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -54,10 +51,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultHld holds the default value on creation for the "hld" field.
-	DefaultHld bool
-	// DefaultExp holds the default value on creation for the "exp" field.
-	DefaultExp time.Time
 	// DefaultIat holds the default value on creation for the "iat" field.
 	DefaultIat func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.

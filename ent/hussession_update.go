@@ -30,22 +30,16 @@ func (hsu *HusSessionUpdate) Where(ps ...predicate.HusSession) *HusSessionUpdate
 	return hsu
 }
 
-// SetUID sets the "uid" field.
-func (hsu *HusSessionUpdate) SetUID(u uuid.UUID) *HusSessionUpdate {
-	hsu.mutation.SetUID(u)
+// SetIat sets the "iat" field.
+func (hsu *HusSessionUpdate) SetIat(t time.Time) *HusSessionUpdate {
+	hsu.mutation.SetIat(t)
 	return hsu
 }
 
-// SetHld sets the "hld" field.
-func (hsu *HusSessionUpdate) SetHld(b bool) *HusSessionUpdate {
-	hsu.mutation.SetHld(b)
-	return hsu
-}
-
-// SetNillableHld sets the "hld" field if the given value is not nil.
-func (hsu *HusSessionUpdate) SetNillableHld(b *bool) *HusSessionUpdate {
-	if b != nil {
-		hsu.SetHld(*b)
+// SetNillableIat sets the "iat" field if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableIat(t *time.Time) *HusSessionUpdate {
+	if t != nil {
+		hsu.SetIat(*t)
 	}
 	return hsu
 }
@@ -64,17 +58,15 @@ func (hsu *HusSessionUpdate) SetNillableExp(t *time.Time) *HusSessionUpdate {
 	return hsu
 }
 
-// SetIat sets the "iat" field.
-func (hsu *HusSessionUpdate) SetIat(t time.Time) *HusSessionUpdate {
-	hsu.mutation.SetIat(t)
+// ClearExp clears the value of the "exp" field.
+func (hsu *HusSessionUpdate) ClearExp() *HusSessionUpdate {
+	hsu.mutation.ClearExp()
 	return hsu
 }
 
-// SetNillableIat sets the "iat" field if the given value is not nil.
-func (hsu *HusSessionUpdate) SetNillableIat(t *time.Time) *HusSessionUpdate {
-	if t != nil {
-		hsu.SetIat(*t)
-	}
+// SetUID sets the "uid" field.
+func (hsu *HusSessionUpdate) SetUID(u uuid.UUID) *HusSessionUpdate {
+	hsu.mutation.SetUID(u)
 	return hsu
 }
 
@@ -147,14 +139,14 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := hsu.mutation.Hld(); ok {
-		_spec.SetField(hussession.FieldHld, field.TypeBool, value)
+	if value, ok := hsu.mutation.Iat(); ok {
+		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
 	}
 	if value, ok := hsu.mutation.Exp(); ok {
 		_spec.SetField(hussession.FieldExp, field.TypeTime, value)
 	}
-	if value, ok := hsu.mutation.Iat(); ok {
-		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
+	if hsu.mutation.ExpCleared() {
+		_spec.ClearField(hussession.FieldExp, field.TypeTime)
 	}
 	if hsu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -211,22 +203,16 @@ type HusSessionUpdateOne struct {
 	mutation *HusSessionMutation
 }
 
-// SetUID sets the "uid" field.
-func (hsuo *HusSessionUpdateOne) SetUID(u uuid.UUID) *HusSessionUpdateOne {
-	hsuo.mutation.SetUID(u)
+// SetIat sets the "iat" field.
+func (hsuo *HusSessionUpdateOne) SetIat(t time.Time) *HusSessionUpdateOne {
+	hsuo.mutation.SetIat(t)
 	return hsuo
 }
 
-// SetHld sets the "hld" field.
-func (hsuo *HusSessionUpdateOne) SetHld(b bool) *HusSessionUpdateOne {
-	hsuo.mutation.SetHld(b)
-	return hsuo
-}
-
-// SetNillableHld sets the "hld" field if the given value is not nil.
-func (hsuo *HusSessionUpdateOne) SetNillableHld(b *bool) *HusSessionUpdateOne {
-	if b != nil {
-		hsuo.SetHld(*b)
+// SetNillableIat sets the "iat" field if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableIat(t *time.Time) *HusSessionUpdateOne {
+	if t != nil {
+		hsuo.SetIat(*t)
 	}
 	return hsuo
 }
@@ -245,17 +231,15 @@ func (hsuo *HusSessionUpdateOne) SetNillableExp(t *time.Time) *HusSessionUpdateO
 	return hsuo
 }
 
-// SetIat sets the "iat" field.
-func (hsuo *HusSessionUpdateOne) SetIat(t time.Time) *HusSessionUpdateOne {
-	hsuo.mutation.SetIat(t)
+// ClearExp clears the value of the "exp" field.
+func (hsuo *HusSessionUpdateOne) ClearExp() *HusSessionUpdateOne {
+	hsuo.mutation.ClearExp()
 	return hsuo
 }
 
-// SetNillableIat sets the "iat" field if the given value is not nil.
-func (hsuo *HusSessionUpdateOne) SetNillableIat(t *time.Time) *HusSessionUpdateOne {
-	if t != nil {
-		hsuo.SetIat(*t)
-	}
+// SetUID sets the "uid" field.
+func (hsuo *HusSessionUpdateOne) SetUID(u uuid.UUID) *HusSessionUpdateOne {
+	hsuo.mutation.SetUID(u)
 	return hsuo
 }
 
@@ -358,14 +342,14 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 			}
 		}
 	}
-	if value, ok := hsuo.mutation.Hld(); ok {
-		_spec.SetField(hussession.FieldHld, field.TypeBool, value)
+	if value, ok := hsuo.mutation.Iat(); ok {
+		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
 	}
 	if value, ok := hsuo.mutation.Exp(); ok {
 		_spec.SetField(hussession.FieldExp, field.TypeTime, value)
 	}
-	if value, ok := hsuo.mutation.Iat(); ok {
-		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
+	if hsuo.mutation.ExpCleared() {
+		_spec.ClearField(hussession.FieldExp, field.TypeTime)
 	}
 	if hsuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

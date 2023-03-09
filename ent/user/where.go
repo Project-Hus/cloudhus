@@ -106,6 +106,26 @@ func UpdatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// ProviderEQ applies the EQ predicate on the "provider" field.
+func ProviderEQ(v Provider) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldProvider, v))
+}
+
+// ProviderNEQ applies the NEQ predicate on the "provider" field.
+func ProviderNEQ(v Provider) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldProvider, v))
+}
+
+// ProviderIn applies the In predicate on the "provider" field.
+func ProviderIn(vs ...Provider) predicate.User {
+	return predicate.User(sql.FieldIn(FieldProvider, vs...))
+}
+
+// ProviderNotIn applies the NotIn predicate on the "provider" field.
+func ProviderNotIn(vs ...Provider) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldProvider, vs...))
+}
+
 // GoogleSubEQ applies the EQ predicate on the "google_sub" field.
 func GoogleSubEQ(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldGoogleSub, v))

@@ -35,16 +35,8 @@ func init() {
 	community.DefaultID = communityDescID.Default.(func() uuid.UUID)
 	hussessionFields := schema.HusSession{}.Fields()
 	_ = hussessionFields
-	// hussessionDescHld is the schema descriptor for hld field.
-	hussessionDescHld := hussessionFields[2].Descriptor()
-	// hussession.DefaultHld holds the default value on creation for the hld field.
-	hussession.DefaultHld = hussessionDescHld.Default.(bool)
-	// hussessionDescExp is the schema descriptor for exp field.
-	hussessionDescExp := hussessionFields[3].Descriptor()
-	// hussession.DefaultExp holds the default value on creation for the exp field.
-	hussession.DefaultExp = hussessionDescExp.Default.(time.Time)
 	// hussessionDescIat is the schema descriptor for iat field.
-	hussessionDescIat := hussessionFields[4].Descriptor()
+	hussessionDescIat := hussessionFields[1].Descriptor()
 	// hussession.DefaultIat holds the default value on creation for the iat field.
 	hussession.DefaultIat = hussessionDescIat.Default.(func() time.Time)
 	// hussessionDescID is the schema descriptor for id field.
@@ -74,11 +66,11 @@ func init() {
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[9].Descriptor()
+	userDescCreatedAt := userFields[10].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[10].Descriptor()
+	userDescUpdatedAt := userFields[11].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

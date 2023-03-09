@@ -20,9 +20,16 @@ func CreateUserFromGoogle(ctx context.Context, client *ent.Client, payload idtok
 	givenName := payload.Claims["given_name"].(string)
 	familyName := payload.Claims["family_name"].(string)
 	u, err := client.User.
-		Create().SetGoogleSub(sub).SetEmail(email).SetEmailVerified(emailVerified).
-		SetName(name).SetProfilePictureURL(picture).SetFamilyName(familyName).
-		SetGivenName(givenName).Save(ctx)
+		Create().
+		SetGoogleSub(sub).
+		SetEmail(email).
+		SetEmailVerified(emailVerified).
+		SetProfilePictureURL(picture).
+		SetName(name).
+		SetGivenName(givenName).
+		SetFamilyName(familyName).
+		SetProvider("google").
+		Save(ctx)
 	if err != nil {
 		log.Printf("[F] creating user failed:%v", err)
 		return nil, err

@@ -299,12 +299,12 @@ func (uq *UserQuery) WithHusSessions(opts ...func(*HusSessionQuery)) *UserQuery 
 // Example:
 //
 //	var v []struct {
-//		GoogleSub string `json:"google_sub,omitempty"`
+//		Provider user.Provider `json:"provider,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.User.Query().
-//		GroupBy(user.FieldGoogleSub).
+//		GroupBy(user.FieldProvider).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (uq *UserQuery) GroupBy(field string, fields ...string) *UserGroupBy {
@@ -322,11 +322,11 @@ func (uq *UserQuery) GroupBy(field string, fields ...string) *UserGroupBy {
 // Example:
 //
 //	var v []struct {
-//		GoogleSub string `json:"google_sub,omitempty"`
+//		Provider user.Provider `json:"provider,omitempty"`
 //	}
 //
 //	client.User.Query().
-//		Select(user.FieldGoogleSub).
+//		Select(user.FieldProvider).
 //		Scan(ctx, &v)
 func (uq *UserQuery) Select(fields ...string) *UserSelect {
 	uq.ctx.Fields = append(uq.ctx.Fields, fields...)

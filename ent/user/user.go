@@ -3,6 +3,7 @@
 package user
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,6 +14,8 @@ const (
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldProvider holds the string denoting the provider field in the database.
+	FieldProvider = "provider"
 	// FieldGoogleSub holds the string denoting the google_sub field in the database.
 	FieldGoogleSub = "google_sub"
 	// FieldEmail holds the string denoting the email field in the database.
@@ -49,6 +52,7 @@ const (
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
+	FieldProvider,
 	FieldGoogleSub,
 	FieldEmail,
 	FieldEmailVerified,
@@ -81,3 +85,26 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// Provider defines the type for the "provider" enum field.
+type Provider string
+
+// Provider values.
+const (
+	ProviderHus    Provider = "hus"
+	ProviderGoogle Provider = "google"
+)
+
+func (pr Provider) String() string {
+	return string(pr)
+}
+
+// ProviderValidator is a validator for the "provider" field enum values. It is called by the builders before save.
+func ProviderValidator(pr Provider) error {
+	switch pr {
+	case ProviderHus, ProviderGoogle:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for provider field: %q", pr)
+	}
+}

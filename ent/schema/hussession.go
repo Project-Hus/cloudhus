@@ -17,11 +17,11 @@ type HusSession struct {
 // Fields of the HusSession.
 func (HusSession) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).StructTag(`json:"sid,omitempty"`).Default(uuid.New).Unique(),
-		field.UUID("uid", uuid.UUID{}),
-		field.Bool("hld").Default(false),                              // holded
-		field.Time("exp").Default(time.Now().Add(time.Hour * 24 * 7)), // expires at
-		field.Time("iat").Default(time.Now),                           // issued at
+		field.UUID("id", uuid.UUID{}).StructTag(`json:"sid,omitempty"`).Default(uuid.New).Unique(), // sid
+		field.Time("iat").Default(time.Now), // issued at
+		// if exp is nil, the session expires when the brwoser's session ends.
+		field.Time("exp").Optional().Nillable(), // expires at
+		field.UUID("uid", uuid.UUID{}),          // uear id
 	}
 }
 

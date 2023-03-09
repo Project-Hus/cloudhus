@@ -27,7 +27,7 @@ func NewAuthApiController(client *ent.Client) *echo.Echo {
 
 	authApiController := newAuthApiController(client)
 
-	authApi.POST("/google", authApiController.GoogleAuthHandler)
+	authApi.POST("/social/google", authApiController.GoogleAuthHandler)
 	authApi.GET("/hus", authApiController.TokenEmbeddingHandler)
 	authApi.GET("/access", authApiController.AcessTokenRequestHandler)
 

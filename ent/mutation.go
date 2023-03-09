@@ -427,9 +427,8 @@ type HusSessionMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
-	hld           *bool
-	exp           *time.Time
 	iat           *time.Time
+	exp           *time.Time
 	clearedFields map[string]struct{}
 	user          *uuid.UUID
 	cleareduser   bool
@@ -542,114 +541,6 @@ func (m *HusSessionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetUID sets the "uid" field.
-func (m *HusSessionMutation) SetUID(u uuid.UUID) {
-	m.user = &u
-}
-
-// UID returns the value of the "uid" field in the mutation.
-func (m *HusSessionMutation) UID() (r uuid.UUID, exists bool) {
-	v := m.user
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUID returns the old "uid" field's value of the HusSession entity.
-// If the HusSession object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HusSessionMutation) OldUID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUID: %w", err)
-	}
-	return oldValue.UID, nil
-}
-
-// ResetUID resets all changes to the "uid" field.
-func (m *HusSessionMutation) ResetUID() {
-	m.user = nil
-}
-
-// SetHld sets the "hld" field.
-func (m *HusSessionMutation) SetHld(b bool) {
-	m.hld = &b
-}
-
-// Hld returns the value of the "hld" field in the mutation.
-func (m *HusSessionMutation) Hld() (r bool, exists bool) {
-	v := m.hld
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldHld returns the old "hld" field's value of the HusSession entity.
-// If the HusSession object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HusSessionMutation) OldHld(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldHld is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldHld requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldHld: %w", err)
-	}
-	return oldValue.Hld, nil
-}
-
-// ResetHld resets all changes to the "hld" field.
-func (m *HusSessionMutation) ResetHld() {
-	m.hld = nil
-}
-
-// SetExp sets the "exp" field.
-func (m *HusSessionMutation) SetExp(t time.Time) {
-	m.exp = &t
-}
-
-// Exp returns the value of the "exp" field in the mutation.
-func (m *HusSessionMutation) Exp() (r time.Time, exists bool) {
-	v := m.exp
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldExp returns the old "exp" field's value of the HusSession entity.
-// If the HusSession object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HusSessionMutation) OldExp(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExp is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExp requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExp: %w", err)
-	}
-	return oldValue.Exp, nil
-}
-
-// ResetExp resets all changes to the "exp" field.
-func (m *HusSessionMutation) ResetExp() {
-	m.exp = nil
-}
-
 // SetIat sets the "iat" field.
 func (m *HusSessionMutation) SetIat(t time.Time) {
 	m.iat = &t
@@ -684,6 +575,91 @@ func (m *HusSessionMutation) OldIat(ctx context.Context) (v time.Time, err error
 // ResetIat resets all changes to the "iat" field.
 func (m *HusSessionMutation) ResetIat() {
 	m.iat = nil
+}
+
+// SetExp sets the "exp" field.
+func (m *HusSessionMutation) SetExp(t time.Time) {
+	m.exp = &t
+}
+
+// Exp returns the value of the "exp" field in the mutation.
+func (m *HusSessionMutation) Exp() (r time.Time, exists bool) {
+	v := m.exp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExp returns the old "exp" field's value of the HusSession entity.
+// If the HusSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HusSessionMutation) OldExp(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExp is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExp: %w", err)
+	}
+	return oldValue.Exp, nil
+}
+
+// ClearExp clears the value of the "exp" field.
+func (m *HusSessionMutation) ClearExp() {
+	m.exp = nil
+	m.clearedFields[hussession.FieldExp] = struct{}{}
+}
+
+// ExpCleared returns if the "exp" field was cleared in this mutation.
+func (m *HusSessionMutation) ExpCleared() bool {
+	_, ok := m.clearedFields[hussession.FieldExp]
+	return ok
+}
+
+// ResetExp resets all changes to the "exp" field.
+func (m *HusSessionMutation) ResetExp() {
+	m.exp = nil
+	delete(m.clearedFields, hussession.FieldExp)
+}
+
+// SetUID sets the "uid" field.
+func (m *HusSessionMutation) SetUID(u uuid.UUID) {
+	m.user = &u
+}
+
+// UID returns the value of the "uid" field in the mutation.
+func (m *HusSessionMutation) UID() (r uuid.UUID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUID returns the old "uid" field's value of the HusSession entity.
+// If the HusSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HusSessionMutation) OldUID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUID: %w", err)
+	}
+	return oldValue.UID, nil
+}
+
+// ResetUID resets all changes to the "uid" field.
+func (m *HusSessionMutation) ResetUID() {
+	m.user = nil
 }
 
 // SetUserID sets the "user" edge to the User entity by id.
@@ -759,18 +735,15 @@ func (m *HusSessionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *HusSessionMutation) Fields() []string {
-	fields := make([]string, 0, 4)
-	if m.user != nil {
-		fields = append(fields, hussession.FieldUID)
-	}
-	if m.hld != nil {
-		fields = append(fields, hussession.FieldHld)
+	fields := make([]string, 0, 3)
+	if m.iat != nil {
+		fields = append(fields, hussession.FieldIat)
 	}
 	if m.exp != nil {
 		fields = append(fields, hussession.FieldExp)
 	}
-	if m.iat != nil {
-		fields = append(fields, hussession.FieldIat)
+	if m.user != nil {
+		fields = append(fields, hussession.FieldUID)
 	}
 	return fields
 }
@@ -780,14 +753,12 @@ func (m *HusSessionMutation) Fields() []string {
 // schema.
 func (m *HusSessionMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case hussession.FieldUID:
-		return m.UID()
-	case hussession.FieldHld:
-		return m.Hld()
-	case hussession.FieldExp:
-		return m.Exp()
 	case hussession.FieldIat:
 		return m.Iat()
+	case hussession.FieldExp:
+		return m.Exp()
+	case hussession.FieldUID:
+		return m.UID()
 	}
 	return nil, false
 }
@@ -797,14 +768,12 @@ func (m *HusSessionMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *HusSessionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case hussession.FieldUID:
-		return m.OldUID(ctx)
-	case hussession.FieldHld:
-		return m.OldHld(ctx)
-	case hussession.FieldExp:
-		return m.OldExp(ctx)
 	case hussession.FieldIat:
 		return m.OldIat(ctx)
+	case hussession.FieldExp:
+		return m.OldExp(ctx)
+	case hussession.FieldUID:
+		return m.OldUID(ctx)
 	}
 	return nil, fmt.Errorf("unknown HusSession field %s", name)
 }
@@ -814,19 +783,12 @@ func (m *HusSessionMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *HusSessionMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case hussession.FieldUID:
-		v, ok := value.(uuid.UUID)
+	case hussession.FieldIat:
+		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetUID(v)
-		return nil
-	case hussession.FieldHld:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetHld(v)
+		m.SetIat(v)
 		return nil
 	case hussession.FieldExp:
 		v, ok := value.(time.Time)
@@ -835,12 +797,12 @@ func (m *HusSessionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetExp(v)
 		return nil
-	case hussession.FieldIat:
-		v, ok := value.(time.Time)
+	case hussession.FieldUID:
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetIat(v)
+		m.SetUID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown HusSession field %s", name)
@@ -871,7 +833,11 @@ func (m *HusSessionMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *HusSessionMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(hussession.FieldExp) {
+		fields = append(fields, hussession.FieldExp)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -884,6 +850,11 @@ func (m *HusSessionMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *HusSessionMutation) ClearField(name string) error {
+	switch name {
+	case hussession.FieldExp:
+		m.ClearExp()
+		return nil
+	}
 	return fmt.Errorf("unknown HusSession nullable field %s", name)
 }
 
@@ -891,17 +862,14 @@ func (m *HusSessionMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *HusSessionMutation) ResetField(name string) error {
 	switch name {
-	case hussession.FieldUID:
-		m.ResetUID()
-		return nil
-	case hussession.FieldHld:
-		m.ResetHld()
+	case hussession.FieldIat:
+		m.ResetIat()
 		return nil
 	case hussession.FieldExp:
 		m.ResetExp()
 		return nil
-	case hussession.FieldIat:
-		m.ResetIat()
+	case hussession.FieldUID:
+		m.ResetUID()
 		return nil
 	}
 	return fmt.Errorf("unknown HusSession field %s", name)
@@ -1481,6 +1449,7 @@ type UserMutation struct {
 	op                  Op
 	typ                 string
 	id                  *uuid.UUID
+	provider            *user.Provider
 	google_sub          *string
 	email               *string
 	email_verified      *bool
@@ -1602,6 +1571,42 @@ func (m *UserMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetProvider sets the "provider" field.
+func (m *UserMutation) SetProvider(u user.Provider) {
+	m.provider = &u
+}
+
+// Provider returns the value of the "provider" field in the mutation.
+func (m *UserMutation) Provider() (r user.Provider, exists bool) {
+	v := m.provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProvider returns the old "provider" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldProvider(ctx context.Context) (v user.Provider, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProvider requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
+	}
+	return oldValue.Provider, nil
+}
+
+// ResetProvider resets all changes to the "provider" field.
+func (m *UserMutation) ResetProvider() {
+	m.provider = nil
 }
 
 // SetGoogleSub sets the "google_sub" field.
@@ -2078,7 +2083,10 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
+	if m.provider != nil {
+		fields = append(fields, user.FieldProvider)
+	}
 	if m.google_sub != nil {
 		fields = append(fields, user.FieldGoogleSub)
 	}
@@ -2117,6 +2125,8 @@ func (m *UserMutation) Fields() []string {
 // schema.
 func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case user.FieldProvider:
+		return m.Provider()
 	case user.FieldGoogleSub:
 		return m.GoogleSub()
 	case user.FieldEmail:
@@ -2146,6 +2156,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case user.FieldProvider:
+		return m.OldProvider(ctx)
 	case user.FieldGoogleSub:
 		return m.OldGoogleSub(ctx)
 	case user.FieldEmail:
@@ -2175,6 +2187,13 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *UserMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case user.FieldProvider:
+		v, ok := value.(user.Provider)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProvider(v)
+		return nil
 	case user.FieldGoogleSub:
 		v, ok := value.(string)
 		if !ok {
@@ -2309,6 +2328,9 @@ func (m *UserMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *UserMutation) ResetField(name string) error {
 	switch name {
+	case user.FieldProvider:
+		m.ResetProvider()
+		return nil
 	case user.FieldGoogleSub:
 		m.ResetGoogleSub()
 		return nil

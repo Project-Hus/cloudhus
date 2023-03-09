@@ -17,6 +17,8 @@ type User struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"uid,omitempty"`
+	// Provider holds the value of the "provider" field.
+	Provider user.Provider `json:"provider,omitempty"`
 	// GoogleSub holds the value of the "google_sub" field.
 	GoogleSub string `json:"google_sub,omitempty"`
 	// Email holds the value of the "email" field.
@@ -67,7 +69,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldEmailVerified:
 			values[i] = new(sql.NullBool)
-		case user.FieldGoogleSub, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldProfilePictureURL:
+		case user.FieldProvider, user.FieldGoogleSub, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldProfilePictureURL:
 			values[i] = new(sql.NullString)
 		case user.FieldBirthdate, user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -93,6 +95,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				u.ID = *value
+			}
+		case user.FieldProvider:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
+			} else if value.Valid {
+				u.Provider = user.Provider(value.String)
 			}
 		case user.FieldGoogleSub:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -189,6 +197,9 @@ func (u *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
+	builder.WriteString("provider=")
+	builder.WriteString(fmt.Sprintf("%v", u.Provider))
+	builder.WriteString(", ")
 	builder.WriteString("google_sub=")
 	builder.WriteString(u.GoogleSub)
 	builder.WriteString(", ")

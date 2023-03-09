@@ -19,6 +19,8 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).StructTag(`json:"uid,omitempty"`).Default(uuid.New).Unique(),
 
+		field.Enum("provider").Values("hus", "google"),
+
 		field.String("google_sub").Unique(),
 
 		field.String("email").Unique(),
