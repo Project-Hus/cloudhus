@@ -91,7 +91,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		}
 	}
 
-	HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.Client, u.ID, false, sids)
+	sid, HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.Client, u.ID, false, sids)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
@@ -109,6 +109,6 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	}
 	c.SetCookie(cookie)
 
-	// redirects to lifthus.com/sign/token/{refresh_token}
-	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/sign")
+	// redirects to {serviceUrl}/hus/token/{hus-session-id}
+	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/hus/session/"+sid)
 }

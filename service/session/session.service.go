@@ -14,19 +14,21 @@ import (
 
 // CreateHusSession takes user's uuid and create new hus session and return it.
 // and it also takes previous session ids as optional argument to revoke them.
-func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID, exp bool, pastSid []string) (string, error) {
+func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID, exp bool, pastSid []string) (
+	new_sid, new_token string, err error,
+) {
 	// Revoke given past sessions in prevSid
 	for _, sid := range pastSid {
 		fmt.Println(sid)
 		sid, err := uuid.FromBytes([]byte(sid))
 		if err != nil {
 			log.Println("[F] converting sid to uuid failed:", err)
-			return "", err
+			return "", "", err
 		}
 		err = client.HusSession.DeleteOneID(sid).Exec(ctx)
 		if err != nil {
 			log.Print("[F] deleting past session failed: ", err)
-			return "", err
+			return "", "", err
 		}
 	}
 
@@ -55,11 +57,11 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 	rts, err := rt.SignedString(hsk)
 	if err != nil {
 		log.Print("[F] signing hus-session token failed: ", err)
-		return "", err
+		return "", "", err
 	}
 	log.Printf("hus-session created by (%s)", uid)
 	// Sign and return the complete encoded token as a string
-	return rts, nil
+	return hs.ID.String(), rts, nil
 }
 
 // ValidateHusSessionToken takes hus-session token and validate it.
