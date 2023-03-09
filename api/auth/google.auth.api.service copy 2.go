@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"hus-auth/db"
+	"hus-auth/service/session"
 	"log"
 	"net/http"
 	"os"
@@ -12,9 +13,15 @@ import (
 	"google.golang.org/api/idtoken"
 )
 
+// Subservices to redirect after login
+var subservices = map[string]string{
+	"lifthus": os.Getenv("LIFTHUS_URL"),
+	"surfhus": os.Getenv("SURFHUS_URL"),
+}
+
 // GoogleAuthHandler godoc
-// @Router       /social/google [post]
-// @Summary      gets google IDtoken and redirect with refresh token in url.
+// @Router       /social/google/lifthus [post]
+// @Summary      gets google IDtoken and redirect with hus session cookie.
 // @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
 // @Description the refresh token will be expired in 7 days.
 // @Tags         auth
@@ -26,6 +33,12 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// client ID that Google issued to lifthus
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 
+	serviceParam := c.Param("service")
+	serviceUrl, ok := subservices[serviceParam]
+	if !ok {
+		return c.Redirect(http.StatusMovedPermanently, os.Getenv("LIFTHUS_URL")+"/error")
+	}
+
 	// credential sent from Google
 	credential := c.FormValue("credential")
 
@@ -36,12 +49,12 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	payload, err := idtoken.Validate(c.Request().Context(), credential, clientID)
 	if err != nil {
 		log.Println("[F] Invalid ID token: %w", err)
-		return c.Redirect(http.StatusMovedPermanently, "http://"+c.Request().Host+"/error")
+		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
-	// check if the user's ID token was intended for Lifthus
+	// check if the user's ID token was intended for Hus.
 	if payload.Audience != clientID {
 		log.Println("[F] Invalid client ID:", payload.Audience)
-		return c.Redirect(http.StatusMovedPermanently, "http://"+c.Request().Host+"/error")
+		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
 	// Google's unique user ID
@@ -49,13 +62,13 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// check if the user is registered with Google
 	u, err := db.QueryUserByGoogleSub(c.Request().Context(), ac.Client, sub)
 	if err != nil {
-		return c.Redirect(http.StatusMovedPermanently, "http://"+c.Request().Host+"/error")
+		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 	// create one if there is no Hus account with this Google account
 	if u == nil {
 		_, err := db.CreateUserFromGoogle(c.Request().Context(), ac.Client, *payload)
 		if err != nil {
-			return c.Redirect(http.StatusMovedPermanently, "http://"+c.Request().Host+"/error")
+			return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 		}
 	}
 
@@ -63,19 +76,18 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// Now get user query again to create refresh token.
 	u, err = db.QueryUserByGoogleSub(c.Request().Context(), ac.Client, sub)
 	if err != nil {
-		return c.Redirect(http.StatusMovedPermanently, "http://"+c.Request().Host+"/error")
+		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
-	// create and get refresh token
-	refreshTokenSigned, err := db.CreateRefreshToken(c.Request().Context(), ac.Client, u.ID.String())
+	HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.Client, u.ID, false)
 	if err != nil {
-		return c.Redirect(http.StatusMovedPermanently, "http://"+c.Request().Host+"/error")
+		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
 	// set cookie for refresh token with 7 days expiration by struct literal
 	cookie := &http.Cookie{
 		Name:  "hus-refresh-token",
-		Value: refreshTokenSigned,
+		Value: HusSessionTokenSigned,
 		Path:  "/",
 		//Secure:   true, // only sent over https
 		HttpOnly: true,
@@ -86,5 +98,5 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	c.SetCookie(cookie)
 
 	// redirects to lifthus.com/sign/token/{refresh_token}
-	return c.Redirect(http.StatusMovedPermanently, os.Getenv("LIFTHUS_URL"))
+	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/sign")
 }
