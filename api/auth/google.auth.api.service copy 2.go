@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/api/idtoken"
 )
@@ -72,6 +73,19 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	u, err = db.QueryUserByGoogleSub(c.Request().Context(), ac.Client, sub)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
+	}
+
+	// get hus_st from cookie
+	hus_st, _ := c.Cookie("hus_st")
+	sessionToken := hus_st.Value
+
+	// if hus_st exists, get the sid from jwt hus_st
+	if hus_st != nil {
+		token, err := jwt.Parse(sessionToken, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf()
+			}
+		})
 	}
 
 	HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.Client, u.ID, false)
