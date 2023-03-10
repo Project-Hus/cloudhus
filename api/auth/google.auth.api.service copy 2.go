@@ -117,6 +117,7 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 
 	claims, err := helper.ParseJWTwithHMAC(hus_st.Value)
 	if err != nil {
+		log.Println(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	sid := claims["sid"].(string)
@@ -133,5 +134,19 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 			return c.NoContent(http.StatusInternalServerError)
 		}
 	}
+
+	// delete the session from cookie
+	cookie := &http.Cookie{
+		Name:  "hus_st",
+		Value: "",
+		Path:  "/",
+		//Secure:   true, // only sent over https
+		HttpOnly: true,
+		Expires:  time.Now().Add(time.Hour * 24 * 7),
+		Domain:   os.Getenv("HUS_AUTH_DOMAIN"),
+		SameSite: http.SameSiteLaxMode,
+	}
+	c.SetCookie(cookie)
+
 	return c.NoContent(http.StatusOK)
 }

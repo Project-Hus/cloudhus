@@ -25,15 +25,28 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 		log.Println("[F] creating new hus session failed:", err)
 	}
 
+	var rt *jwt.Token
+
 	// using created session's UUID, create session token
-	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sid":     hs.ID,                     // refresh token's uuid
-		"purpose": "hus_session",             // purpose"
-		"iss":     os.Getenv("HUS_AUTH_URL"), // issuer
-		"uid":     uid,                       // user's uuid
-		"iat":     hs.Iat,                    // issued at
-		"exp":     hs.Exp,                    // expiration : one week
-	})
+	if exp {
+		rt = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"sid":     hs.ID,                     // refresh token's uuid
+			"purpose": "hus_session",             // purpose"
+			"iss":     os.Getenv("HUS_AUTH_URL"), // issuer
+			"uid":     uid,                       // user's uuid
+			"iat":     hs.Iat,                    // issued at
+			"exp":     hs.Exp.Unix(),             // expiration : one week
+		})
+	} else {
+		rt = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"sid":     hs.ID,                                 // refresh token's uuid
+			"purpose": "hus_session",                         // purpose"
+			"iss":     os.Getenv("HUS_AUTH_URL"),             // issuer
+			"uid":     uid,                                   // user's uuid
+			"iat":     hs.Iat,                                // issued at
+			"exp":     time.Now().Add(time.Hour * 24).Unix(), // expiration : one day
+		})
+	}
 
 	hsk := []byte(os.Getenv("HUS_AUTH_TOKEN_KEY"))
 
