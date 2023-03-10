@@ -2,7 +2,6 @@ package session
 
 import (
 	"context"
-	"fmt"
 	"hus-auth/ent"
 	"log"
 	"os"
@@ -19,16 +18,17 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 ) {
 	// Revoke given past sessions in prevSid
 	for _, sid := range pastSid {
-		fmt.Println(sid)
-		sid, err := uuid.FromBytes([]byte(sid))
+		sid, err := uuid.Parse(sid)
 		if err != nil {
 			log.Println("[F] converting sid to uuid failed:", err)
 			return "", "", err
 		}
 		err = client.HusSession.DeleteOneID(sid).Exec(ctx)
 		if err != nil {
-			log.Print("[F] deleting past session failed: ", err)
-			return "", "", err
+			if !ent.IsNotFound(err) {
+				log.Print("[F] deleting past session failed: ", err)
+				return "", "", err
+			}
 		}
 	}
 

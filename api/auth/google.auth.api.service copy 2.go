@@ -3,7 +3,6 @@ package auth
 import (
 	"fmt"
 	"hus-auth/db"
-	"hus-auth/helper"
 	"hus-auth/service/session"
 	"log"
 	"net/http"
@@ -75,6 +74,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
+	/*  Google login's redirect ux mode doesn't include cookie
 	// get hus_st from cookie
 	hus_st, _ := c.Cookie("hus_st") // google redirection doesn't send cookie
 	// if hus_st exists, get the sid from jwt hus_st
@@ -89,6 +89,14 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		if ok {
 			sids = append(sids, sid.(string))
 		}
+	}
+	*/
+
+	/* using local storage instead of cookie */
+	pastSid := c.Param("pastSession")
+	sids := []string{}
+	if pastSid != "" {
+		sids = append(sids, pastSid)
 	}
 
 	sid, HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.Client, u.ID, false, sids)
