@@ -110,6 +110,32 @@
                 }
             }
         },
+        "/session/revoke": {
+            "delete": {
+                "description": "gets hus session token from cookie and revoke it by deleting it from database.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "gets hus session token from cookie and revoke it.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hus session token in cookie",
+                        "name": "jwt",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "500": {
+                        "description": "doesn't have to be handled"
+                    }
+                }
+            }
+        },
         "/social/google/{subservice_name}": {
             "post": {
                 "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.\nthe refresh token will be expired in 7 days.",

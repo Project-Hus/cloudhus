@@ -3,12 +3,15 @@ package auth
 import (
 	"fmt"
 	"hus-auth/db"
+	"hus-auth/ent"
+	"hus-auth/helper"
 	"hus-auth/service/session"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/api/idtoken"
 )
@@ -67,39 +70,14 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		}
 	}
 
-	// We checked or created if the Google user exists in Hus,
-	// Now get user query again to create refresh token.
+	// We checked or created if the Google user exists in Hus above,
+	// Now get user query again to create new hus session.
 	u, err = db.QueryUserByGoogleSub(c.Request().Context(), ac.Client, sub)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
-	/*  Google login's redirect ux mode doesn't include cookie
-	// get hus_st from cookie
-	hus_st, _ := c.Cookie("hus_st") // google redirection doesn't send cookie
-	// if hus_st exists, get the sid from jwt hus_st
-	sids := []string{}
-	if hus_st != nil {
-		sessionToken := hus_st.Value
-		claims, err := helper.ParseJWTwithHMAC(sessionToken)
-		if err != nil {
-			return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
-		}
-		sid, ok := claims["sid"]
-		if ok {
-			sids = append(sids, sid.(string))
-		}
-	}
-	*/
-
-	/* using local storage instead of cookie */
-	pastSid := c.Param("pastSession")
-	sids := []string{}
-	if pastSid != "" {
-		sids = append(sids, pastSid)
-	}
-
-	sid, HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.Client, u.ID, false, sids)
+	_, HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.Client, u.ID, false)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
@@ -118,5 +96,42 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	c.SetCookie(cookie)
 
 	// redirects to {serviceUrl}/hus/token/{hus-session-id}
-	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/hus/session/"+sid)
+	return c.Redirect(http.StatusMovedPermanently, serviceUrl)
+}
+
+// SessionRevocationHandler godoc
+// @Router       /session/revoke [delete]
+// @Summary      gets hus session token from cookie and revoke it.
+// @Description  gets hus session token from cookie and revoke it by deleting it from database.
+// @Tags         auth
+// @Param        jwt header string true "Hus session token in cookie"
+// @Success      200 "Ok"
+// @Failure      500 "doesn't have to be handled"
+func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
+	// get hus_st from cookie
+	hus_st, _ := c.Cookie("hus_st")
+	if hus_st == nil {
+		return c.NoContent(http.StatusOK)
+	}
+	// Revoke past session in cookie
+
+	claims, err := helper.ParseJWTwithHMAC(hus_st.Value)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	sid := claims["sid"].(string)
+
+	suuid, err := uuid.Parse(sid)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	err = ac.Client.HusSession.DeleteOneID(suuid).Exec(c.Request().Context())
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			log.Print("[F] deleting past session failed: ", err)
+			return c.NoContent(http.StatusInternalServerError)
+		}
+	}
+	return c.NoContent(http.StatusOK)
 }

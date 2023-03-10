@@ -10,6 +10,8 @@ import (
 type authApis interface {
 	// get google ID token and set hus session cookie
 	GoogleAuthHandler(c echo.Context) error
+	SessionRevocationHandler(c echo.Context) error
+
 	TokenEmbeddingHandler(c echo.Context) error
 	AcessTokenRequestHandler(c echo.Context) error
 
@@ -27,7 +29,9 @@ func NewAuthApiController(client *ent.Client) *echo.Echo {
 
 	authApiController := newAuthApiController(client)
 
-	authApi.POST("/social/google/:service/:pastSession", authApiController.GoogleAuthHandler)
+	authApi.POST("/social/google/:service", authApiController.GoogleAuthHandler)
+	authApi.DELETE("/session/revoke", authApiController.SessionRevocationHandler)
+
 	authApi.GET("/hus", authApiController.TokenEmbeddingHandler)
 	authApi.GET("/access", authApiController.AcessTokenRequestHandler)
 

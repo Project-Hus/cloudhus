@@ -12,26 +12,9 @@ import (
 )
 
 // CreateHusSession takes user's uuid and create new hus session and return it.
-// and it also takes previous session ids as optional argument to revoke them.
-func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID, exp bool, pastSid []string) (
+func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID, exp bool) (
 	new_sid, new_token string, err error,
 ) {
-	// Revoke given past sessions in prevSid
-	for _, sid := range pastSid {
-		sid, err := uuid.Parse(sid)
-		if err != nil {
-			log.Println("[F] converting sid to uuid failed:", err)
-			return "", "", err
-		}
-		err = client.HusSession.DeleteOneID(sid).Exec(ctx)
-		if err != nil {
-			if !ent.IsNotFound(err) {
-				log.Print("[F] deleting past session failed: ", err)
-				return "", "", err
-			}
-		}
-	}
-
 	// create new Hus session in database
 	nhs := client.HusSession.Create().SetUID(uid)
 	if exp { // if it's set to expired, give it 7 days expiration
