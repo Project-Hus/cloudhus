@@ -84,14 +84,14 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 
 	// set cookie for refresh token with 7 days expiration by struct literal
 	cookie := &http.Cookie{
-		Name:  "hus_st",
-		Value: HusSessionTokenSigned,
-		Path:  "/",
-		//Secure:   true, // only sent over https
+		Name:     "hus_st",
+		Value:    HusSessionTokenSigned,
+		Path:     "/",
+		Secure:   false,
 		HttpOnly: true,
 		Expires:  time.Now().Add(time.Hour * 24 * 7),
 		Domain:   os.Getenv("HUS_AUTH_DOMAIN"),
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteDefaultMode,
 	}
 	c.SetCookie(cookie)
 
@@ -115,7 +115,7 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 	}
 	// Revoke past session in cookie
 
-	claims, err := helper.ParseJWTwithHMAC(hus_st.Value)
+	claims, _, err := helper.ParseJWTwithHMAC(hus_st.Value)
 	if err != nil {
 		log.Println(err)
 		return c.NoContent(http.StatusInternalServerError)
@@ -137,14 +137,13 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 
 	// delete the session from cookie
 	cookie := &http.Cookie{
-		Name:  "hus_st",
-		Value: "",
-		Path:  "/",
-		//Secure:   true, // only sent over https
+		Name:     "hus_st",
+		Value:    "",
+		Path:     "/",
+		Secure:   false,
 		HttpOnly: true,
-		Expires:  time.Now().Add(time.Hour * 24 * 7),
 		Domain:   os.Getenv("HUS_AUTH_DOMAIN"),
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteDefaultMode,
 	}
 	c.SetCookie(cookie)
 

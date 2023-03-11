@@ -8,18 +8,6 @@ import (
 	"hus-auth/ent"
 )
 
-// The CommunityFunc type is an adapter to allow the use of ordinary
-// function as Community mutator.
-type CommunityFunc func(context.Context, *ent.CommunityMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f CommunityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.CommunityMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommunityMutation", m)
-}
-
 // The HusSessionFunc type is an adapter to allow the use of ordinary
 // function as HusSession mutator.
 type HusSessionFunc func(context.Context, *ent.HusSessionMutation) (ent.Value, error)
@@ -30,18 +18,6 @@ func (f HusSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.HusSessionMutation", m)
-}
-
-// The RefreshTokenFunc type is an adapter to allow the use of ordinary
-// function as RefreshToken mutator.
-type RefreshTokenFunc func(context.Context, *ent.RefreshTokenMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f RefreshTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.RefreshTokenMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RefreshTokenMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary

@@ -3,9 +3,7 @@
 package ent
 
 import (
-	"hus-auth/ent/community"
 	"hus-auth/ent/hussession"
-	"hus-auth/ent/refreshtoken"
 	"hus-auth/ent/schema"
 	"hus-auth/ent/user"
 	"time"
@@ -17,22 +15,6 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	communityFields := schema.Community{}.Fields()
-	_ = communityFields
-	// communityDescName is the schema descriptor for name field.
-	communityDescName := communityFields[1].Descriptor()
-	// community.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	community.NameValidator = communityDescName.Validators[0].(func(string) error)
-	// communityDescUpdatedAt is the schema descriptor for updated_at field.
-	communityDescUpdatedAt := communityFields[2].Descriptor()
-	// community.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	community.DefaultUpdatedAt = communityDescUpdatedAt.Default.(func() time.Time)
-	// community.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	community.UpdateDefaultUpdatedAt = communityDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// communityDescID is the schema descriptor for id field.
-	communityDescID := communityFields[0].Descriptor()
-	// community.DefaultID holds the default value on creation for the id field.
-	community.DefaultID = communityDescID.Default.(func() uuid.UUID)
 	hussessionFields := schema.HusSession{}.Fields()
 	_ = hussessionFields
 	// hussessionDescIat is the schema descriptor for iat field.
@@ -43,26 +25,6 @@ func init() {
 	hussessionDescID := hussessionFields[0].Descriptor()
 	// hussession.DefaultID holds the default value on creation for the id field.
 	hussession.DefaultID = hussessionDescID.Default.(func() uuid.UUID)
-	refreshtokenFields := schema.RefreshToken{}.Fields()
-	_ = refreshtokenFields
-	// refreshtokenDescRevoked is the schema descriptor for revoked field.
-	refreshtokenDescRevoked := refreshtokenFields[2].Descriptor()
-	// refreshtoken.DefaultRevoked holds the default value on creation for the revoked field.
-	refreshtoken.DefaultRevoked = refreshtokenDescRevoked.Default.(bool)
-	// refreshtokenDescCreatedAt is the schema descriptor for created_at field.
-	refreshtokenDescCreatedAt := refreshtokenFields[3].Descriptor()
-	// refreshtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
-	refreshtoken.DefaultCreatedAt = refreshtokenDescCreatedAt.Default.(func() time.Time)
-	// refreshtokenDescUpdatedAt is the schema descriptor for updated_at field.
-	refreshtokenDescUpdatedAt := refreshtokenFields[4].Descriptor()
-	// refreshtoken.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	refreshtoken.DefaultUpdatedAt = refreshtokenDescUpdatedAt.Default.(func() time.Time)
-	// refreshtoken.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	refreshtoken.UpdateDefaultUpdatedAt = refreshtokenDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// refreshtokenDescID is the schema descriptor for id field.
-	refreshtokenDescID := refreshtokenFields[0].Descriptor()
-	// refreshtoken.DefaultID holds the default value on creation for the id field.
-	refreshtoken.DefaultID = refreshtokenDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for created_at field.
