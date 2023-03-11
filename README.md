@@ -27,9 +27,12 @@ go generate ./ent
 ## Protocol Hus
 
 - Unsigned-Hus case ( Manual Login )<br>
-  1 - A user who haven't gotten Hus token accesses one of Hus subservices.<br>
-  2 - The SPA proceeds authentication(Third-party etc.) with Hus, and Hus sets Hus session cookie with response.<br>
-  3 - Now go to No.2 of following case.<br>
+  1 - A user who haven't gotten Hus token accesses one of Hus subservices(SS).<br>
+  2 - It requires unique sid from SS.<br>
+  3 - The SPA proceeds authentication(Third-party etc.) with Hus.<br>
+  4 - Hus tells SS the user is signed with sid.<br>
+  5 - and Hus redirects with Hus session cookie.<br>
+  6 - The SPA requets to check if it's signed from SS.<br>
 
 - Signed-Hus case<br>
   1 - A user who got Hus session cookie in Hus' domain accesses one of its subservices(SS).<br>
