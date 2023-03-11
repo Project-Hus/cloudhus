@@ -8,25 +8,6 @@ import (
 )
 
 var (
-	// CommunitiesColumns holds the columns for the "communities" table.
-	CommunitiesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "name", Type: field.TypeString},
-		{Name: "updated_at", Type: field.TypeTime},
-	}
-	// CommunitiesTable holds the schema information for the "communities" table.
-	CommunitiesTable = &schema.Table{
-		Name:       "communities",
-		Columns:    CommunitiesColumns,
-		PrimaryKey: []*schema.Column{CommunitiesColumns[0]},
-		Indexes: []*schema.Index{
-			{
-				Name:    "community_id",
-				Unique:  true,
-				Columns: []*schema.Column{CommunitiesColumns[0]},
-			},
-		},
-	}
 	// HusSessionsColumns holds the columns for the "hus_sessions" table.
 	HusSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -47,20 +28,6 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
-	}
-	// RefreshTokensColumns holds the columns for the "refresh_tokens" table.
-	RefreshTokensColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "uid", Type: field.TypeString},
-		{Name: "revoked", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-	}
-	// RefreshTokensTable holds the schema information for the "refresh_tokens" table.
-	RefreshTokensTable = &schema.Table{
-		Name:       "refresh_tokens",
-		Columns:    RefreshTokensColumns,
-		PrimaryKey: []*schema.Column{RefreshTokensColumns[0]},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -85,9 +52,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		CommunitiesTable,
 		HusSessionsTable,
-		RefreshTokensTable,
 		UsersTable,
 	}
 )
