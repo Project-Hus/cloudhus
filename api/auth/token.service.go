@@ -24,7 +24,7 @@ func (ac authApiController) TokenEmbeddingHandler(c echo.Context) error {
 	// get refresh token from header
 	refreshToken := c.Request().Header.Get("Authorization")
 	// validate refresh token
-	_, err := service.ValidateRefreshToken(c.Request().Context(), ac.Client, refreshToken)
+	_, err := service.ValidateRefreshToken(c.Request().Context(), ac.dbClient, refreshToken)
 	if err != nil {
 		return c.NoContent(http.StatusUnauthorized)
 	}
@@ -86,7 +86,7 @@ func (ac authApiController) AcessTokenRequestHandler(c echo.Context) error {
 	// get refresh token from header
 	refreshToken := c.Request().Header.Get("refresh_token")
 	// validate refresh token
-	refreshTokenValidated, err := service.ValidateRefreshToken(c.Request().Context(), ac.Client, refreshToken)
+	refreshTokenValidated, err := service.ValidateRefreshToken(c.Request().Context(), ac.dbClient, refreshToken)
 	if err != nil {
 		return c.NoContent(http.StatusUnauthorized)
 	}
@@ -95,7 +95,7 @@ func (ac authApiController) AcessTokenRequestHandler(c echo.Context) error {
 	uid := refreshTokenValidated["uid"].(string)
 
 	// Create a new access token with 10 minutes expiration time.
-	accessTokenSigned, err := service.GetNewAccessToken(c.Request().Context(), ac.Client, uid)
+	accessTokenSigned, err := service.GetNewAccessToken(c.Request().Context(), ac.dbClient, uid)
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}

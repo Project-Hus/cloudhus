@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"bytes"
+	"encoding/json"
 	"hus-auth/common"
 	"hus-auth/ent"
 	"hus-auth/ent/hussession"
@@ -26,7 +28,7 @@ import (
 func (ac authApiController) SessionCheckHandler(c echo.Context) error {
 	// get service name and sid from path
 	service := c.Param("service")
-	sid := c.Param("sid")
+	lifthus_sid := c.Param("sid")
 
 	subservice, ok := common.Subservice[service]
 	// if the service name is not registered, return 404
@@ -65,7 +67,7 @@ func (ac authApiController) SessionCheckHandler(c echo.Context) error {
 	}
 
 	// check if the hus session is not revoked querying the database with hus_sid.
-	hs, err := ac.Client.HusSession.Query().Where(hussession.ID(hus_sid_uuid)).Only(c.Request().Context())
+	hs, err := ac.dbClient.HusSession.Query().Where(hussession.ID(hus_sid_uuid)).Only(c.Request().Context())
 	if err != nil {
 		return c.NoContent(http.StatusUnauthorized)
 	} else if hs.UID.String() != hus_uid { // if the user ID is not matched, then return 401.
@@ -74,24 +76,22 @@ func (ac authApiController) SessionCheckHandler(c echo.Context) error {
 
 	// now we know that the hus session is valid, so we tell the subservice server that the session is valid with uid.
 	// make http request to subservice server
-	req, err := http.NewRequest("POST", subservice.URL+"/session/check/"+service+"/"+sid, nil)
+	scb := SessionCheckBody{lifthus_sid, hus_uid}
+	scbBytes, _ := json.Marshal(scb)
+	buff := bytes.NewBuffer(scbBytes)
+	resp, err := http.Post(subservice.URL+"/session/check/", "application/json", buff)
 	if err != nil {
-		log.Println(err)
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	req.Header.Set("uid", hus_uid)
-	req.Header.Set("sid", sid)
-	req.Header.Set("service", service)
-	// send the request
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Println(err)
+		log.Println("[F] session transfering to "+subservice.Name+" failed: ", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	defer resp.Body.Close()
 
-	return c.Redirect(http.StatusPermanentRedirect, subservice.URL+"/session/check/")
+	if resp.StatusCode == http.StatusOK {
+		return c.Redirect(http.StatusPermanentRedirect, subservice.URL+"/session/check/")
+	} else {
+		log.Println("[F] an error occured from " + subservice.Name)
+		return c.NoContent(http.StatusInternalServerError)
+	}
 }
 
 // SessionRevocationHandler godoc
@@ -122,7 +122,7 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	err = ac.Client.HusSession.DeleteOneID(suuid).Exec(c.Request().Context())
+	err = ac.dbClient.HusSession.DeleteOneID(suuid).Exec(c.Request().Context())
 	if err != nil {
 		if !ent.IsNotFound(err) {
 			log.Print("[F] deleting past session failed: ", err)

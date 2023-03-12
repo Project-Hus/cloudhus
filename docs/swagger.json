@@ -110,6 +110,45 @@
                 }
             }
         },
+        "/session/check/:service/:sid": {
+            "post": {
+                "description": "checks the hus session and tell subservice server if the session is valid.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "accepts sid and service name to check if the session is valid.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "subservice name",
+                        "name": "service",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "session id",
+                        "name": "sid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Hus session token in cookie",
+                        "name": "jwt",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
         "/session/revoke": {
             "delete": {
                 "description": "gets hus session token from cookie and revoke it by deleting it from database.",

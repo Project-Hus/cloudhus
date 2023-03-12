@@ -82,6 +82,33 @@ paths:
         after validation.
       tags:
       - auth
+  /session/check/:service/:sid:
+    post:
+      description: checks the hus session and tell subservice server if the session
+        is valid.
+      parameters:
+      - description: subservice name
+        in: path
+        name: service
+        required: true
+        type: string
+      - description: session id
+        in: path
+        name: sid
+        required: true
+        type: string
+      - description: Hus session token in cookie
+        in: header
+        name: jwt
+        type: string
+      responses:
+        "200":
+          description: Ok
+        "401":
+          description: Unauthorized
+      summary: accepts sid and service name to check if the session is valid.
+      tags:
+      - auth
   /session/revoke:
     delete:
       description: gets hus session token from cookie and revoke it by deleting it

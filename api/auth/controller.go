@@ -2,6 +2,7 @@ package auth
 
 import (
 	"hus-auth/ent"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -20,14 +21,20 @@ type authApis interface {
 
 // authApiController defines what auth api has to have and implements authApis interface at service file.
 type authApiController struct {
-	Client *ent.Client
+	dbClient   *ent.Client
+	httpClient *http.Client
+}
+
+type AuthApiControllerParams struct {
+	DbClient   *ent.Client
+	HttpClient *http.Client
 }
 
 // NewAuthApiController returns Echo comprising of auth api routes. instance to main.
-func NewAuthApiController(client *ent.Client) *echo.Echo {
+func NewAuthApiController(params AuthApiControllerParams) *echo.Echo {
 	authApi := echo.New()
 
-	authApiController := newAuthApiController(client)
+	authApiController := newAuthApiController(params)
 
 	authApi.POST("/social/google/:service", authApiController.GoogleAuthHandler)
 	authApi.DELETE("/session/revoke", authApiController.SessionRevocationHandler)
@@ -41,6 +48,6 @@ func NewAuthApiController(client *ent.Client) *echo.Echo {
 }
 
 // newAuthApiController returns a new authApiController that implements every auth api features.
-func newAuthApiController(client *ent.Client) authApis {
-	return &authApiController{Client: client}
+func newAuthApiController(params AuthApiControllerParams) authApis {
+	return &authApiController{dbClient: params.DbClient, httpClient: params.HttpClient}
 }
