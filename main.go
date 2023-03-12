@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"hus-auth/api/auth"
 	"hus-auth/db"
@@ -38,14 +39,14 @@ func main() {
 	}
 
 	// connecting to hus_auth_db with ent
-	client, err := db.ConnectToHusAuth()
+	dbClient, err := db.ConnectToHusAuth()
 	if err != nil {
 		log.Fatal("%w", err)
 	}
-	defer client.Close()
+	defer dbClient.Close()
 
 	// Run the auto migration tool.
-	if err := client.Schema.Create(context.Background()); err != nil {
+	if err := dbClient.Schema.Create(context.Background()); err != nil {
 		log.Fatalf("[F] creating schema resources failed : %v", err)
 	}
 
@@ -56,8 +57,18 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.SetHusCorsHeaders)
 
-	// authApi, which controls auth all over the services
-	authApi := auth.NewAuthApiController(client)
+	/* authApi, which controls auth all over the services */
+	// create new http.Client for authApi
+	authHttpClient := &http.Client{
+		Timeout: time.Second * 5,
+	}
+
+	authApiControllerParams := auth.AuthApiControllerParams{
+		DbClient:   dbClient,
+		HttpClient: authHttpClient,
+	}
+
+	authApi := auth.NewAuthApiController(authApiControllerParams)
 	hosts["localhost:9090"] = &Host{Echo: authApi} // gonna use auth.cloudhus.com later
 
 	// get requset and process by its subdomain

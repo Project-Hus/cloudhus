@@ -55,13 +55,13 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// Google's unique user ID
 	sub := payload.Claims["sub"].(string)
 	// check if the user is registered with Google
-	u, err := db.QueryUserByGoogleSub(c.Request().Context(), ac.Client, sub)
+	u, err := db.QueryUserByGoogleSub(c.Request().Context(), ac.dbClient, sub)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 	// create one if there is no Hus account with this Google account
 	if u == nil {
-		_, err := db.CreateUserFromGoogle(c.Request().Context(), ac.Client, *payload)
+		_, err := db.CreateUserFromGoogle(c.Request().Context(), ac.dbClient, *payload)
 		if err != nil {
 			return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 		}
@@ -69,12 +69,12 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 
 	// We checked or created if the Google user exists in Hus above,
 	// Now get user query again to create new hus session.
-	u, err = db.QueryUserByGoogleSub(c.Request().Context(), ac.Client, sub)
+	u, err = db.QueryUserByGoogleSub(c.Request().Context(), ac.dbClient, sub)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
-	_, HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.Client, u.ID, false)
+	_, HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.dbClient, u.ID, false)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
