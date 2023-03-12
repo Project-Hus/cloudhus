@@ -2,10 +2,15 @@ package auth
 
 import (
 	"fmt"
+	"hus-auth/ent"
+	"hus-auth/helper"
 	"hus-auth/service"
+	"log"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -48,6 +53,57 @@ func (ac authApiController) TokenEmbeddingHandler(c echo.Context) error {
 	for _, cookie := range cookies {
 		fmt.Println(cookie.Name + cookie.Value)
 	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+// SessionRevocationHandler godoc
+// @Router       /session/revoke [delete]
+// @Summary      gets hus session token from cookie and revoke it.
+// @Description  gets hus session token from cookie and revoke it by deleting it from database.
+// @Tags         auth
+// @Param        jwt header string true "Hus session token in cookie"
+// @Success      200 "Ok"
+// @Failure      500 "doesn't have to be handled"
+func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
+	// get hus_st from cookie
+	hus_st, _ := c.Cookie("hus_st")
+	if hus_st == nil {
+		return c.NoContent(http.StatusOK)
+	}
+	// Revoke past session in cookie
+
+	claims, _, err := helper.ParseJWTwithHMAC(hus_st.Value)
+	if err != nil {
+		log.Println(err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	sid := claims["sid"].(string)
+
+	suuid, err := uuid.Parse(sid)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	err = ac.Client.HusSession.DeleteOneID(suuid).Exec(c.Request().Context())
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			log.Print("[F] deleting past session failed: ", err)
+			return c.NoContent(http.StatusInternalServerError)
+		}
+	}
+
+	// delete the session from cookie
+	cookie := &http.Cookie{
+		Name:     "hus_st",
+		Value:    "",
+		Path:     "/",
+		Secure:   false,
+		HttpOnly: true,
+		Domain:   os.Getenv("HUS_AUTH_DOMAIN"),
+		SameSite: http.SameSiteDefaultMode,
+	}
+	c.SetCookie(cookie)
 
 	return c.NoContent(http.StatusOK)
 }
