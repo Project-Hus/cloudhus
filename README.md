@@ -27,7 +27,7 @@ go generate ./ent
 ## Protocol Hus
 
 - Unsigned-Hus case ( Manual Login )<br>
-  1 - A user who haven't gotten Hus token accesses one of Hus subservices(SS).<br>
+  1 - A user who hasn't got Hus token accesses one of Hus subservices(SS).<br>
   2 - It requires unique sid from SS.<br>
   3 - The SPA proceeds authentication(Third-party etc.) with Hus.<br>
   4 - Hus tells SS the user is signed with sid.<br>
