@@ -46,7 +46,7 @@ go generate ./ent
 ### with SS sid
 - Unsigned-Hus case ( Manual Login )<br>
   1 - A user who hasn't got Hus token accesses one of Hus subservices(SS).<br>
-  2 - It requires unique sid from SS, but user got already so just say OK.
+  2 - It requires unique sid from SS, but user got already so just say OK.<br>
   3 - The SPA proceeds authentication(Third-party etc.) with Hus.<br>
   4 - Hus tells SS the user is signed with sid.<br>
   5 - and Hus redirects with Hus session cookie.<br>
