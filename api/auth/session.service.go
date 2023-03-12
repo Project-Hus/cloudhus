@@ -1,60 +1,97 @@
 package auth
 
 import (
-	"fmt"
+	"hus-auth/common"
 	"hus-auth/ent"
+	"hus-auth/ent/hussession"
 	"hus-auth/helper"
-	"hus-auth/service"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
-// TokenEmbeddingHandler godoc
-// @Router       /hus [post]
-// @Summary      processes google auth and redirect with refresh token in url.
-// @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
-// @Description the refresh token will be expired in 7 days.
+// SessionCheckHandler godoc
+// @Router /session/check/:service/:sid [post]
+// @Summary accepts sid and service name to check if the session is valid.
+// @Description  checks the hus session and tell subservice server if the session is valid.
 // @Tags         auth
-// @Accept       json
-// @Param        jwt body string true "Google ID token"
-// @Success      301 "to /auth/{token_string}"
+// @Param service path string true "subservice name"
+// @Param sid path string true "session id"
+// @Param        jwt header string false "Hus session token in cookie"
+// @Success      200 "Ok"
 // @Failure      401 "Unauthorized"
-// @Failure      500 "Internal Server Error"
-func (ac authApiController) TokenEmbeddingHandler(c echo.Context) error {
-	// get refresh token from header
-	refreshToken := c.Request().Header.Get("Authorization")
-	// validate refresh token
-	_, err := service.ValidateRefreshToken(c.Request().Context(), ac.Client, refreshToken)
-	if err != nil {
+func (ac authApiController) SessionCheckHandler(c echo.Context) error {
+	// get service name and sid from path
+	service := c.Param("service")
+	sid := c.Param("sid")
+
+	subservice, ok := common.Subservice[service]
+	// if the service name is not registered, return 404
+	if !ok {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	// get hus_st from cookie
+	hus_st, _ := c.Cookie("hus_st")
+	// no valid st cookie, then return 401
+	if hus_st == nil {
 		return c.NoContent(http.StatusUnauthorized)
 	}
-	// set cookie with refresh token
-	cookie := &http.Cookie{
-		Name:     "hus-refresh-token",
-		Value:    refreshToken,
-		Path:     "/",
-		Secure:   false,
-		HttpOnly: true,
-		Expires:  time.Now().Add(time.Hour * 24 * 7),
-		SameSite: http.SameSiteLaxMode,
+
+	// check if the session is valid
+	claims, exp, err := helper.ParseJWTwithHMAC(hus_st.Value)
+	if err != nil {
+		log.Println(err)
+		return c.NoContent(http.StatusInternalServerError)
+	} else if exp {
+		// if the st is expired, then return 401.
+		return c.NoContent(http.StatusUnauthorized)
 	}
 
-	c.SetCookie(cookie)
-
-	fmt.Println("yo")
-	// get whole set-cookie from echo context
-	cookies := c.Cookies()
-
-	for _, cookie := range cookies {
-		fmt.Println(cookie.Name + cookie.Value)
+	// if the purpose is not hus_session, then return 401.
+	if claims["purpose"].(string) != "hus_session" {
+		return c.NoContent(http.StatusUnauthorized)
 	}
 
-	return c.NoContent(http.StatusOK)
+	hus_sid := claims["sid"].(string)
+	hus_uid := claims["uid"].(string)
+
+	hus_sid_uuid, err := uuid.Parse(hus_sid)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	// check if the hus session is not revoked querying the database with hus_sid.
+	hs, err := ac.Client.HusSession.Query().Where(hussession.ID(hus_sid_uuid)).Only(c.Request().Context())
+	if err != nil {
+		return c.NoContent(http.StatusUnauthorized)
+	} else if hs.UID.String() != hus_uid { // if the user ID is not matched, then return 401.
+		return c.NoContent(http.StatusUnauthorized)
+	}
+
+	// now we know that the hus session is valid, so we tell the subservice server that the session is valid with uid.
+	// make http request to subservice server
+	req, err := http.NewRequest("POST", subservice.URL+"/session/check/"+service+"/"+sid, nil)
+	if err != nil {
+		log.Println(err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	req.Header.Set("uid", hus_uid)
+	req.Header.Set("sid", sid)
+	req.Header.Set("service", service)
+	// send the request
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Println(err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	defer resp.Body.Close()
+
+	return c.Redirect(http.StatusPermanentRedirect, subservice.URL+"/session/check/")
 }
 
 // SessionRevocationHandler godoc
