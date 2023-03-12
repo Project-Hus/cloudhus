@@ -25,7 +25,7 @@ go generate ./ent
 ```
 
 ## Protocol Hus
-
+### without SS sid
 - Unsigned-Hus case ( Manual Login )<br>
   1 - A user who hasn't got Hus token accesses one of Hus subservices(SS).<br>
   2 - It requires unique sid from SS.<br>
@@ -36,13 +36,33 @@ go generate ./ent
 
 - Signed-Hus case<br>
   1 - A user who got Hus session cookie in Hus' domain accesses one of its subservices(SS).<br>
-  2 - The SPA requests a **unique key to identify the session from SS. and SS sets the cookie the same as that.**<br>
-  3 - Now the SPA **transfers the key with its Hus session cookie to Hus.**<br>
+  2 - The SPA requests a **unique sid to identify the session from SS. and SS sets the cookie the same as that.**<br>
+  3 - Now the SPA **transfers the sid with its Hus session cookie to Hus.**<br>
   4 - Hus validates and reset(for rotating) the session cookie and **transfer the user info with key to SS.**<br>
-  5 - **The key ensures the session and the user info is set to the datbase for SS with the key.**<br>
+  5 - **The sid ensures the session and the user info is set to the datbase for SS with the sid.**<br>
+  6 - SS responds Ok to Hus and Hus does same to the SPA subsequently.<br>
+  7 - Now the **SPA requests the token cookie from SS.**<br>
+  
+### with SS sid
+- Unsigned-Hus case ( Manual Login )<br>
+  1 - A user who hasn't got Hus token accesses one of Hus subservices(SS).<br>
+  2 - It requires unique sid from SS, but user got already so just say OK.
+  3 - The SPA proceeds authentication(Third-party etc.) with Hus.<br>
+  4 - Hus tells SS the user is signed with sid.<br>
+  5 - and Hus redirects with Hus session cookie.<br>
+  6 - The SPA requets to check if it's signed from SS.<br>
+
+- Signed-Hus case<br>
+  1 - A user who got Hus session cookie in Hus' domain accesses one of its subservices(SS).<br>
+  2 - The SPA requests a unique key to identify the session from SS. but the user got already.<br>
+  3 - Now the SPA **transfers the sid with its Hus session cookie to Hus.**<br>
+  4 - Hus validates and reset(for rotating) the session cookie and **transfer the user info with sid to SS.**<br>
+  5 - **The sid ensures the session and the user info is set to the datbase for SS with the sid.**<br>
   6 - SS responds Ok to Hus and Hus does same to the SPA subsequently.<br>
   7 - Now the **SPA requests the token cookie from SS.**<br>
 
+
+### Tokens
 - Generating access token ( both non-token and expired token cases )<br>
   1 - A user without valid access token requests any access token needed resource.<br>
   2 - SS notices the user got no access token. and validate the refresh token.(both in cookie)<br>
