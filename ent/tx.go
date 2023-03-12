@@ -14,6 +14,10 @@ type Tx struct {
 	config
 	// HusSession is the client for interacting with the HusSession builders.
 	HusSession *HusSessionClient
+	// Service is the client for interacting with the Service builders.
+	Service *ServiceClient
+	// Subdomain is the client for interacting with the Subdomain builders.
+	Subdomain *SubdomainClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -148,6 +152,8 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.HusSession = NewHusSessionClient(tx.config)
+	tx.Service = NewServiceClient(tx.config)
+	tx.Subdomain = NewSubdomainClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

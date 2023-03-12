@@ -29,6 +29,42 @@ var (
 			},
 		},
 	}
+	// ServicesColumns holds the columns for the "services" table.
+	ServicesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "domain", Type: field.TypeString},
+		{Name: "url", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// ServicesTable holds the schema information for the "services" table.
+	ServicesTable = &schema.Table{
+		Name:       "services",
+		Columns:    ServicesColumns,
+		PrimaryKey: []*schema.Column{ServicesColumns[0]},
+	}
+	// SubdomainsColumns holds the columns for the "subdomains" table.
+	SubdomainsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "subdomain", Type: field.TypeString},
+		{Name: "url", Type: field.TypeString},
+		{Name: "service_id", Type: field.TypeInt},
+	}
+	// SubdomainsTable holds the schema information for the "subdomains" table.
+	SubdomainsTable = &schema.Table{
+		Name:       "subdomains",
+		Columns:    SubdomainsColumns,
+		PrimaryKey: []*schema.Column{SubdomainsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "subdomains_services_subdomains",
+				Columns:    []*schema.Column{SubdomainsColumns[3]},
+				RefColumns: []*schema.Column{ServicesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -53,10 +89,13 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		HusSessionsTable,
+		ServicesTable,
+		SubdomainsTable,
 		UsersTable,
 	}
 )
 
 func init() {
 	HusSessionsTable.ForeignKeys[0].RefTable = UsersTable
+	SubdomainsTable.ForeignKeys[0].RefTable = ServicesTable
 }

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"hus-auth/ent/hussession"
 	"hus-auth/ent/predicate"
+	"hus-auth/ent/service"
+	"hus-auth/ent/subdomain"
 	"hus-auth/ent/user"
 	"sync"
 	"time"
@@ -28,6 +30,8 @@ const (
 
 	// Node types.
 	TypeHusSession = "HusSession"
+	TypeService    = "Service"
+	TypeSubdomain  = "Subdomain"
 	TypeUser       = "User"
 )
 
@@ -557,6 +561,1131 @@ func (m *HusSessionMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown HusSession edge %s", name)
+}
+
+// ServiceMutation represents an operation that mutates the Service nodes in the graph.
+type ServiceMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int
+	name              *string
+	domain            *string
+	url               *string
+	created_at        *time.Time
+	updated_at        *time.Time
+	clearedFields     map[string]struct{}
+	subdomains        map[int]struct{}
+	removedsubdomains map[int]struct{}
+	clearedsubdomains bool
+	done              bool
+	oldValue          func(context.Context) (*Service, error)
+	predicates        []predicate.Service
+}
+
+var _ ent.Mutation = (*ServiceMutation)(nil)
+
+// serviceOption allows management of the mutation configuration using functional options.
+type serviceOption func(*ServiceMutation)
+
+// newServiceMutation creates new mutation for the Service entity.
+func newServiceMutation(c config, op Op, opts ...serviceOption) *ServiceMutation {
+	m := &ServiceMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeService,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withServiceID sets the ID field of the mutation.
+func withServiceID(id int) serviceOption {
+	return func(m *ServiceMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Service
+		)
+		m.oldValue = func(ctx context.Context) (*Service, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Service.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withService sets the old Service of the mutation.
+func withService(node *Service) serviceOption {
+	return func(m *ServiceMutation) {
+		m.oldValue = func(context.Context) (*Service, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ServiceMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ServiceMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ServiceMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ServiceMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Service.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *ServiceMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *ServiceMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Service entity.
+// If the Service object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *ServiceMutation) ResetName() {
+	m.name = nil
+}
+
+// SetDomain sets the "domain" field.
+func (m *ServiceMutation) SetDomain(s string) {
+	m.domain = &s
+}
+
+// Domain returns the value of the "domain" field in the mutation.
+func (m *ServiceMutation) Domain() (r string, exists bool) {
+	v := m.domain
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDomain returns the old "domain" field's value of the Service entity.
+// If the Service object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceMutation) OldDomain(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDomain is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDomain requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDomain: %w", err)
+	}
+	return oldValue.Domain, nil
+}
+
+// ResetDomain resets all changes to the "domain" field.
+func (m *ServiceMutation) ResetDomain() {
+	m.domain = nil
+}
+
+// SetURL sets the "url" field.
+func (m *ServiceMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *ServiceMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Service entity.
+// If the Service object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *ServiceMutation) ResetURL() {
+	m.url = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ServiceMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ServiceMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Service entity.
+// If the Service object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ServiceMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *ServiceMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *ServiceMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Service entity.
+// If the Service object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *ServiceMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// AddSubdomainIDs adds the "subdomains" edge to the Subdomain entity by ids.
+func (m *ServiceMutation) AddSubdomainIDs(ids ...int) {
+	if m.subdomains == nil {
+		m.subdomains = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.subdomains[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSubdomains clears the "subdomains" edge to the Subdomain entity.
+func (m *ServiceMutation) ClearSubdomains() {
+	m.clearedsubdomains = true
+}
+
+// SubdomainsCleared reports if the "subdomains" edge to the Subdomain entity was cleared.
+func (m *ServiceMutation) SubdomainsCleared() bool {
+	return m.clearedsubdomains
+}
+
+// RemoveSubdomainIDs removes the "subdomains" edge to the Subdomain entity by IDs.
+func (m *ServiceMutation) RemoveSubdomainIDs(ids ...int) {
+	if m.removedsubdomains == nil {
+		m.removedsubdomains = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.subdomains, ids[i])
+		m.removedsubdomains[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSubdomains returns the removed IDs of the "subdomains" edge to the Subdomain entity.
+func (m *ServiceMutation) RemovedSubdomainsIDs() (ids []int) {
+	for id := range m.removedsubdomains {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SubdomainsIDs returns the "subdomains" edge IDs in the mutation.
+func (m *ServiceMutation) SubdomainsIDs() (ids []int) {
+	for id := range m.subdomains {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSubdomains resets all changes to the "subdomains" edge.
+func (m *ServiceMutation) ResetSubdomains() {
+	m.subdomains = nil
+	m.clearedsubdomains = false
+	m.removedsubdomains = nil
+}
+
+// Where appends a list predicates to the ServiceMutation builder.
+func (m *ServiceMutation) Where(ps ...predicate.Service) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ServiceMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ServiceMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Service, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ServiceMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ServiceMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Service).
+func (m *ServiceMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ServiceMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.name != nil {
+		fields = append(fields, service.FieldName)
+	}
+	if m.domain != nil {
+		fields = append(fields, service.FieldDomain)
+	}
+	if m.url != nil {
+		fields = append(fields, service.FieldURL)
+	}
+	if m.created_at != nil {
+		fields = append(fields, service.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, service.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ServiceMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case service.FieldName:
+		return m.Name()
+	case service.FieldDomain:
+		return m.Domain()
+	case service.FieldURL:
+		return m.URL()
+	case service.FieldCreatedAt:
+		return m.CreatedAt()
+	case service.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ServiceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case service.FieldName:
+		return m.OldName(ctx)
+	case service.FieldDomain:
+		return m.OldDomain(ctx)
+	case service.FieldURL:
+		return m.OldURL(ctx)
+	case service.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case service.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Service field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ServiceMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case service.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case service.FieldDomain:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDomain(v)
+		return nil
+	case service.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	case service.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case service.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Service field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ServiceMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ServiceMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ServiceMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Service numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ServiceMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ServiceMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ServiceMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Service nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ServiceMutation) ResetField(name string) error {
+	switch name {
+	case service.FieldName:
+		m.ResetName()
+		return nil
+	case service.FieldDomain:
+		m.ResetDomain()
+		return nil
+	case service.FieldURL:
+		m.ResetURL()
+		return nil
+	case service.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case service.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Service field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ServiceMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.subdomains != nil {
+		edges = append(edges, service.EdgeSubdomains)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ServiceMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case service.EdgeSubdomains:
+		ids := make([]ent.Value, 0, len(m.subdomains))
+		for id := range m.subdomains {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ServiceMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedsubdomains != nil {
+		edges = append(edges, service.EdgeSubdomains)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ServiceMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case service.EdgeSubdomains:
+		ids := make([]ent.Value, 0, len(m.removedsubdomains))
+		for id := range m.removedsubdomains {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ServiceMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedsubdomains {
+		edges = append(edges, service.EdgeSubdomains)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ServiceMutation) EdgeCleared(name string) bool {
+	switch name {
+	case service.EdgeSubdomains:
+		return m.clearedsubdomains
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ServiceMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Service unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ServiceMutation) ResetEdge(name string) error {
+	switch name {
+	case service.EdgeSubdomains:
+		m.ResetSubdomains()
+		return nil
+	}
+	return fmt.Errorf("unknown Service edge %s", name)
+}
+
+// SubdomainMutation represents an operation that mutates the Subdomain nodes in the graph.
+type SubdomainMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	subdomain      *string
+	url            *string
+	clearedFields  map[string]struct{}
+	service        *int
+	clearedservice bool
+	done           bool
+	oldValue       func(context.Context) (*Subdomain, error)
+	predicates     []predicate.Subdomain
+}
+
+var _ ent.Mutation = (*SubdomainMutation)(nil)
+
+// subdomainOption allows management of the mutation configuration using functional options.
+type subdomainOption func(*SubdomainMutation)
+
+// newSubdomainMutation creates new mutation for the Subdomain entity.
+func newSubdomainMutation(c config, op Op, opts ...subdomainOption) *SubdomainMutation {
+	m := &SubdomainMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSubdomain,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSubdomainID sets the ID field of the mutation.
+func withSubdomainID(id int) subdomainOption {
+	return func(m *SubdomainMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Subdomain
+		)
+		m.oldValue = func(ctx context.Context) (*Subdomain, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Subdomain.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSubdomain sets the old Subdomain of the mutation.
+func withSubdomain(node *Subdomain) subdomainOption {
+	return func(m *SubdomainMutation) {
+		m.oldValue = func(context.Context) (*Subdomain, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SubdomainMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SubdomainMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SubdomainMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SubdomainMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Subdomain.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetServiceID sets the "service_id" field.
+func (m *SubdomainMutation) SetServiceID(i int) {
+	m.service = &i
+}
+
+// ServiceID returns the value of the "service_id" field in the mutation.
+func (m *SubdomainMutation) ServiceID() (r int, exists bool) {
+	v := m.service
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldServiceID returns the old "service_id" field's value of the Subdomain entity.
+// If the Subdomain object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SubdomainMutation) OldServiceID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldServiceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldServiceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldServiceID: %w", err)
+	}
+	return oldValue.ServiceID, nil
+}
+
+// ResetServiceID resets all changes to the "service_id" field.
+func (m *SubdomainMutation) ResetServiceID() {
+	m.service = nil
+}
+
+// SetSubdomain sets the "subdomain" field.
+func (m *SubdomainMutation) SetSubdomain(s string) {
+	m.subdomain = &s
+}
+
+// Subdomain returns the value of the "subdomain" field in the mutation.
+func (m *SubdomainMutation) Subdomain() (r string, exists bool) {
+	v := m.subdomain
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSubdomain returns the old "subdomain" field's value of the Subdomain entity.
+// If the Subdomain object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SubdomainMutation) OldSubdomain(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSubdomain is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSubdomain requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSubdomain: %w", err)
+	}
+	return oldValue.Subdomain, nil
+}
+
+// ResetSubdomain resets all changes to the "subdomain" field.
+func (m *SubdomainMutation) ResetSubdomain() {
+	m.subdomain = nil
+}
+
+// SetURL sets the "url" field.
+func (m *SubdomainMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *SubdomainMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Subdomain entity.
+// If the Subdomain object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SubdomainMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *SubdomainMutation) ResetURL() {
+	m.url = nil
+}
+
+// ClearService clears the "service" edge to the Service entity.
+func (m *SubdomainMutation) ClearService() {
+	m.clearedservice = true
+}
+
+// ServiceCleared reports if the "service" edge to the Service entity was cleared.
+func (m *SubdomainMutation) ServiceCleared() bool {
+	return m.clearedservice
+}
+
+// ServiceIDs returns the "service" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ServiceID instead. It exists only for internal usage by the builders.
+func (m *SubdomainMutation) ServiceIDs() (ids []int) {
+	if id := m.service; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetService resets all changes to the "service" edge.
+func (m *SubdomainMutation) ResetService() {
+	m.service = nil
+	m.clearedservice = false
+}
+
+// Where appends a list predicates to the SubdomainMutation builder.
+func (m *SubdomainMutation) Where(ps ...predicate.Subdomain) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the SubdomainMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *SubdomainMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Subdomain, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *SubdomainMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *SubdomainMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Subdomain).
+func (m *SubdomainMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SubdomainMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.service != nil {
+		fields = append(fields, subdomain.FieldServiceID)
+	}
+	if m.subdomain != nil {
+		fields = append(fields, subdomain.FieldSubdomain)
+	}
+	if m.url != nil {
+		fields = append(fields, subdomain.FieldURL)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SubdomainMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case subdomain.FieldServiceID:
+		return m.ServiceID()
+	case subdomain.FieldSubdomain:
+		return m.Subdomain()
+	case subdomain.FieldURL:
+		return m.URL()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SubdomainMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case subdomain.FieldServiceID:
+		return m.OldServiceID(ctx)
+	case subdomain.FieldSubdomain:
+		return m.OldSubdomain(ctx)
+	case subdomain.FieldURL:
+		return m.OldURL(ctx)
+	}
+	return nil, fmt.Errorf("unknown Subdomain field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SubdomainMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case subdomain.FieldServiceID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetServiceID(v)
+		return nil
+	case subdomain.FieldSubdomain:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSubdomain(v)
+		return nil
+	case subdomain.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Subdomain field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SubdomainMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SubdomainMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SubdomainMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Subdomain numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SubdomainMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SubdomainMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SubdomainMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Subdomain nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SubdomainMutation) ResetField(name string) error {
+	switch name {
+	case subdomain.FieldServiceID:
+		m.ResetServiceID()
+		return nil
+	case subdomain.FieldSubdomain:
+		m.ResetSubdomain()
+		return nil
+	case subdomain.FieldURL:
+		m.ResetURL()
+		return nil
+	}
+	return fmt.Errorf("unknown Subdomain field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SubdomainMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.service != nil {
+		edges = append(edges, subdomain.EdgeService)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SubdomainMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case subdomain.EdgeService:
+		if id := m.service; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SubdomainMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SubdomainMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SubdomainMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedservice {
+		edges = append(edges, subdomain.EdgeService)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SubdomainMutation) EdgeCleared(name string) bool {
+	switch name {
+	case subdomain.EdgeService:
+		return m.clearedservice
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SubdomainMutation) ClearEdge(name string) error {
+	switch name {
+	case subdomain.EdgeService:
+		m.ClearService()
+		return nil
+	}
+	return fmt.Errorf("unknown Subdomain unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SubdomainMutation) ResetEdge(name string) error {
+	switch name {
+	case subdomain.EdgeService:
+		m.ResetService()
+		return nil
+	}
+	return fmt.Errorf("unknown Subdomain edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.
