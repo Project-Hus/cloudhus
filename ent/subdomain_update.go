@@ -40,12 +40,6 @@ func (su *SubdomainUpdate) SetSubdomain(s string) *SubdomainUpdate {
 	return su
 }
 
-// SetURL sets the "url" field.
-func (su *SubdomainUpdate) SetURL(s string) *SubdomainUpdate {
-	su.mutation.SetURL(s)
-	return su
-}
-
 // SetService sets the "service" edge to the Service entity.
 func (su *SubdomainUpdate) SetService(s *Service) *SubdomainUpdate {
 	return su.SetServiceID(s.ID)
@@ -112,9 +106,6 @@ func (su *SubdomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.Subdomain(); ok {
 		_spec.SetField(subdomain.FieldSubdomain, field.TypeString, value)
 	}
-	if value, ok := su.mutation.URL(); ok {
-		_spec.SetField(subdomain.FieldURL, field.TypeString, value)
-	}
 	if su.mutation.ServiceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -179,12 +170,6 @@ func (suo *SubdomainUpdateOne) SetServiceID(i int) *SubdomainUpdateOne {
 // SetSubdomain sets the "subdomain" field.
 func (suo *SubdomainUpdateOne) SetSubdomain(s string) *SubdomainUpdateOne {
 	suo.mutation.SetSubdomain(s)
-	return suo
-}
-
-// SetURL sets the "url" field.
-func (suo *SubdomainUpdateOne) SetURL(s string) *SubdomainUpdateOne {
-	suo.mutation.SetURL(s)
 	return suo
 }
 
@@ -283,9 +268,6 @@ func (suo *SubdomainUpdateOne) sqlSave(ctx context.Context) (_node *Subdomain, e
 	}
 	if value, ok := suo.mutation.Subdomain(); ok {
 		_spec.SetField(subdomain.FieldSubdomain, field.TypeString, value)
-	}
-	if value, ok := suo.mutation.URL(); ok {
-		_spec.SetField(subdomain.FieldURL, field.TypeString, value)
 	}
 	if suo.mutation.ServiceCleared() {
 		edge := &sqlgraph.EdgeSpec{

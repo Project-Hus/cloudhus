@@ -32,12 +32,6 @@ func (sc *SubdomainCreate) SetSubdomain(s string) *SubdomainCreate {
 	return sc
 }
 
-// SetURL sets the "url" field.
-func (sc *SubdomainCreate) SetURL(s string) *SubdomainCreate {
-	sc.mutation.SetURL(s)
-	return sc
-}
-
 // SetService sets the "service" edge to the Service entity.
 func (sc *SubdomainCreate) SetService(s *Service) *SubdomainCreate {
 	return sc.SetServiceID(s.ID)
@@ -83,9 +77,6 @@ func (sc *SubdomainCreate) check() error {
 	if _, ok := sc.mutation.Subdomain(); !ok {
 		return &ValidationError{Name: "subdomain", err: errors.New(`ent: missing required field "Subdomain.subdomain"`)}
 	}
-	if _, ok := sc.mutation.URL(); !ok {
-		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Subdomain.url"`)}
-	}
 	if _, ok := sc.mutation.ServiceID(); !ok {
 		return &ValidationError{Name: "service", err: errors.New(`ent: missing required edge "Subdomain.service"`)}
 	}
@@ -118,10 +109,6 @@ func (sc *SubdomainCreate) createSpec() (*Subdomain, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.Subdomain(); ok {
 		_spec.SetField(subdomain.FieldSubdomain, field.TypeString, value)
 		_node.Subdomain = value
-	}
-	if value, ok := sc.mutation.URL(); ok {
-		_spec.SetField(subdomain.FieldURL, field.TypeString, value)
-		_node.URL = value
 	}
 	if nodes := sc.mutation.ServiceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

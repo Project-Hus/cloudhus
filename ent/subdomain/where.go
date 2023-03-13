@@ -64,11 +64,6 @@ func Subdomain(v string) predicate.Subdomain {
 	return predicate.Subdomain(sql.FieldEQ(FieldSubdomain, v))
 }
 
-// URL applies equality check predicate on the "url" field. It's identical to URLEQ.
-func URL(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldEQ(FieldURL, v))
-}
-
 // ServiceIDEQ applies the EQ predicate on the "service_id" field.
 func ServiceIDEQ(v int) predicate.Subdomain {
 	return predicate.Subdomain(sql.FieldEQ(FieldServiceID, v))
@@ -152,71 +147,6 @@ func SubdomainEqualFold(v string) predicate.Subdomain {
 // SubdomainContainsFold applies the ContainsFold predicate on the "subdomain" field.
 func SubdomainContainsFold(v string) predicate.Subdomain {
 	return predicate.Subdomain(sql.FieldContainsFold(FieldSubdomain, v))
-}
-
-// URLEQ applies the EQ predicate on the "url" field.
-func URLEQ(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldEQ(FieldURL, v))
-}
-
-// URLNEQ applies the NEQ predicate on the "url" field.
-func URLNEQ(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldNEQ(FieldURL, v))
-}
-
-// URLIn applies the In predicate on the "url" field.
-func URLIn(vs ...string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldIn(FieldURL, vs...))
-}
-
-// URLNotIn applies the NotIn predicate on the "url" field.
-func URLNotIn(vs ...string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldNotIn(FieldURL, vs...))
-}
-
-// URLGT applies the GT predicate on the "url" field.
-func URLGT(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldGT(FieldURL, v))
-}
-
-// URLGTE applies the GTE predicate on the "url" field.
-func URLGTE(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldGTE(FieldURL, v))
-}
-
-// URLLT applies the LT predicate on the "url" field.
-func URLLT(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldLT(FieldURL, v))
-}
-
-// URLLTE applies the LTE predicate on the "url" field.
-func URLLTE(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldLTE(FieldURL, v))
-}
-
-// URLContains applies the Contains predicate on the "url" field.
-func URLContains(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldContains(FieldURL, v))
-}
-
-// URLHasPrefix applies the HasPrefix predicate on the "url" field.
-func URLHasPrefix(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldHasPrefix(FieldURL, v))
-}
-
-// URLHasSuffix applies the HasSuffix predicate on the "url" field.
-func URLHasSuffix(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldHasSuffix(FieldURL, v))
-}
-
-// URLEqualFold applies the EqualFold predicate on the "url" field.
-func URLEqualFold(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldEqualFold(FieldURL, v))
-}
-
-// URLContainsFold applies the ContainsFold predicate on the "url" field.
-func URLContainsFold(v string) predicate.Subdomain {
-	return predicate.Subdomain(sql.FieldContainsFold(FieldURL, v))
 }
 
 // HasService applies the HasEdge predicate on the "service" edge.

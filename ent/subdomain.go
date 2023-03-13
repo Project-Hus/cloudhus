@@ -20,8 +20,6 @@ type Subdomain struct {
 	ServiceID int `json:"service_id,omitempty"`
 	// Subdomain holds the value of the "subdomain" field.
 	Subdomain string `json:"subdomain,omitempty"`
-	// URL holds the value of the "url" field.
-	URL string `json:"url,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SubdomainQuery when eager-loading is set.
 	Edges SubdomainEdges `json:"edges"`
@@ -56,7 +54,7 @@ func (*Subdomain) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case subdomain.FieldID, subdomain.FieldServiceID:
 			values[i] = new(sql.NullInt64)
-		case subdomain.FieldSubdomain, subdomain.FieldURL:
+		case subdomain.FieldSubdomain:
 			values[i] = new(sql.NullString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Subdomain", columns[i])
@@ -90,12 +88,6 @@ func (s *Subdomain) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field subdomain", values[i])
 			} else if value.Valid {
 				s.Subdomain = value.String
-			}
-		case subdomain.FieldURL:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field url", values[i])
-			} else if value.Valid {
-				s.URL = value.String
 			}
 		}
 	}
@@ -135,9 +127,6 @@ func (s *Subdomain) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("subdomain=")
 	builder.WriteString(s.Subdomain)
-	builder.WriteString(", ")
-	builder.WriteString("url=")
-	builder.WriteString(s.URL)
 	builder.WriteByte(')')
 	return builder.String()
 }

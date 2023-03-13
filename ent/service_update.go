@@ -35,15 +35,15 @@ func (su *ServiceUpdate) SetName(s string) *ServiceUpdate {
 	return su
 }
 
-// SetDomain sets the "domain" field.
-func (su *ServiceUpdate) SetDomain(s string) *ServiceUpdate {
-	su.mutation.SetDomain(s)
+// SetProtocol sets the "protocol" field.
+func (su *ServiceUpdate) SetProtocol(s string) *ServiceUpdate {
+	su.mutation.SetProtocol(s)
 	return su
 }
 
-// SetURL sets the "url" field.
-func (su *ServiceUpdate) SetURL(s string) *ServiceUpdate {
-	su.mutation.SetURL(s)
+// SetDomain sets the "domain" field.
+func (su *ServiceUpdate) SetDomain(s string) *ServiceUpdate {
+	su.mutation.SetDomain(s)
 	return su
 }
 
@@ -156,11 +156,11 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.Name(); ok {
 		_spec.SetField(service.FieldName, field.TypeString, value)
 	}
+	if value, ok := su.mutation.Protocol(); ok {
+		_spec.SetField(service.FieldProtocol, field.TypeString, value)
+	}
 	if value, ok := su.mutation.Domain(); ok {
 		_spec.SetField(service.FieldDomain, field.TypeString, value)
-	}
-	if value, ok := su.mutation.URL(); ok {
-		_spec.SetField(service.FieldURL, field.TypeString, value)
 	}
 	if value, ok := su.mutation.CreatedAt(); ok {
 		_spec.SetField(service.FieldCreatedAt, field.TypeTime, value)
@@ -248,15 +248,15 @@ func (suo *ServiceUpdateOne) SetName(s string) *ServiceUpdateOne {
 	return suo
 }
 
-// SetDomain sets the "domain" field.
-func (suo *ServiceUpdateOne) SetDomain(s string) *ServiceUpdateOne {
-	suo.mutation.SetDomain(s)
+// SetProtocol sets the "protocol" field.
+func (suo *ServiceUpdateOne) SetProtocol(s string) *ServiceUpdateOne {
+	suo.mutation.SetProtocol(s)
 	return suo
 }
 
-// SetURL sets the "url" field.
-func (suo *ServiceUpdateOne) SetURL(s string) *ServiceUpdateOne {
-	suo.mutation.SetURL(s)
+// SetDomain sets the "domain" field.
+func (suo *ServiceUpdateOne) SetDomain(s string) *ServiceUpdateOne {
+	suo.mutation.SetDomain(s)
 	return suo
 }
 
@@ -399,11 +399,11 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 	if value, ok := suo.mutation.Name(); ok {
 		_spec.SetField(service.FieldName, field.TypeString, value)
 	}
+	if value, ok := suo.mutation.Protocol(); ok {
+		_spec.SetField(service.FieldProtocol, field.TypeString, value)
+	}
 	if value, ok := suo.mutation.Domain(); ok {
 		_spec.SetField(service.FieldDomain, field.TypeString, value)
-	}
-	if value, ok := suo.mutation.URL(); ok {
-		_spec.SetField(service.FieldURL, field.TypeString, value)
 	}
 	if value, ok := suo.mutation.CreatedAt(); ok {
 		_spec.SetField(service.FieldCreatedAt, field.TypeTime, value)
