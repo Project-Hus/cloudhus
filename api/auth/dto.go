@@ -1,6 +1,6 @@
 package auth
 
-type SessionCheckBody struct {
+type HusSessionCheckBody struct {
 	Sid string `json:"sid"`
 	Uid string `json:"uid"`
 }

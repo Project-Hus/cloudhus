@@ -9,8 +9,11 @@ import (
 
 // authApis interface defines what auth api has to handle
 type authApis interface {
-	// get google ID token and set hus session cookie
+
+	/* client side api */
 	GoogleAuthHandler(c echo.Context) error
+
+	HusSessionCheckHandler(c echo.Context) error
 	SessionRevocationHandler(c echo.Context) error
 
 	TokenEmbeddingHandler(c echo.Context) error
@@ -37,11 +40,13 @@ func NewAuthApiController(params AuthApiControllerParams) *echo.Echo {
 	authApiController := newAuthApiController(params)
 
 	authApi.POST("/social/google/:service", authApiController.GoogleAuthHandler)
+
+	authApi.POST("/session/check/:service/:sid", authApiController.HusSessionCheckHandler)
 	authApi.DELETE("/session/revoke", authApiController.SessionRevocationHandler)
 
+	// adsfadsgadsg
 	authApi.GET("/hus", authApiController.TokenEmbeddingHandler)
 	authApi.GET("/access", authApiController.AcessTokenRequestHandler)
-
 	authApi.GET("/refresh", authApiController.RefreshTokenRequestHandler)
 
 	return authApi

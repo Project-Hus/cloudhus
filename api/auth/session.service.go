@@ -25,7 +25,7 @@ import (
 // @Param        jwt header string false "Hus session token in cookie"
 // @Success      200 "Ok"
 // @Failure      401 "Unauthorized"
-func (ac authApiController) SessionCheckHandler(c echo.Context) error {
+func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	// get service name and sid from path
 	service := c.Param("service")
 	lifthus_sid := c.Param("sid")
@@ -76,10 +76,19 @@ func (ac authApiController) SessionCheckHandler(c echo.Context) error {
 
 	// now we know that the hus session is valid, so we tell the subservice server that the session is valid with uid.
 	// make http request to subservice server
-	scb := SessionCheckBody{lifthus_sid, hus_uid}
+	scb := HusSessionCheckBody{lifthus_sid, hus_uid}
 	scbBytes, _ := json.Marshal(scb)
 	buff := bytes.NewBuffer(scbBytes)
-	resp, err := http.Post(subservice.URL+"/session/check/", "application/json", buff)
+
+	// with ac.httpClient, transfer the validation result to subservice auth server.
+	req, err := http.NewRequest("POST", subservice.Subdomains["auth"]+"/hus/session/check", buff)
+	if err != nil {
+		log.Println("[F] session transfering to "+subservice.Name+" failed: ", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	// send the request
+	resp, err := ac.httpClient.Do(req)
 	if err != nil {
 		log.Println("[F] session transfering to "+subservice.Name+" failed: ", err)
 		return c.NoContent(http.StatusInternalServerError)
@@ -87,7 +96,7 @@ func (ac authApiController) SessionCheckHandler(c echo.Context) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		return c.Redirect(http.StatusPermanentRedirect, subservice.URL+"/session/check/")
+		return c.Redirect(http.StatusPermanentRedirect, subservice.Subdomains["auth"]+"/session/check")
 	} else {
 		log.Println("[F] an error occured from " + subservice.Name)
 		return c.NoContent(http.StatusInternalServerError)
