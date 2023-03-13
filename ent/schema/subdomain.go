@@ -16,7 +16,7 @@ func (Subdomain) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("service_id"),
 		field.String("subdomain"),
-		field.String("url"),
+		field.String("role"),
 	}
 }
 

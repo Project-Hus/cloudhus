@@ -570,8 +570,8 @@ type ServiceMutation struct {
 	typ               string
 	id                *int
 	name              *string
+	protocol          *string
 	domain            *string
-	url               *string
 	created_at        *time.Time
 	updated_at        *time.Time
 	clearedFields     map[string]struct{}
@@ -717,6 +717,42 @@ func (m *ServiceMutation) ResetName() {
 	m.name = nil
 }
 
+// SetProtocol sets the "protocol" field.
+func (m *ServiceMutation) SetProtocol(s string) {
+	m.protocol = &s
+}
+
+// Protocol returns the value of the "protocol" field in the mutation.
+func (m *ServiceMutation) Protocol() (r string, exists bool) {
+	v := m.protocol
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProtocol returns the old "protocol" field's value of the Service entity.
+// If the Service object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceMutation) OldProtocol(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProtocol is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProtocol requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProtocol: %w", err)
+	}
+	return oldValue.Protocol, nil
+}
+
+// ResetProtocol resets all changes to the "protocol" field.
+func (m *ServiceMutation) ResetProtocol() {
+	m.protocol = nil
+}
+
 // SetDomain sets the "domain" field.
 func (m *ServiceMutation) SetDomain(s string) {
 	m.domain = &s
@@ -751,42 +787,6 @@ func (m *ServiceMutation) OldDomain(ctx context.Context) (v string, err error) {
 // ResetDomain resets all changes to the "domain" field.
 func (m *ServiceMutation) ResetDomain() {
 	m.domain = nil
-}
-
-// SetURL sets the "url" field.
-func (m *ServiceMutation) SetURL(s string) {
-	m.url = &s
-}
-
-// URL returns the value of the "url" field in the mutation.
-func (m *ServiceMutation) URL() (r string, exists bool) {
-	v := m.url
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldURL returns the old "url" field's value of the Service entity.
-// If the Service object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServiceMutation) OldURL(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldURL is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldURL requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldURL: %w", err)
-	}
-	return oldValue.URL, nil
-}
-
-// ResetURL resets all changes to the "url" field.
-func (m *ServiceMutation) ResetURL() {
-	m.url = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -953,11 +953,11 @@ func (m *ServiceMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, service.FieldName)
 	}
+	if m.protocol != nil {
+		fields = append(fields, service.FieldProtocol)
+	}
 	if m.domain != nil {
 		fields = append(fields, service.FieldDomain)
-	}
-	if m.url != nil {
-		fields = append(fields, service.FieldURL)
 	}
 	if m.created_at != nil {
 		fields = append(fields, service.FieldCreatedAt)
@@ -975,10 +975,10 @@ func (m *ServiceMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case service.FieldName:
 		return m.Name()
+	case service.FieldProtocol:
+		return m.Protocol()
 	case service.FieldDomain:
 		return m.Domain()
-	case service.FieldURL:
-		return m.URL()
 	case service.FieldCreatedAt:
 		return m.CreatedAt()
 	case service.FieldUpdatedAt:
@@ -994,10 +994,10 @@ func (m *ServiceMutation) OldField(ctx context.Context, name string) (ent.Value,
 	switch name {
 	case service.FieldName:
 		return m.OldName(ctx)
+	case service.FieldProtocol:
+		return m.OldProtocol(ctx)
 	case service.FieldDomain:
 		return m.OldDomain(ctx)
-	case service.FieldURL:
-		return m.OldURL(ctx)
 	case service.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case service.FieldUpdatedAt:
@@ -1018,19 +1018,19 @@ func (m *ServiceMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
+	case service.FieldProtocol:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProtocol(v)
+		return nil
 	case service.FieldDomain:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDomain(v)
-		return nil
-	case service.FieldURL:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetURL(v)
 		return nil
 	case service.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -1098,11 +1098,11 @@ func (m *ServiceMutation) ResetField(name string) error {
 	case service.FieldName:
 		m.ResetName()
 		return nil
+	case service.FieldProtocol:
+		m.ResetProtocol()
+		return nil
 	case service.FieldDomain:
 		m.ResetDomain()
-		return nil
-	case service.FieldURL:
-		m.ResetURL()
 		return nil
 	case service.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -1205,7 +1205,6 @@ type SubdomainMutation struct {
 	typ            string
 	id             *int
 	subdomain      *string
-	url            *string
 	clearedFields  map[string]struct{}
 	service        *int
 	clearedservice bool
@@ -1384,42 +1383,6 @@ func (m *SubdomainMutation) ResetSubdomain() {
 	m.subdomain = nil
 }
 
-// SetURL sets the "url" field.
-func (m *SubdomainMutation) SetURL(s string) {
-	m.url = &s
-}
-
-// URL returns the value of the "url" field in the mutation.
-func (m *SubdomainMutation) URL() (r string, exists bool) {
-	v := m.url
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldURL returns the old "url" field's value of the Subdomain entity.
-// If the Subdomain object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SubdomainMutation) OldURL(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldURL is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldURL requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldURL: %w", err)
-	}
-	return oldValue.URL, nil
-}
-
-// ResetURL resets all changes to the "url" field.
-func (m *SubdomainMutation) ResetURL() {
-	m.url = nil
-}
-
 // ClearService clears the "service" edge to the Service entity.
 func (m *SubdomainMutation) ClearService() {
 	m.clearedservice = true
@@ -1480,15 +1443,12 @@ func (m *SubdomainMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SubdomainMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 2)
 	if m.service != nil {
 		fields = append(fields, subdomain.FieldServiceID)
 	}
 	if m.subdomain != nil {
 		fields = append(fields, subdomain.FieldSubdomain)
-	}
-	if m.url != nil {
-		fields = append(fields, subdomain.FieldURL)
 	}
 	return fields
 }
@@ -1502,8 +1462,6 @@ func (m *SubdomainMutation) Field(name string) (ent.Value, bool) {
 		return m.ServiceID()
 	case subdomain.FieldSubdomain:
 		return m.Subdomain()
-	case subdomain.FieldURL:
-		return m.URL()
 	}
 	return nil, false
 }
@@ -1517,8 +1475,6 @@ func (m *SubdomainMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldServiceID(ctx)
 	case subdomain.FieldSubdomain:
 		return m.OldSubdomain(ctx)
-	case subdomain.FieldURL:
-		return m.OldURL(ctx)
 	}
 	return nil, fmt.Errorf("unknown Subdomain field %s", name)
 }
@@ -1541,13 +1497,6 @@ func (m *SubdomainMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSubdomain(v)
-		return nil
-	case subdomain.FieldURL:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetURL(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Subdomain field %s", name)
@@ -1606,9 +1555,6 @@ func (m *SubdomainMutation) ResetField(name string) error {
 		return nil
 	case subdomain.FieldSubdomain:
 		m.ResetSubdomain()
-		return nil
-	case subdomain.FieldURL:
-		m.ResetURL()
 		return nil
 	}
 	return fmt.Errorf("unknown Subdomain field %s", name)

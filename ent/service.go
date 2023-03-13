@@ -18,10 +18,10 @@ type Service struct {
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Protocol holds the value of the "protocol" field.
+	Protocol string `json:"protocol,omitempty"`
 	// Domain holds the value of the "domain" field.
 	Domain string `json:"domain,omitempty"`
-	// URL holds the value of the "url" field.
-	URL string `json:"url,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -56,7 +56,7 @@ func (*Service) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case service.FieldID:
 			values[i] = new(sql.NullInt64)
-		case service.FieldName, service.FieldDomain, service.FieldURL:
+		case service.FieldName, service.FieldProtocol, service.FieldDomain:
 			values[i] = new(sql.NullString)
 		case service.FieldCreatedAt, service.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -87,17 +87,17 @@ func (s *Service) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.Name = value.String
 			}
+		case service.FieldProtocol:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field protocol", values[i])
+			} else if value.Valid {
+				s.Protocol = value.String
+			}
 		case service.FieldDomain:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field domain", values[i])
 			} else if value.Valid {
 				s.Domain = value.String
-			}
-		case service.FieldURL:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field url", values[i])
-			} else if value.Valid {
-				s.URL = value.String
 			}
 		case service.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -147,11 +147,11 @@ func (s *Service) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(s.Name)
 	builder.WriteString(", ")
+	builder.WriteString("protocol=")
+	builder.WriteString(s.Protocol)
+	builder.WriteString(", ")
 	builder.WriteString("domain=")
 	builder.WriteString(s.Domain)
-	builder.WriteString(", ")
-	builder.WriteString("url=")
-	builder.WriteString(s.URL)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(s.CreatedAt.Format(time.ANSIC))

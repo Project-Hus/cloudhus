@@ -11,8 +11,6 @@ const (
 	FieldServiceID = "service_id"
 	// FieldSubdomain holds the string denoting the subdomain field in the database.
 	FieldSubdomain = "subdomain"
-	// FieldURL holds the string denoting the url field in the database.
-	FieldURL = "url"
 	// EdgeService holds the string denoting the service edge name in mutations.
 	EdgeService = "service"
 	// Table holds the table name of the subdomain in the database.
@@ -31,7 +29,6 @@ var Columns = []string{
 	FieldID,
 	FieldServiceID,
 	FieldSubdomain,
-	FieldURL,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

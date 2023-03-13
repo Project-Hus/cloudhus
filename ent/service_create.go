@@ -27,15 +27,15 @@ func (sc *ServiceCreate) SetName(s string) *ServiceCreate {
 	return sc
 }
 
-// SetDomain sets the "domain" field.
-func (sc *ServiceCreate) SetDomain(s string) *ServiceCreate {
-	sc.mutation.SetDomain(s)
+// SetProtocol sets the "protocol" field.
+func (sc *ServiceCreate) SetProtocol(s string) *ServiceCreate {
+	sc.mutation.SetProtocol(s)
 	return sc
 }
 
-// SetURL sets the "url" field.
-func (sc *ServiceCreate) SetURL(s string) *ServiceCreate {
-	sc.mutation.SetURL(s)
+// SetDomain sets the "domain" field.
+func (sc *ServiceCreate) SetDomain(s string) *ServiceCreate {
+	sc.mutation.SetDomain(s)
 	return sc
 }
 
@@ -132,11 +132,11 @@ func (sc *ServiceCreate) check() error {
 	if _, ok := sc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Service.name"`)}
 	}
+	if _, ok := sc.mutation.Protocol(); !ok {
+		return &ValidationError{Name: "protocol", err: errors.New(`ent: missing required field "Service.protocol"`)}
+	}
 	if _, ok := sc.mutation.Domain(); !ok {
 		return &ValidationError{Name: "domain", err: errors.New(`ent: missing required field "Service.domain"`)}
-	}
-	if _, ok := sc.mutation.URL(); !ok {
-		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Service.url"`)}
 	}
 	if _, ok := sc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Service.created_at"`)}
@@ -174,13 +174,13 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 		_spec.SetField(service.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
+	if value, ok := sc.mutation.Protocol(); ok {
+		_spec.SetField(service.FieldProtocol, field.TypeString, value)
+		_node.Protocol = value
+	}
 	if value, ok := sc.mutation.Domain(); ok {
 		_spec.SetField(service.FieldDomain, field.TypeString, value)
 		_node.Domain = value
-	}
-	if value, ok := sc.mutation.URL(); ok {
-		_spec.SetField(service.FieldURL, field.TypeString, value)
-		_node.URL = value
 	}
 	if value, ok := sc.mutation.CreatedAt(); ok {
 		_spec.SetField(service.FieldCreatedAt, field.TypeTime, value)

@@ -13,10 +13,10 @@ const (
 	FieldID = "id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldProtocol holds the string denoting the protocol field in the database.
+	FieldProtocol = "protocol"
 	// FieldDomain holds the string denoting the domain field in the database.
 	FieldDomain = "domain"
-	// FieldURL holds the string denoting the url field in the database.
-	FieldURL = "url"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -38,8 +38,8 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldName,
+	FieldProtocol,
 	FieldDomain,
-	FieldURL,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }

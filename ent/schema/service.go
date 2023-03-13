@@ -17,8 +17,8 @@ type Service struct {
 func (Service) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name"),
+		field.String("protocol"),
 		field.String("domain"),
-		field.String("url"),
 
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
