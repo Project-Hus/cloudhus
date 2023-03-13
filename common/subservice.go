@@ -22,7 +22,8 @@ var Subservice = map[string]subservice{
 		Name:   "lifthus",
 		Domain: "lifthus.com",
 		Subdomains: map[string]string{
-			"api": "localhost:9091", // api.lifthus.com
+			"auth": "auth.localhost:9091", // auth.lifthus.com
+			"api":  "localhost:9091",      // api.lifthus.com
 		},
 		URL: "http://localhost:9091", // https://lifthus.com
 	},
@@ -30,7 +31,8 @@ var Subservice = map[string]subservice{
 		Name:   "surfhus",
 		Domain: "surfhus.com",
 		Subdomains: map[string]string{
-			"api": "https://api.surfhus.com",
+			"auth": "auth.surfhus.com", // auth.surfhus.com
+			"api":  "https://api.surfhus.com",
 		},
 		URL: "https://surfhus.com",
 	},
