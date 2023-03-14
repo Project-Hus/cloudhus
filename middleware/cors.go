@@ -6,6 +6,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+var CorsOrigins = map[string]string{}
+
 // SetHusCorsHeaders sets headers for CORS.
 func SetHusCorsHeaders(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {

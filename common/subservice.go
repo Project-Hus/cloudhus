@@ -1,41 +1,63 @@
 package common
 
 type subservice struct {
-	Name       string          `json:"name"`
-	Prtc       string          `json:"prtc"`
-	Domain     string          `json:"domain"`
-	Subdomains map[string]bool `json:"subdomains"`
+	Domain     Domain
+	Subdomains map[string]Domain `json:"subdomains"`
+}
+
+type Domain struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
 }
 
 // later it would be good to have this info in a database and to initialize this map when the server starts
-const httpPrtc = "http"
-
 var Subservice = map[string]subservice{
 	"hus": {
-		Name:   "cloudhus",
-		Prtc:   httpPrtc,
-		Domain: "cloudhus.com",
-		Subdomains: map[string]bool{
-			"auth": true, // auth.cloudhus.com
-			"api":  true, // api.cloudhus.com
+		Domain: Domain{
+			Name: "hus",
+			URL:  "http://localhost:9090", // cloudhus.com
+		},
+		Subdomains: map[string]Domain{
+			"auth": {
+				Name: "auth",
+				URL:  "http://localhost:9090", // auth.cloudhus.com
+			},
+			"api": {
+				Name: "api",
+				URL:  "http://localhost:9090", // api.cloudhus.com
+			},
 		},
 	},
 	"lifthus": {
-		Name:   "lifthus",
-		Prtc:   httpPrtc,
-		Domain: "lifthus.com",
-		Subdomains: map[string]bool{
-			"auth": true, // auth.lifthus.com
-			"api":  true, // api.lifthus.com
+		Domain: Domain{
+			Name: "lifthus",
+			URL:  "http://localhost:3000", // lifthus.com
+		},
+		Subdomains: map[string]Domain{
+			"auth": {
+				Name: "auth",
+				URL:  "http://localhost:9091", // auth.lifthus.com
+			},
+			"api": {
+				Name: "api",
+				URL:  "http://localhost:9091", // api.lifthus.com
+			},
 		},
 	},
 	"surfhus": {
-		Name:   "surfhus",
-		Prtc:   httpPrtc,
-		Domain: "surfhus.com",
-		Subdomains: map[string]bool{
-			"auth": true, // auth.surfhus.com
-			"api":  true,
+		Domain: Domain{
+			Name: "surfhus",
+			URL:  "https://surfhus.com",
+		},
+		Subdomains: map[string]Domain{
+			"auth": {
+				Name: "auth",
+				URL:  "https://auth.surfhus.com", // auth.surfhus.com
+			},
+			"api": {
+				Name: "api",
+				URL:  "https://api.surfhus.com", // api.surfhus.com
+			},
 		},
 	},
 }
