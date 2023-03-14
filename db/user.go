@@ -6,6 +6,7 @@ import (
 	"hus-auth/ent/user"
 	"log"
 
+	"github.com/google/uuid"
 	"google.golang.org/api/idtoken"
 )
 
@@ -51,4 +52,19 @@ func QueryUserByGoogleSub(ctx context.Context, client *ent.Client, sub string) (
 		return nil, err
 	}
 	return u, err
+}
+
+// QueryUserByUID takes user's UID and returns user entity.
+func QueryUserByUID(ctx context.Context, client *ent.Client, uid string) (*ent.User, error) {
+	uid_uuid, err := uuid.Parse(uid)
+	if err != nil {
+		log.Println("[F] parsing uid failed:", err)
+		return nil, err
+	}
+	u, err := client.User.Query().Where(user.ID(uid_uuid)).Only(ctx)
+	if err != nil && !ent.IsNotFound(err) {
+		log.Printf("[F] querying user failed:%v", err)
+		return nil, err
+	}
+	return u, nil
 }

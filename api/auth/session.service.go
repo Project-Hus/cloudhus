@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"hus-auth/common"
+	"hus-auth/db"
 	"hus-auth/ent"
 	"hus-auth/ent/hussession"
 	"hus-auth/helper"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -37,9 +39,9 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	}
 
 	// get hus_st from cookie
-	hus_st, _ := c.Cookie("hus_st")
+	hus_st, err := c.Cookie("hus_st")
 	// no valid st cookie, then return 401
-	if hus_st == nil {
+	if hus_st == nil || err != nil {
 		return c.NoContent(http.StatusUnauthorized)
 	}
 
@@ -52,7 +54,6 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 		// if the st is expired, then return 401.
 		return c.NoContent(http.StatusUnauthorized)
 	}
-
 	// if the purpose is not hus_session, then return 401.
 	if claims["purpose"].(string) != "hus_session" {
 		return c.NoContent(http.StatusUnauthorized)
@@ -76,29 +77,54 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 
 	// now we know that the hus session is valid, so we tell the subservice server that the session is valid with uid.
 	// make http request to subservice server
-	scb := HusSessionCheckBody{lifthus_sid, hus_uid}
-	scbBytes, _ := json.Marshal(scb)
+	u, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, hus_uid)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	bd := ""
+	if u.Birthdate != nil {
+		bd = u.Birthdate.Format(time.RFC3339)
+	}
+	scb := HusSessionCheckBody{
+		lifthus_sid,
+		hus_uid,
+		u.Email,
+		u.EmailVerified,
+		u.Name,
+		u.GivenName,
+		u.FamilyName,
+		bd,
+	}
+
+	scbBytes, err := json.Marshal(scb)
+	if err != nil {
+		log.Println("[F] marshaling body to lifthus failed: ", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
 	buff := bytes.NewBuffer(scbBytes)
 
 	// with ac.httpClient, transfer the validation result to subservice auth server.
-	req, err := http.NewRequest("POST", subservice.Subdomains["auth"]+"/hus/session/check", buff)
+	req, err := http.NewRequest("POST", subservice.Subdomains["auth"].URL+"/hus/session/check", buff)
 	if err != nil {
-		log.Println("[F] session transfering to "+subservice.Name+" failed: ", err)
+		log.Println("[F] session transfering to "+subservice.Domain.Name+" failed: ", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	// send the request
 	resp, err := ac.httpClient.Do(req)
 	if err != nil {
-		log.Println("[F] session transfering to "+subservice.Name+" failed: ", err)
+		log.Println("[F] session transfering to "+subservice.Domain.Name+" failed: ", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		return c.Redirect(http.StatusPermanentRedirect, subservice.Subdomains["auth"]+"/session/check")
+		return c.NoContent(http.StatusOK)
+		//return c.Redirect(http.StatusPermanentRedirect, subservice.Subdomains["auth"].URL+"/session/check")
 	} else {
-		log.Println("[F] an error occured from " + subservice.Name)
+		log.Println("[F] an error occured from " + subservice.Domain.Name + ":" + resp.Status)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 }
