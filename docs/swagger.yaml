@@ -84,8 +84,8 @@ paths:
       - auth
   /session/check/:service/:sid:
     post:
-      description: checks the hus session and tell subservice server if the session
-        is valid.
+      description: checks the hus session in cookie and tells the subservice server
+        if the session is valid.
       parameters:
       - description: subservice name
         in: path
@@ -96,10 +96,6 @@ paths:
         in: path
         name: sid
         required: true
-        type: string
-      - description: Hus session token in cookie
-        in: header
-        name: jwt
         type: string
       responses:
         "200":
