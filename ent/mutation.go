@@ -1205,6 +1205,7 @@ type SubdomainMutation struct {
 	typ            string
 	id             *int
 	subdomain      *string
+	role           *string
 	clearedFields  map[string]struct{}
 	service        *int
 	clearedservice bool
@@ -1383,6 +1384,42 @@ func (m *SubdomainMutation) ResetSubdomain() {
 	m.subdomain = nil
 }
 
+// SetRole sets the "role" field.
+func (m *SubdomainMutation) SetRole(s string) {
+	m.role = &s
+}
+
+// Role returns the value of the "role" field in the mutation.
+func (m *SubdomainMutation) Role() (r string, exists bool) {
+	v := m.role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRole returns the old "role" field's value of the Subdomain entity.
+// If the Subdomain object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SubdomainMutation) OldRole(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRole: %w", err)
+	}
+	return oldValue.Role, nil
+}
+
+// ResetRole resets all changes to the "role" field.
+func (m *SubdomainMutation) ResetRole() {
+	m.role = nil
+}
+
 // ClearService clears the "service" edge to the Service entity.
 func (m *SubdomainMutation) ClearService() {
 	m.clearedservice = true
@@ -1443,12 +1480,15 @@ func (m *SubdomainMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SubdomainMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.service != nil {
 		fields = append(fields, subdomain.FieldServiceID)
 	}
 	if m.subdomain != nil {
 		fields = append(fields, subdomain.FieldSubdomain)
+	}
+	if m.role != nil {
+		fields = append(fields, subdomain.FieldRole)
 	}
 	return fields
 }
@@ -1462,6 +1502,8 @@ func (m *SubdomainMutation) Field(name string) (ent.Value, bool) {
 		return m.ServiceID()
 	case subdomain.FieldSubdomain:
 		return m.Subdomain()
+	case subdomain.FieldRole:
+		return m.Role()
 	}
 	return nil, false
 }
@@ -1475,6 +1517,8 @@ func (m *SubdomainMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldServiceID(ctx)
 	case subdomain.FieldSubdomain:
 		return m.OldSubdomain(ctx)
+	case subdomain.FieldRole:
+		return m.OldRole(ctx)
 	}
 	return nil, fmt.Errorf("unknown Subdomain field %s", name)
 }
@@ -1497,6 +1541,13 @@ func (m *SubdomainMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSubdomain(v)
+		return nil
+	case subdomain.FieldRole:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRole(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Subdomain field %s", name)
@@ -1555,6 +1606,9 @@ func (m *SubdomainMutation) ResetField(name string) error {
 		return nil
 	case subdomain.FieldSubdomain:
 		m.ResetSubdomain()
+		return nil
+	case subdomain.FieldRole:
+		m.ResetRole()
 		return nil
 	}
 	return fmt.Errorf("unknown Subdomain field %s", name)

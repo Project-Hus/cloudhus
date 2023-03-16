@@ -3,10 +3,10 @@ package auth
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"hus-auth/common"
 	"hus-auth/db"
 	"hus-auth/ent"
-	"hus-auth/ent/hussession"
 	"hus-auth/helper"
 	"log"
 	"net/http"
@@ -35,54 +35,46 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	subservice, ok := common.Subservice[service]
 	// if the service name is not registered, return 404
 	if !ok {
-		return c.NoContent(http.StatusNotFound)
+		return c.String(http.StatusNotFound, "[F]no such service")
 	}
 
 	// get hus_st from cookie
 	hus_st, err := c.Cookie("hus_st")
 	// no valid st cookie, then return 401
-	if hus_st == nil || err != nil {
-		return c.NoContent(http.StatusUnauthorized)
+	if hus_st.Value == "" || err != nil {
+		return c.String(http.StatusUnauthorized, "[F]not sigend in")
 	}
 
 	// check if the session is valid
 	claims, exp, err := helper.ParseJWTwithHMAC(hus_st.Value)
 	if err != nil {
 		log.Println(err)
-		return c.NoContent(http.StatusInternalServerError)
+		return c.String(http.StatusUnauthorized, "[F]invalid session")
 	} else if exp {
 		// if the st is expired, then return 401.
-		return c.NoContent(http.StatusUnauthorized)
+		return c.String(http.StatusUnauthorized, "[F]session expired")
 	}
 	// if the purpose is not hus_session, then return 401.
 	if claims["purpose"].(string) != "hus_session" {
-		return c.NoContent(http.StatusUnauthorized)
+		return c.String(http.StatusUnauthorized, "[F]wrong purpose")
 	}
 
 	hus_sid := claims["sid"].(string)
 	hus_uid := claims["uid"].(string)
 
-	hus_sid_uuid, err := uuid.Parse(hus_sid)
-	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
 	// check if the hus session is not revoked querying the database with hus_sid.
-	hs, err := ac.dbClient.HusSession.Query().Where(hussession.ID(hus_sid_uuid)).Only(c.Request().Context())
+	_, err = db.QuerySessionBySID(c.Request().Context(), ac.dbClient, hus_sid)
 	if err != nil {
-		return c.NoContent(http.StatusUnauthorized)
-	} else if hs.UID.String() != hus_uid { // if the user ID is not matched, then return 401.
-		return c.NoContent(http.StatusUnauthorized)
+		return c.String(http.StatusUnauthorized, "[F]invalid session")
 	}
 
 	// now we know that the hus session is valid, so we tell the subservice server that the session is valid with uid.
-	// make http request to subservice server
 	u, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, hus_uid)
 	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
+		return c.String(http.StatusUnauthorized, "[F]no such user")
 	}
 
-	bd := ""
+	var bd string
 	if u.Birthdate != nil {
 		bd = u.Birthdate.Format(time.RFC3339)
 	}
@@ -99,8 +91,9 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 
 	scbBytes, err := json.Marshal(scb)
 	if err != nil {
-		log.Println("[F] marshaling body to lifthus failed: ", err)
-		return c.NoContent(http.StatusInternalServerError)
+		err = fmt.Errorf("[F]marshalling body for %s failed: %w", service, err)
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
 	buff := bytes.NewBuffer(scbBytes)
@@ -108,21 +101,20 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	// with ac.httpClient, transfer the validation result to subservice auth server.
 	req, err := http.NewRequest("POST", subservice.Subdomains["auth"].URL+"/hus/session/check", buff)
 	if err != nil {
-		log.Println("[F] session transfering to "+subservice.Domain.Name+" failed: ", err)
-		return c.NoContent(http.StatusInternalServerError)
+		err = fmt.Errorf("[F]session injection to "+subservice.Domain.Name+" failed:", err)
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	req.Header.Set("Content-Type", "application/json")
 	// send the request
 	resp, err := ac.httpClient.Do(req)
 	if err != nil {
-		log.Println("[F] session transfering to "+subservice.Domain.Name+" failed: ", err)
-		return c.NoContent(http.StatusInternalServerError)
+		err = fmt.Errorf("[F]session injection to "+subservice.Domain.Name+" failed:", err)
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		return c.NoContent(http.StatusOK)
-		//return c.Redirect(http.StatusPermanentRedirect, subservice.Subdomains["auth"].URL+"/session/check")
+		return c.String(http.StatusOK, "session injection to "+subservice.Domain.Name+" success")
 	} else {
 		log.Println("[F] an error occured from " + subservice.Domain.Name + ":" + resp.Status)
 		return c.NoContent(http.StatusInternalServerError)
