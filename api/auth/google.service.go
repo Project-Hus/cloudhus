@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"hus-auth/db"
 	"hus-auth/service/session"
@@ -24,6 +25,21 @@ import (
 // @Success      301 "to /auth/{token_string}"
 // @Failure      301 "to /error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
+	// from cookie get hus_pst
+	hus_psid, err := c.Cookie("hus_psid")
+	if err != nil && !errors.Is(err, http.ErrNoCookie) {
+		log.Println("[F]Error getting hus_pst cookie:", err)
+		return c.String(http.StatusInternalServerError, "[F]Error getting hus_pst")
+	}
+	if hus_psid != nil && hus_psid.Value != "" {
+		// revoke the old session.
+		err = session.RevokeHusSession(c.Request().Context(), ac.dbClient, hus_psid.Value)
+		if err != nil {
+			log.Println("[F]Error revoking hus session:", err)
+			return c.String(http.StatusInternalServerError, "[F]Error revoking hus session")
+		}
+	}
+
 	// client ID that Google issued to lifthus
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 
@@ -74,7 +90,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
-	_, HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.dbClient, u.ID, false)
+	nsid, HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.dbClient, u.ID, false)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
@@ -90,6 +106,18 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		SameSite: http.SameSiteDefaultMode,
 	}
 	c.SetCookie(cookie)
+
+	cookie2 := &http.Cookie{
+		Name:     "hus_psid",
+		Value:    nsid,
+		Path:     "/",
+		Secure:   false,
+		HttpOnly: true,
+		Expires:  time.Now().AddDate(1, 0, 0),
+		Domain:   os.Getenv("HUS_AUTH_DOMAIN"),
+		SameSite: http.SameSiteDefaultMode,
+	}
+	c.SetCookie(cookie2)
 
 	// redirects to {serviceUrl}/hus/token/{hus-session-id}
 	return c.Redirect(http.StatusMovedPermanently, serviceUrl)
