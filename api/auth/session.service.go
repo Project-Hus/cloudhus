@@ -17,14 +17,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// SessionCheckHandler godoc
+// HusSessionCheckHandler godoc
 // @Router /session/check/:service/:sid [post]
 // @Summary accepts sid and service name to check if the session is valid.
-// @Description  checks the hus session and tell subservice server if the session is valid.
+// @Description  checks the hus session in cookie and tells the subservice server if the session is valid.
 // @Tags         auth
 // @Param service path string true "subservice name"
 // @Param sid path string true "session id"
-// @Param        jwt header string false "Hus session token in cookie"
 // @Success      200 "Ok"
 // @Failure      401 "Unauthorized"
 func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
@@ -99,7 +98,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	buff := bytes.NewBuffer(scbBytes)
 
 	// with ac.httpClient, transfer the validation result to subservice auth server.
-	req, err := http.NewRequest("POST", subservice.Subdomains["auth"].URL+"/hus/session/check", buff)
+	req, err := http.NewRequest("POST", subservice.Subdomains["auth"].URL+"/hus/session/sign", buff)
 	if err != nil {
 		err = fmt.Errorf("[F]session injection to "+subservice.Domain.Name+" failed:", err)
 		return c.String(http.StatusInternalServerError, err.Error())

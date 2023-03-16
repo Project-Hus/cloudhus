@@ -118,7 +118,7 @@ const docTemplate = `{
         },
         "/session/check/:service/:sid": {
             "post": {
-                "description": "checks the hus session and tell subservice server if the session is valid.",
+                "description": "checks the hus session in cookie and tells the subservice server if the session is valid.",
                 "tags": [
                     "auth"
                 ],
@@ -137,12 +137,6 @@ const docTemplate = `{
                         "name": "sid",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Hus session token in cookie",
-                        "name": "jwt",
-                        "in": "header"
                     }
                 ],
                 "responses": {

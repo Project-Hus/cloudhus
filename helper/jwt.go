@@ -14,7 +14,7 @@ func ParseJWTwithHMAC(tokenString string) (claims jwt.MapClaims, expired bool, e
 		}
 		return []byte(os.Getenv("HUS_AUTH_TOKEN_KEY")), nil
 	})
-	if err != nil {
+	if err != nil && err != jwt.ErrTokenExpired {
 		return nil, false, err
 	}
 
