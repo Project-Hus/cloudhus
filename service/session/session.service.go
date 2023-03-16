@@ -31,8 +31,8 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 	// using created session's UUID, create session token
 	if exp {
 		rt = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"sid":     hs.ID,                     // refresh token's uuid
-			"purpose": "hus_session",             // purpose"
+			"sid":     hs.ID,                     // session token's uuid
+			"purpose": "hus_session",             // purpose
 			"iss":     os.Getenv("HUS_AUTH_URL"), // issuer
 			"uid":     uid,                       // user's uuid
 			"iat":     hs.Iat,                    // issued at
@@ -40,7 +40,7 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 		})
 	} else {
 		rt = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"sid":     hs.ID,                                // refresh token's uuid
+			"sid":     hs.ID,                                // session token's uuid
 			"purpose": "hus_session",                        // purpose"
 			"iss":     os.Getenv("HUS_AUTH_URL"),            // issuer
 			"uid":     uid,                                  // user's uuid
@@ -49,7 +49,7 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 		})
 	}
 
-	hsk := []byte(os.Getenv("HUS_AUTH_TOKEN_KEY"))
+	hsk := []byte(os.Getenv("HUS_SECRET_KEY"))
 
 	rts, err := rt.SignedString(hsk)
 	if err != nil {

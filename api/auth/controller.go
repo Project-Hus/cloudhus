@@ -15,11 +15,6 @@ type authApis interface {
 
 	HusSessionCheckHandler(c echo.Context) error
 	SessionRevocationHandler(c echo.Context) error
-
-	TokenEmbeddingHandler(c echo.Context) error
-	AcessTokenRequestHandler(c echo.Context) error
-
-	RefreshTokenRequestHandler(c echo.Context) error
 }
 
 // authApiController defines what auth api has to have and implements authApis interface at service file.
@@ -43,11 +38,6 @@ func NewAuthApiController(params AuthApiControllerParams) *echo.Echo {
 
 	authApi.POST("/session/check/:service/:sid", authApiController.HusSessionCheckHandler)
 	authApi.DELETE("/session/revoke", authApiController.SessionRevocationHandler)
-
-	// adsfadsgadsg
-	authApi.GET("/hus", authApiController.TokenEmbeddingHandler)
-	authApi.GET("/access", authApiController.AcessTokenRequestHandler)
-	authApi.GET("/refresh", authApiController.RefreshTokenRequestHandler)
 
 	return authApi
 }
