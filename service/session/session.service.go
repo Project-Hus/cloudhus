@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"fmt"
 	"hus-auth/ent"
 	"log"
 	"os"
@@ -22,7 +23,7 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 	}
 	hs, err := nhs.Save(ctx)
 	if err != nil {
-		log.Println("[F] creating new hus session failed:", err)
+		return "", "", fmt.Errorf("!!creating new hus session failed:%w", err)
 	}
 
 	var rt *jwt.Token
@@ -39,12 +40,12 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 		})
 	} else {
 		rt = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"sid":     hs.ID,                                 // refresh token's uuid
-			"purpose": "hus_session",                         // purpose"
-			"iss":     os.Getenv("HUS_AUTH_URL"),             // issuer
-			"uid":     uid,                                   // user's uuid
-			"iat":     hs.Iat,                                // issued at
-			"exp":     time.Now().Add(time.Hour * 24).Unix(), // expiration : one day
+			"sid":     hs.ID,                                // refresh token's uuid
+			"purpose": "hus_session",                        // purpose"
+			"iss":     os.Getenv("HUS_AUTH_URL"),            // issuer
+			"uid":     uid,                                  // user's uuid
+			"iat":     hs.Iat,                               // issued at
+			"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
 		})
 	}
 
@@ -52,8 +53,7 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 
 	rts, err := rt.SignedString(hsk)
 	if err != nil {
-		log.Print("[F] signing hus-session token failed: ", err)
-		return "", "", err
+		return "", "", fmt.Errorf("!!signing hus-session token failed:%w", err)
 	}
 	log.Printf("hus-session created by (%s)", uid)
 	// Sign and return the complete encoded token as a string
