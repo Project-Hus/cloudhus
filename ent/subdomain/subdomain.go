@@ -11,6 +11,8 @@ const (
 	FieldServiceID = "service_id"
 	// FieldSubdomain holds the string denoting the subdomain field in the database.
 	FieldSubdomain = "subdomain"
+	// FieldRole holds the string denoting the role field in the database.
+	FieldRole = "role"
 	// EdgeService holds the string denoting the service edge name in mutations.
 	EdgeService = "service"
 	// Table holds the table name of the subdomain in the database.
@@ -29,6 +31,7 @@ var Columns = []string{
 	FieldID,
 	FieldServiceID,
 	FieldSubdomain,
+	FieldRole,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

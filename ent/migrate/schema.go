@@ -48,6 +48,7 @@ var (
 	SubdomainsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "subdomain", Type: field.TypeString},
+		{Name: "role", Type: field.TypeString},
 		{Name: "service_id", Type: field.TypeInt},
 	}
 	// SubdomainsTable holds the schema information for the "subdomains" table.
@@ -58,7 +59,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "subdomains_services_subdomains",
-				Columns:    []*schema.Column{SubdomainsColumns[2]},
+				Columns:    []*schema.Column{SubdomainsColumns[3]},
 				RefColumns: []*schema.Column{ServicesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
