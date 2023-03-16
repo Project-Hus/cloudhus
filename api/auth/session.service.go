@@ -40,14 +40,14 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	// get hus_st from cookie
 	hus_st, err := c.Cookie("hus_st")
 	// no valid st cookie, then return 401
-	if hus_st.Value == "" || err != nil {
+	if err != nil || hus_st.Value == "" {
 		return c.String(http.StatusUnauthorized, "[F]not sigend in")
 	}
 
 	// check if the session is valid
 	claims, exp, err := helper.ParseJWTwithHMAC(hus_st.Value)
 	if err != nil {
-		log.Println(err)
+		log.Printf("%v(from /session/check/%s/:sid)", err, service)
 		return c.String(http.StatusUnauthorized, "[F]invalid session")
 	} else if exp {
 		// if the st is expired, then return 401.

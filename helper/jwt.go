@@ -17,7 +17,7 @@ func ParseJWTwithHMAC(tokenString string) (claims jwt.MapClaims, expired bool, e
 	})
 
 	if err != nil && !errors.Is(err, jwt.ErrTokenExpired) {
-		return nil, false, err
+		return nil, false, fmt.Errorf("!!invalid token:%w", err)
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
@@ -27,6 +27,6 @@ func ParseJWTwithHMAC(tokenString string) (claims jwt.MapClaims, expired bool, e
 			return claims, true, nil
 		}
 	} else {
-		return nil, false, fmt.Errorf("!!invalid token ")
+		return nil, false, fmt.Errorf("!!invalid token:%w", err)
 	}
 }
