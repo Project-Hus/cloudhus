@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"hus-auth/ent"
+
 	"log"
 	"os"
 	"time"
@@ -60,8 +61,15 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 	return hs.ID.String(), rts, nil
 }
 
-// ValidateHusSessionToken takes hus-session token and validate it.
-// and it also revokes validated token and return new token.
-func ValidateHusSessionToken(ctx context.Context, client *ent.Client, st string) (new_token string, err error) {
-	return "", nil
+// RevokeHusSession takes session id and revokes it.
+func RevokeHusSession(ctx context.Context, client *ent.Client, sid string) error {
+	sid_uuid, err := uuid.Parse(sid)
+	if err != nil {
+		return fmt.Errorf("!!invalid sid:%w", err)
+	}
+	err = client.HusSession.DeleteOneID(sid_uuid).Exec(ctx)
+	if err != nil && !ent.IsNotFound(err) {
+		return fmt.Errorf("!!revoking hus session failed:%w", err)
+	}
+	return nil
 }
