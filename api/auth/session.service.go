@@ -51,7 +51,6 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 		log.Printf("%v(from /session/check/%s/:sid)", err, service)
 		return c.String(http.StatusUnauthorized, "[F]invalid session")
 	} else if exp {
-		fmt.Println("YOOOO")
 		return c.String(http.StatusUnauthorized, "[F]session expired")
 	}
 	// if the purpose is not hus_session, then return 401.
@@ -61,20 +60,18 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 
 	hus_sid := claims["sid"].(string)
 	hus_uid := claims["uid"].(string)
-	hus_iat := claims["iat"].(string)
+	hus_iat := claims["iat"].(float64)
 
 	// check if the hus session is not revoked querying the database with hus_sid.
 	_, err = db.QuerySessionBySID(c.Request().Context(), ac.dbClient, hus_sid)
 	if err != nil {
 		return c.String(http.StatusUnauthorized, "[F]invalid session")
 	}
-
 	// now we know that the hus session is valid, so we tell the subservice server that the session is valid with uid.
 	u, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, hus_uid)
 	if err != nil {
 		return c.String(http.StatusUnauthorized, "[F]no such user")
 	}
-
 	var bd string
 	if u.Birthdate != nil {
 		bd = u.Birthdate.Format(time.RFC3339)
@@ -124,8 +121,9 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 			"iat":     hus_iat,                              // issued at
 			"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
 		})
-		nhstSigned, err := nhst.SignedString(os.Getenv("HUS_SECRET_KEY"))
+		nhstSigned, err := nhst.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
 		if err != nil {
+			fmt.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
 		nhstCookie := &http.Cookie{
