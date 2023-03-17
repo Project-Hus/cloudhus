@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"bytes"
+	"strings"
 
 	"fmt"
 	"hus-auth/common"
@@ -91,17 +91,15 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 		"exp":           time.Now().Add(time.Second * 10).Unix(),
 	})
 
-	hscbJWTString, err := hscbJWT.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
+	hscbSigned, err := hscbJWT.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
 	if err != nil {
 		err = fmt.Errorf("[F]signing jwt for %s failed: %w", service, err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	hscbBuff := bytes.NewBuffer([]byte(hscbJWTString))
-
 	// with ac.httpClient, transfer the validation result to subservice auth server.
-	req, err := http.NewRequest("POST", subservice.Subdomains["auth"].URL+"/hus/session/sign", hscbBuff)
+	req, err := http.NewRequest("POST", subservice.Subdomains["auth"].URL+"/hus/session/sign", strings.NewReader(hscbSigned))
 	if err != nil {
 		err = fmt.Errorf("[F]session injection to "+subservice.Domain.Name+" failed:", err)
 		return c.String(http.StatusInternalServerError, err.Error())
