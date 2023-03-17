@@ -62,7 +62,7 @@ func Iat(v time.Time) predicate.HusSession {
 }
 
 // Exp applies equality check predicate on the "exp" field. It's identical to ExpEQ.
-func Exp(v time.Time) predicate.HusSession {
+func Exp(v bool) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldExp, v))
 }
 
@@ -112,53 +112,13 @@ func IatLTE(v time.Time) predicate.HusSession {
 }
 
 // ExpEQ applies the EQ predicate on the "exp" field.
-func ExpEQ(v time.Time) predicate.HusSession {
+func ExpEQ(v bool) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldExp, v))
 }
 
 // ExpNEQ applies the NEQ predicate on the "exp" field.
-func ExpNEQ(v time.Time) predicate.HusSession {
+func ExpNEQ(v bool) predicate.HusSession {
 	return predicate.HusSession(sql.FieldNEQ(FieldExp, v))
-}
-
-// ExpIn applies the In predicate on the "exp" field.
-func ExpIn(vs ...time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldIn(FieldExp, vs...))
-}
-
-// ExpNotIn applies the NotIn predicate on the "exp" field.
-func ExpNotIn(vs ...time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNotIn(FieldExp, vs...))
-}
-
-// ExpGT applies the GT predicate on the "exp" field.
-func ExpGT(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldGT(FieldExp, v))
-}
-
-// ExpGTE applies the GTE predicate on the "exp" field.
-func ExpGTE(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldGTE(FieldExp, v))
-}
-
-// ExpLT applies the LT predicate on the "exp" field.
-func ExpLT(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldLT(FieldExp, v))
-}
-
-// ExpLTE applies the LTE predicate on the "exp" field.
-func ExpLTE(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldLTE(FieldExp, v))
-}
-
-// ExpIsNil applies the IsNil predicate on the "exp" field.
-func ExpIsNil() predicate.HusSession {
-	return predicate.HusSession(sql.FieldIsNull(FieldExp))
-}
-
-// ExpNotNil applies the NotNil predicate on the "exp" field.
-func ExpNotNil() predicate.HusSession {
-	return predicate.HusSession(sql.FieldNotNull(FieldExp))
 }
 
 // UIDEQ applies the EQ predicate on the "uid" field.

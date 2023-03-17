@@ -51,7 +51,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 		log.Printf("%v(from /session/check/%s/:sid)", err, service)
 		return c.String(http.StatusUnauthorized, "[F]invalid session")
 	} else if exp {
-		// if the st is expired, then return 401.
+		fmt.Println("YOOOO")
 		return c.String(http.StatusUnauthorized, "[F]session expired")
 	}
 	// if the purpose is not hus_session, then return 401.
@@ -61,6 +61,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 
 	hus_sid := claims["sid"].(string)
 	hus_uid := claims["uid"].(string)
+	hus_iat := claims["iat"].(string)
 
 	// check if the hus session is not revoked querying the database with hus_sid.
 	_, err = db.QuerySessionBySID(c.Request().Context(), ac.dbClient, hus_sid)
@@ -80,15 +81,15 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	}
 
 	hscbJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"Sid":           lifthus_sid,
-		"Uid":           hus_uid,
-		"Email":         u.Email,
-		"EmailVerified": u.EmailVerified,
-		"Name":          u.Name,
-		"GivenName":     u.GivenName,
-		"FamilyName":    u.FamilyName,
-		"Birthdate":     bd,
-		"exp":           time.Now().Add(time.Second * 10).Unix(),
+		"sid":            lifthus_sid,
+		"uid":            hus_uid,
+		"email":          u.Email,
+		"email_verified": u.EmailVerified,
+		"name":           u.Name,
+		"given_name":     u.GivenName,
+		"family_name":    u.FamilyName,
+		"birthdate":      bd,
+		"exp":            time.Now().Add(time.Second * 10).Unix(),
 	})
 
 	hscbSigned, err := hscbJWT.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
@@ -114,6 +115,29 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
+		// if the session check is successful, renew the hus_st.
+		nhst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"sid":     hus_sid,                              // session token's uuid
+			"purpose": "hus_session",                        // purpose"
+			"iss":     os.Getenv("HUS_AUTH_URL"),            // issuer
+			"uid":     hus_uid,                              // user's uuid
+			"iat":     hus_iat,                              // issued at
+			"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
+		})
+		nhstSigned, err := nhst.SignedString(os.Getenv("HUS_SECRET_KEY"))
+		if err != nil {
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
+		nhstCookie := &http.Cookie{
+			Name:     "hus_st",
+			Value:    nhstSigned,
+			Path:     "/",
+			Domain:   os.Getenv("HUS_DOMAIN"),
+			Expires:  time.Now().Add(time.Hour * 1),
+			HttpOnly: true,
+			Secure:   true,
+		}
+		c.SetCookie(nhstCookie)
 		return c.String(http.StatusOK, "session injection to "+subservice.Domain.Name+" success")
 	} else {
 		log.Println("[F] an error occured from " + subservice.Domain.Name + ":" + resp.Status)

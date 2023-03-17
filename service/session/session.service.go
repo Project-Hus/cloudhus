@@ -20,7 +20,7 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 	// create new Hus session in database
 	nhs := client.HusSession.Create().SetUID(uid)
 	if exp { // if it's set to expired, give it 7 days expiration
-		nhs = nhs.SetExp(time.Now().Add(time.Hour * 24 * 7))
+		nhs = nhs.SetExp(true)
 	}
 	hs, err := nhs.Save(ctx)
 	if err != nil {
@@ -32,20 +32,20 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 	// using created session's UUID, create session token
 	if exp {
 		rt = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"sid":     hs.ID,                     // session token's uuid
-			"purpose": "hus_session",             // purpose
-			"iss":     os.Getenv("HUS_AUTH_URL"), // issuer
-			"uid":     uid,                       // user's uuid
-			"iat":     hs.Iat,                    // issued at
-			"exp":     hs.Exp.Unix(),             // expiration : one week
+			"sid":     hs.ID,                              // session token's uuid
+			"purpose": "hus_session",                      // purpose
+			"iss":     os.Getenv("HUS_AUTH_URL"),          // issuer
+			"uid":     uid,                                // user's uuid
+			"iat":     hs.Iat.Unix(),                      // issued at
+			"exp":     time.Now().AddDate(0, 0, 7).Unix(), // expiration : one week
 		})
 	} else {
 		rt = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"sid":     hs.ID,                                // session token's uuid
-			"purpose": "hus_session",                        // purpose"
+			"purpose": "hus_session",                        // purpose
 			"iss":     os.Getenv("HUS_AUTH_URL"),            // issuer
 			"uid":     uid,                                  // user's uuid
-			"iat":     hs.Iat,                               // issued at
+			"iat":     hs.Iat.Unix(),                        // issued at
 			"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
 		})
 	}
