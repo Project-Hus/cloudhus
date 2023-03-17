@@ -2,7 +2,7 @@ package auth
 
 import (
 	"bytes"
-	"encoding/json"
+
 	"fmt"
 	"hus-auth/common"
 	"hus-auth/db"
@@ -13,6 +13,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -77,28 +78,30 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	if u.Birthdate != nil {
 		bd = u.Birthdate.Format(time.RFC3339)
 	}
-	scb := HusSessionCheckBody{
-		lifthus_sid,
-		hus_uid,
-		u.Email,
-		u.EmailVerified,
-		u.Name,
-		u.GivenName,
-		u.FamilyName,
-		bd,
-	}
 
-	scbBytes, err := json.Marshal(scb)
+	hscbJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"Sid":           lifthus_sid,
+		"Uid":           hus_uid,
+		"Email":         u.Email,
+		"EmailVerified": u.EmailVerified,
+		"Name":          u.Name,
+		"GivenName":     u.GivenName,
+		"FamilyName":    u.FamilyName,
+		"Birthdate":     bd,
+		"exp":           time.Now().Add(time.Second * 10).Unix(),
+	})
+
+	hscbJWTString, err := hscbJWT.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
 	if err != nil {
-		err = fmt.Errorf("[F]marshalling body for %s failed: %w", service, err)
+		err = fmt.Errorf("[F]signing jwt for %s failed: %w", service, err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	buff := bytes.NewBuffer(scbBytes)
+	hscbBuff := bytes.NewBuffer([]byte(hscbJWTString))
 
 	// with ac.httpClient, transfer the validation result to subservice auth server.
-	req, err := http.NewRequest("POST", subservice.Subdomains["auth"].URL+"/hus/session/sign", buff)
+	req, err := http.NewRequest("POST", subservice.Subdomains["auth"].URL+"/hus/session/sign", hscbBuff)
 	if err != nil {
 		err = fmt.Errorf("[F]session injection to "+subservice.Domain.Name+" failed:", err)
 		return c.String(http.StatusInternalServerError, err.Error())
