@@ -37,15 +37,15 @@ func (hsc *HusSessionCreate) SetNillableIat(t *time.Time) *HusSessionCreate {
 }
 
 // SetExp sets the "exp" field.
-func (hsc *HusSessionCreate) SetExp(t time.Time) *HusSessionCreate {
-	hsc.mutation.SetExp(t)
+func (hsc *HusSessionCreate) SetExp(b bool) *HusSessionCreate {
+	hsc.mutation.SetExp(b)
 	return hsc
 }
 
 // SetNillableExp sets the "exp" field if the given value is not nil.
-func (hsc *HusSessionCreate) SetNillableExp(t *time.Time) *HusSessionCreate {
-	if t != nil {
-		hsc.SetExp(*t)
+func (hsc *HusSessionCreate) SetNillableExp(b *bool) *HusSessionCreate {
+	if b != nil {
+		hsc.SetExp(*b)
 	}
 	return hsc
 }
@@ -120,6 +120,10 @@ func (hsc *HusSessionCreate) defaults() {
 		v := hussession.DefaultIat()
 		hsc.mutation.SetIat(v)
 	}
+	if _, ok := hsc.mutation.Exp(); !ok {
+		v := hussession.DefaultExp
+		hsc.mutation.SetExp(v)
+	}
 	if _, ok := hsc.mutation.ID(); !ok {
 		v := hussession.DefaultID()
 		hsc.mutation.SetID(v)
@@ -130,6 +134,9 @@ func (hsc *HusSessionCreate) defaults() {
 func (hsc *HusSessionCreate) check() error {
 	if _, ok := hsc.mutation.Iat(); !ok {
 		return &ValidationError{Name: "iat", err: errors.New(`ent: missing required field "HusSession.iat"`)}
+	}
+	if _, ok := hsc.mutation.Exp(); !ok {
+		return &ValidationError{Name: "exp", err: errors.New(`ent: missing required field "HusSession.exp"`)}
 	}
 	if _, ok := hsc.mutation.UID(); !ok {
 		return &ValidationError{Name: "uid", err: errors.New(`ent: missing required field "HusSession.uid"`)}
@@ -177,8 +184,8 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 		_node.Iat = value
 	}
 	if value, ok := hsc.mutation.Exp(); ok {
-		_spec.SetField(hussession.FieldExp, field.TypeTime, value)
-		_node.Exp = &value
+		_spec.SetField(hussession.FieldExp, field.TypeBool, value)
+		_node.Exp = value
 	}
 	if nodes := hsc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

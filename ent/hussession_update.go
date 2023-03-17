@@ -45,22 +45,16 @@ func (hsu *HusSessionUpdate) SetNillableIat(t *time.Time) *HusSessionUpdate {
 }
 
 // SetExp sets the "exp" field.
-func (hsu *HusSessionUpdate) SetExp(t time.Time) *HusSessionUpdate {
-	hsu.mutation.SetExp(t)
+func (hsu *HusSessionUpdate) SetExp(b bool) *HusSessionUpdate {
+	hsu.mutation.SetExp(b)
 	return hsu
 }
 
 // SetNillableExp sets the "exp" field if the given value is not nil.
-func (hsu *HusSessionUpdate) SetNillableExp(t *time.Time) *HusSessionUpdate {
-	if t != nil {
-		hsu.SetExp(*t)
+func (hsu *HusSessionUpdate) SetNillableExp(b *bool) *HusSessionUpdate {
+	if b != nil {
+		hsu.SetExp(*b)
 	}
-	return hsu
-}
-
-// ClearExp clears the value of the "exp" field.
-func (hsu *HusSessionUpdate) ClearExp() *HusSessionUpdate {
-	hsu.mutation.ClearExp()
 	return hsu
 }
 
@@ -143,10 +137,7 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
 	}
 	if value, ok := hsu.mutation.Exp(); ok {
-		_spec.SetField(hussession.FieldExp, field.TypeTime, value)
-	}
-	if hsu.mutation.ExpCleared() {
-		_spec.ClearField(hussession.FieldExp, field.TypeTime)
+		_spec.SetField(hussession.FieldExp, field.TypeBool, value)
 	}
 	if hsu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -218,22 +209,16 @@ func (hsuo *HusSessionUpdateOne) SetNillableIat(t *time.Time) *HusSessionUpdateO
 }
 
 // SetExp sets the "exp" field.
-func (hsuo *HusSessionUpdateOne) SetExp(t time.Time) *HusSessionUpdateOne {
-	hsuo.mutation.SetExp(t)
+func (hsuo *HusSessionUpdateOne) SetExp(b bool) *HusSessionUpdateOne {
+	hsuo.mutation.SetExp(b)
 	return hsuo
 }
 
 // SetNillableExp sets the "exp" field if the given value is not nil.
-func (hsuo *HusSessionUpdateOne) SetNillableExp(t *time.Time) *HusSessionUpdateOne {
-	if t != nil {
-		hsuo.SetExp(*t)
+func (hsuo *HusSessionUpdateOne) SetNillableExp(b *bool) *HusSessionUpdateOne {
+	if b != nil {
+		hsuo.SetExp(*b)
 	}
-	return hsuo
-}
-
-// ClearExp clears the value of the "exp" field.
-func (hsuo *HusSessionUpdateOne) ClearExp() *HusSessionUpdateOne {
-	hsuo.mutation.ClearExp()
 	return hsuo
 }
 
@@ -346,10 +331,7 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
 	}
 	if value, ok := hsuo.mutation.Exp(); ok {
-		_spec.SetField(hussession.FieldExp, field.TypeTime, value)
-	}
-	if hsuo.mutation.ExpCleared() {
-		_spec.ClearField(hussession.FieldExp, field.TypeTime)
+		_spec.SetField(hussession.FieldExp, field.TypeBool, value)
 	}
 	if hsuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

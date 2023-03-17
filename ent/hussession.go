@@ -21,7 +21,7 @@ type HusSession struct {
 	// Iat holds the value of the "iat" field.
 	Iat time.Time `json:"iat,omitempty"`
 	// Exp holds the value of the "exp" field.
-	Exp *time.Time `json:"exp,omitempty"`
+	Exp bool `json:"exp,omitempty"`
 	// UID holds the value of the "uid" field.
 	UID uuid.UUID `json:"uid,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -56,7 +56,9 @@ func (*HusSession) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case hussession.FieldIat, hussession.FieldExp:
+		case hussession.FieldExp:
+			values[i] = new(sql.NullBool)
+		case hussession.FieldIat:
 			values[i] = new(sql.NullTime)
 		case hussession.FieldID, hussession.FieldUID:
 			values[i] = new(uuid.UUID)
@@ -88,11 +90,10 @@ func (hs *HusSession) assignValues(columns []string, values []any) error {
 				hs.Iat = value.Time
 			}
 		case hussession.FieldExp:
-			if value, ok := values[i].(*sql.NullTime); !ok {
+			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field exp", values[i])
 			} else if value.Valid {
-				hs.Exp = new(time.Time)
-				*hs.Exp = value.Time
+				hs.Exp = value.Bool
 			}
 		case hussession.FieldUID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -136,10 +137,8 @@ func (hs *HusSession) String() string {
 	builder.WriteString("iat=")
 	builder.WriteString(hs.Iat.Format(time.ANSIC))
 	builder.WriteString(", ")
-	if v := hs.Exp; v != nil {
-		builder.WriteString("exp=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("exp=")
+	builder.WriteString(fmt.Sprintf("%v", hs.Exp))
 	builder.WriteString(", ")
 	builder.WriteString("uid=")
 	builder.WriteString(fmt.Sprintf("%v", hs.UID))

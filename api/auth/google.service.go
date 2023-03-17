@@ -101,7 +101,6 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
-		Expires:  time.Now().Add(time.Hour * 24 * 1),
 		Domain:   os.Getenv("HUS_AUTH_DOMAIN"),
 		SameSite: http.SameSiteDefaultMode,
 	}

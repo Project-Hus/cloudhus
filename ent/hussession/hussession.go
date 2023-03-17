@@ -53,6 +53,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultIat holds the default value on creation for the "iat" field.
 	DefaultIat func() time.Time
+	// DefaultExp holds the default value on creation for the "exp" field.
+	DefaultExp bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

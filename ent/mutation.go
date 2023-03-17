@@ -42,7 +42,7 @@ type HusSessionMutation struct {
 	typ           string
 	id            *uuid.UUID
 	iat           *time.Time
-	exp           *time.Time
+	exp           *bool
 	clearedFields map[string]struct{}
 	user          *uuid.UUID
 	cleareduser   bool
@@ -192,12 +192,12 @@ func (m *HusSessionMutation) ResetIat() {
 }
 
 // SetExp sets the "exp" field.
-func (m *HusSessionMutation) SetExp(t time.Time) {
-	m.exp = &t
+func (m *HusSessionMutation) SetExp(b bool) {
+	m.exp = &b
 }
 
 // Exp returns the value of the "exp" field in the mutation.
-func (m *HusSessionMutation) Exp() (r time.Time, exists bool) {
+func (m *HusSessionMutation) Exp() (r bool, exists bool) {
 	v := m.exp
 	if v == nil {
 		return
@@ -208,7 +208,7 @@ func (m *HusSessionMutation) Exp() (r time.Time, exists bool) {
 // OldExp returns the old "exp" field's value of the HusSession entity.
 // If the HusSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HusSessionMutation) OldExp(ctx context.Context) (v *time.Time, err error) {
+func (m *HusSessionMutation) OldExp(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldExp is only allowed on UpdateOne operations")
 	}
@@ -222,22 +222,9 @@ func (m *HusSessionMutation) OldExp(ctx context.Context) (v *time.Time, err erro
 	return oldValue.Exp, nil
 }
 
-// ClearExp clears the value of the "exp" field.
-func (m *HusSessionMutation) ClearExp() {
-	m.exp = nil
-	m.clearedFields[hussession.FieldExp] = struct{}{}
-}
-
-// ExpCleared returns if the "exp" field was cleared in this mutation.
-func (m *HusSessionMutation) ExpCleared() bool {
-	_, ok := m.clearedFields[hussession.FieldExp]
-	return ok
-}
-
 // ResetExp resets all changes to the "exp" field.
 func (m *HusSessionMutation) ResetExp() {
 	m.exp = nil
-	delete(m.clearedFields, hussession.FieldExp)
 }
 
 // SetUID sets the "uid" field.
@@ -405,7 +392,7 @@ func (m *HusSessionMutation) SetField(name string, value ent.Value) error {
 		m.SetIat(v)
 		return nil
 	case hussession.FieldExp:
-		v, ok := value.(time.Time)
+		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -447,11 +434,7 @@ func (m *HusSessionMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *HusSessionMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(hussession.FieldExp) {
-		fields = append(fields, hussession.FieldExp)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -464,11 +447,6 @@ func (m *HusSessionMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *HusSessionMutation) ClearField(name string) error {
-	switch name {
-	case hussession.FieldExp:
-		m.ClearExp()
-		return nil
-	}
 	return fmt.Errorf("unknown HusSession nullable field %s", name)
 }
 
