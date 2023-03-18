@@ -157,6 +157,7 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 	if hus_st == nil {
 		return c.NoContent(http.StatusOK)
 	}
+
 	// Revoke past session in cookie
 
 	claims, _, err := helper.ParseJWTwithHMAC(hus_st.Value)
