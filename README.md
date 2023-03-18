@@ -1,12 +1,11 @@
 # Project Hus auth server with Go
 
 ## Integrated authentication server
-
+* Features
 ```
 Cross-Domain Identity Federation
-Single Sign-On (SSO)
-Federated Login
-//System for Cross-domain Identity Management (SCIM)
+Fedrated Login, Single Sign-On (SSO)
+Hus Protocol : Server-side driven System for Cross-domain Identity Management (SCIM)
 ```
 
 ### Dev monitoring by nodemon
@@ -15,64 +14,43 @@ Federated Login
 npm i -g nodemon
 nodemon --watch './**/*.go' --signal SIGTERM --exec 'go' run ./main.go
 ```
+(use nodemon command with Makefile)
 
 ### ent
 
 ```
-go run -mod=mod entgo.io/ent/cmd/ent new User
+go run -mod=mod entgo.io/ent/cmd/ent new TableName
 
 go generate ./ent
 ```
 
 ## Protocol Hus
-### without SS sid
 - Unsigned-Hus case ( Manual Login )<br>
-  1 - A user who hasn't got Hus token accesses one of Hus subservices(SS).<br>
-  2 - It requires unique sid from SS.<br>
-  3 - The SPA proceeds authentication(Third-party etc.) with Hus.<br>
-  4 - Hus tells SS the user is signed with sid.<br>
-  5 - and Hus redirects with Hus session cookie.<br>
-  6 - The SPA requets to check if it's signed from SS.<br>
+  1 - A user who hasn't got Hus session accesses one of Hus subservices(SS).<br>
+  2 - The client requires unique SID and Session cookie from SS.<br>
+  3 - The client proceeds authentication with Hus using redirection.<br>
+  4 - Hus redirects the user to SS setting Hus session cookie.<br>
+  5 - Go to Signed-Hus case<br>
 
 - Signed-Hus case<br>
-  1 - A user who got Hus session cookie in Hus' domain accesses one of its subservices(SS).<br>
-  2 - The SPA requests a **unique sid to identify the session from SS. and SS sets the cookie the same as that.**<br>
-  3 - Now the SPA **transfers the sid with its Hus session cookie to Hus.**<br>
-  4 - Hus validates and reset(for rotating) the session cookie and **transfer the user info with key to SS.**<br>
-  5 - **The sid ensures the session and the user info is set to the datbase for SS with the sid.**<br>
-  6 - SS responds Ok to Hus and Hus does same to the SPA subsequently.<br>
-  7 - Now the **SPA requests the token cookie from SS.**<br>
-  
-### with SS sid
-- Unsigned-Hus case ( Manual Login )<br>
-  1 - A user who hasn't got Hus token accesses one of Hus subservices(SS).<br>
-  2 - It requires unique sid from SS, but user got already so just returns it back.<br>
-  3 - The SPA proceeds authentication(Third-party etc.) with Hus.<br>
-  4 - Hus tells SS the user is signed with sid.<br>
-  5 - and Hus redirects with Hus session cookie.<br>
-  6 - The SPA requets to check if it's signed from SS.<br>
-
-- Signed-Hus case<br>
-  1 - A user who got Hus session cookie in Hus' domain accesses one of its subservices(SS).<br>
-  2 - The SPA requests a unique key to identify the session from SS. but the user got already.<br>
-  3 - Now the SPA **transfers the sid with its Hus session cookie to Hus.**<br>
-  4 - Hus validates and reset(for rotating) the session cookie and **transfer the user info with sid to SS.**<br>
-  5 - **The sid ensures the session and the user info is set to the datbase for SS with the sid.**<br>
-  6 - SS responds Ok to Hus and Hus does same to the SPA subsequently.<br>
-  7 - Now the **SPA requests the token cookie from SS.**<br>
+  1 - A user who got Hus session accesses one of its subservices(SS).<br>
+  2 - The client requests new session, but if session token is already set and not expired, keep using it.<br>
+  3 - If the client got new session with 201 code, transfers the SID to Hus.<br>
+  4 - Hus validates and reset(for rotating) the Hus session cookie and transfers the user info with SID to SS.<br>
+  5 - The SID ensures the session, and the UID is set to the datbase for SS with the SID.**<br>
+  6 - SS responds Ok to Hus and Hus does same to the client subsequently.<br>
+  7 - Now the client requests the signed token cookie from SS.<br>
 
 
 ### Tokens
-- Generating access token ( both non-token and expired token cases )<br>
-  1 - A user without valid access token requests any access token needed resource.<br>
-  2 - SS notices the user got no access token. and validate the refresh token.(both in cookie)<br>
-  ~ - The refresh token validation needs to be done with Hus, to check whether the login session is over or revoked.<br>
-  3 - If the refresh token is valid, SS generates the access token and sets it to cookie.<br>
-  4 - While the access token is alive, the root Hus server would get some rest.<br>
+- Access token<br>
+  Signed subservice's session token works as access token.<br>
 
-- Expired, expiring refresh token<br>
-  1 - A user requests with invalid access token(including non-token) and expired refresh token.
-  2 - Check login session from Hus server, if it's still alive, SS generates new refresh token and if not, informs the client that the login session is done.<br>
+- Expired token<br>
+  If the client requests with expired access token, the subservice server responds Unauthorized.<br>
+  then the client updates the session following Signed-Hus case, (recommended to combine those steps into a single function)<br>
+  If the SS reponds Unauthorized, release the client's login session. If not, request again with newly signed session.<br>
 
-- Refresh token rotation<br>
-  Everytime the refresh token or login session token is used, the token is rotated to revoke stolen tokens.
+- Refresh token<br>
+  Hus session token works as refresh token. everytime SS's session is checked, Hus token is rotated.<br>
+  If someone steals and use Hus token, token owner's session will be cut. and Hus drops all relevant sessions.
