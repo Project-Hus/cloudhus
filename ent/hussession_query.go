@@ -298,12 +298,12 @@ func (hsq *HusSessionQuery) WithUser(opts ...func(*UserQuery)) *HusSessionQuery 
 // Example:
 //
 //	var v []struct {
-//		Iat time.Time `json:"iat,omitempty"`
+//		Tid uuid.UUID `json:"tid,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.HusSession.Query().
-//		GroupBy(hussession.FieldIat).
+//		GroupBy(hussession.FieldTid).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (hsq *HusSessionQuery) GroupBy(field string, fields ...string) *HusSessionGroupBy {
@@ -321,11 +321,11 @@ func (hsq *HusSessionQuery) GroupBy(field string, fields ...string) *HusSessionG
 // Example:
 //
 //	var v []struct {
-//		Iat time.Time `json:"iat,omitempty"`
+//		Tid uuid.UUID `json:"tid,omitempty"`
 //	}
 //
 //	client.HusSession.Query().
-//		Select(hussession.FieldIat).
+//		Select(hussession.FieldTid).
 //		Scan(ctx, &v)
 func (hsq *HusSessionQuery) Select(fields ...string) *HusSessionSelect {
 	hsq.ctx.Fields = append(hsq.ctx.Fields, fields...)

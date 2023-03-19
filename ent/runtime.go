@@ -18,12 +18,16 @@ import (
 func init() {
 	hussessionFields := schema.HusSession{}.Fields()
 	_ = hussessionFields
+	// hussessionDescTid is the schema descriptor for tid field.
+	hussessionDescTid := hussessionFields[1].Descriptor()
+	// hussession.DefaultTid holds the default value on creation for the tid field.
+	hussession.DefaultTid = hussessionDescTid.Default.(func() uuid.UUID)
 	// hussessionDescIat is the schema descriptor for iat field.
-	hussessionDescIat := hussessionFields[1].Descriptor()
+	hussessionDescIat := hussessionFields[2].Descriptor()
 	// hussession.DefaultIat holds the default value on creation for the iat field.
 	hussession.DefaultIat = hussessionDescIat.Default.(func() time.Time)
 	// hussessionDescPreserved is the schema descriptor for preserved field.
-	hussessionDescPreserved := hussessionFields[2].Descriptor()
+	hussessionDescPreserved := hussessionFields[3].Descriptor()
 	// hussession.DefaultPreserved holds the default value on creation for the preserved field.
 	hussession.DefaultPreserved = hussessionDescPreserved.Default.(bool)
 	// hussessionDescID is the schema descriptor for id field.

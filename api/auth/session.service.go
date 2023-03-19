@@ -5,9 +5,10 @@ import (
 
 	"fmt"
 	"hus-auth/common"
-	"hus-auth/db"
+
 	"hus-auth/ent"
 	"hus-auth/helper"
+	"hus-auth/service/session"
 	"log"
 	"net/http"
 	"os"
@@ -21,12 +22,13 @@ import (
 // HusSessionCheckHandler godoc
 // @Router /session/check/:service/:sid [post]
 // @Summary accepts sid and service name to check if the session is valid.
-// @Description  checks the hus session in cookie and tells the subservice server if the session is valid.
+// @Description  checks the hus session in cookie and tells the subservice server if the session is valid with SID.
 // @Tags         auth
 // @Param service path string true "subservice name"
 // @Param sid path string true "session id"
-// @Success      200 "Ok"
-// @Failure      401 "Unauthorized"
+// @Success      200 "Ok, theclient now should go to subservice's signing endpoint"
+// @Failure      401 "Unauthorized, the client is not signed in"
+// @Failure 500 "Internal Server Error"
 func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	// get service name and sid from path
 	service := c.Param("service")
@@ -35,43 +37,42 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	subservice, ok := common.Subservice[service]
 	// if the service name is not registered, return 404
 	if !ok {
-		return c.String(http.StatusNotFound, "[F]no such service")
+		return c.String(http.StatusNotFound, "no such service")
 	}
 
 	// get hus_st from cookie
 	hus_st, err := c.Cookie("hus_st")
 	// no valid st cookie, then return 401
 	if err != nil || hus_st.Value == "" {
-		return c.String(http.StatusUnauthorized, "[F]not sigend in")
+		return c.String(http.StatusUnauthorized, "not sigend in")
 	}
 
-	// check if the session is valid
-	claims, exp, err := helper.ParseJWTwithHMAC(hus_st.Value)
+	// first validate and parse the session token and get SID, User entity.
+	hus_sid, u, err := session.ValidateHusSession(c.Request().Context(), ac.dbClient, hus_st.Value)
 	if err != nil {
-		log.Printf("%v(from /session/check/%s/:sid)", err, service)
-		return c.String(http.StatusUnauthorized, "[F]invalid session")
-	} else if exp {
-		return c.String(http.StatusUnauthorized, "[F]session expired")
-	}
-	// if the purpose is not hus_session, then return 401.
-	if claims["purpose"].(string) != "hus_session" {
-		return c.String(http.StatusUnauthorized, "[F]wrong purpose")
+		sidUUID, _ := uuid.Parse(hus_sid)
+		_ = ac.dbClient.HusSession.DeleteOneID(sidUUID).Exec(c.Request().Context())
+		return c.String(http.StatusUnauthorized, "not signed in")
 	}
 
-	hus_sid := claims["sid"].(string)
-	hus_uid := claims["uid"].(string)
-	hus_iat := claims["iat"].(float64)
+	// if valid Hus session requests, rotate the session token in cookie.
+	nhstSigned, err := session.RefreshHusSession(c.Request().Context(), ac.dbClient, hus_sid)
+	if err != nil {
+		err = fmt.Errorf("refreshing hus session failed:%w", err)
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	nhstCookie := &http.Cookie{
+		Name:     "hus_st",
+		Value:    nhstSigned,
+		Path:     "/",
+		Domain:   os.Getenv("HUS_DOMAIN"),
+		Expires:  time.Now().Add(time.Hour * 1),
+		HttpOnly: true,
+		Secure:   false,
+	}
+	c.SetCookie(nhstCookie)
 
-	// check if the hus session is not revoked querying the database with hus_sid.
-	_, err = db.QuerySessionBySID(c.Request().Context(), ac.dbClient, hus_sid)
-	if err != nil {
-		return c.String(http.StatusUnauthorized, "[F]invalid session")
-	}
-	// now we know that the hus session is valid, so we tell the subservice server that the session is valid with uid.
-	u, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, hus_uid)
-	if err != nil {
-		return c.String(http.StatusUnauthorized, "[F]no such user")
-	}
 	var bd string
 	if u.Birthdate != nil {
 		bd = u.Birthdate.Format(time.RFC3339)
@@ -79,7 +80,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 
 	hscbJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid":            lifthus_sid,
-		"uid":            hus_uid,
+		"uid":            u.ID,
 		"email":          u.Email,
 		"email_verified": u.EmailVerified,
 		"name":           u.Name,
@@ -91,7 +92,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 
 	hscbSigned, err := hscbJWT.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
 	if err != nil {
-		err = fmt.Errorf("[F]signing jwt for %s failed: %w", service, err)
+		err = fmt.Errorf("signing jwt for %s failed:%w", service, err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -99,46 +100,22 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	// with ac.httpClient, transfer the validation result to subservice auth server.
 	req, err := http.NewRequest("POST", subservice.Subdomains["auth"].URL+"/hus/session/sign", strings.NewReader(hscbSigned))
 	if err != nil {
-		err = fmt.Errorf("[F]session injection to "+subservice.Domain.Name+" failed:", err)
+		err = fmt.Errorf("session injection to "+subservice.Domain.Name+" failed:", err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	req.Header.Set("Content-Type", "application/json")
 	// send the request
 	resp, err := ac.httpClient.Do(req)
 	if err != nil {
-		err = fmt.Errorf("[F]session injection to "+subservice.Domain.Name+" failed:", err)
+		err = fmt.Errorf("session injection to "+subservice.Domain.Name+" failed:", err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		// if the session check is successful, renew the hus_st.
-		nhst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"sid":     hus_sid,                              // session token's uuid
-			"purpose": "hus_session",                        // purpose"
-			"iss":     os.Getenv("HUS_AUTH_URL"),            // issuer
-			"uid":     hus_uid,                              // user's uuid
-			"iat":     hus_iat,                              // issued at
-			"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
-		})
-		nhstSigned, err := nhst.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
-		if err != nil {
-			fmt.Println(err)
-			return c.String(http.StatusInternalServerError, err.Error())
-		}
-		nhstCookie := &http.Cookie{
-			Name:     "hus_st",
-			Value:    nhstSigned,
-			Path:     "/",
-			Domain:   os.Getenv("HUS_DOMAIN"),
-			Expires:  time.Now().Add(time.Hour * 1),
-			HttpOnly: true,
-			Secure:   false,
-		}
-		c.SetCookie(nhstCookie)
 		return c.String(http.StatusOK, "session injection to "+subservice.Domain.Name+" success")
 	} else {
-		log.Println("[F] an error occured from " + subservice.Domain.Name + ":" + resp.Status)
+		log.Println("an error occured from " + subservice.Domain.Name + ":" + resp.Status)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 }
@@ -193,13 +170,4 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 	c.SetCookie(cookie)
 
 	return c.NoContent(http.StatusOK)
-}
-
-// function that unmarsahls the jwt token and returns the claims.
-func ParseJWTwithHMAC(token string) (jwt.MapClaims, *jwt.Token, error) {
-	claims := jwt.MapClaims{}
-	parsedToken, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("HUS_SECRET_KEY")), nil
-	})
-	return claims, parsedToken, err
 }

@@ -41,6 +41,7 @@ type HusSessionMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
+	tid           *uuid.UUID
 	iat           *time.Time
 	preserved     *bool
 	clearedFields map[string]struct{}
@@ -153,6 +154,42 @@ func (m *HusSessionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetTid sets the "tid" field.
+func (m *HusSessionMutation) SetTid(u uuid.UUID) {
+	m.tid = &u
+}
+
+// Tid returns the value of the "tid" field in the mutation.
+func (m *HusSessionMutation) Tid() (r uuid.UUID, exists bool) {
+	v := m.tid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTid returns the old "tid" field's value of the HusSession entity.
+// If the HusSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HusSessionMutation) OldTid(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTid is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTid requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTid: %w", err)
+	}
+	return oldValue.Tid, nil
+}
+
+// ResetTid resets all changes to the "tid" field.
+func (m *HusSessionMutation) ResetTid() {
+	m.tid = nil
 }
 
 // SetIat sets the "iat" field.
@@ -336,7 +373,10 @@ func (m *HusSessionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *HusSessionMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
+	if m.tid != nil {
+		fields = append(fields, hussession.FieldTid)
+	}
 	if m.iat != nil {
 		fields = append(fields, hussession.FieldIat)
 	}
@@ -354,6 +394,8 @@ func (m *HusSessionMutation) Fields() []string {
 // schema.
 func (m *HusSessionMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case hussession.FieldTid:
+		return m.Tid()
 	case hussession.FieldIat:
 		return m.Iat()
 	case hussession.FieldPreserved:
@@ -369,6 +411,8 @@ func (m *HusSessionMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *HusSessionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case hussession.FieldTid:
+		return m.OldTid(ctx)
 	case hussession.FieldIat:
 		return m.OldIat(ctx)
 	case hussession.FieldPreserved:
@@ -384,6 +428,13 @@ func (m *HusSessionMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *HusSessionMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case hussession.FieldTid:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTid(v)
+		return nil
 	case hussession.FieldIat:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -454,6 +505,9 @@ func (m *HusSessionMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *HusSessionMutation) ResetField(name string) error {
 	switch name {
+	case hussession.FieldTid:
+		m.ResetTid()
+		return nil
 	case hussession.FieldIat:
 		m.ResetIat()
 		return nil

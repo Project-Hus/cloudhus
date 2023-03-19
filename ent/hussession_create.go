@@ -22,6 +22,20 @@ type HusSessionCreate struct {
 	hooks    []Hook
 }
 
+// SetTid sets the "tid" field.
+func (hsc *HusSessionCreate) SetTid(u uuid.UUID) *HusSessionCreate {
+	hsc.mutation.SetTid(u)
+	return hsc
+}
+
+// SetNillableTid sets the "tid" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableTid(u *uuid.UUID) *HusSessionCreate {
+	if u != nil {
+		hsc.SetTid(*u)
+	}
+	return hsc
+}
+
 // SetIat sets the "iat" field.
 func (hsc *HusSessionCreate) SetIat(t time.Time) *HusSessionCreate {
 	hsc.mutation.SetIat(t)
@@ -116,6 +130,10 @@ func (hsc *HusSessionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (hsc *HusSessionCreate) defaults() {
+	if _, ok := hsc.mutation.Tid(); !ok {
+		v := hussession.DefaultTid()
+		hsc.mutation.SetTid(v)
+	}
 	if _, ok := hsc.mutation.Iat(); !ok {
 		v := hussession.DefaultIat()
 		hsc.mutation.SetIat(v)
@@ -132,6 +150,9 @@ func (hsc *HusSessionCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (hsc *HusSessionCreate) check() error {
+	if _, ok := hsc.mutation.Tid(); !ok {
+		return &ValidationError{Name: "tid", err: errors.New(`ent: missing required field "HusSession.tid"`)}
+	}
 	if _, ok := hsc.mutation.Iat(); !ok {
 		return &ValidationError{Name: "iat", err: errors.New(`ent: missing required field "HusSession.iat"`)}
 	}
@@ -178,6 +199,10 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 	if id, ok := hsc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := hsc.mutation.Tid(); ok {
+		_spec.SetField(hussession.FieldTid, field.TypeUUID, value)
+		_node.Tid = value
 	}
 	if value, ok := hsc.mutation.Iat(); ok {
 		_spec.SetField(hussession.FieldIat, field.TypeTime, value)

@@ -88,7 +88,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
-	nsid, HusSessionTokenSigned, err := session.CreateNewHusSession(c.Request().Context(), ac.dbClient, u.ID, false)
+	nsid, HusSessionTokenSigned, err := session.CreateHusSession(c.Request().Context(), ac.dbClient, u.ID, false)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
