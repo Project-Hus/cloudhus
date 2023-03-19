@@ -61,9 +61,9 @@ func Iat(v time.Time) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldIat, v))
 }
 
-// Exp applies equality check predicate on the "exp" field. It's identical to ExpEQ.
-func Exp(v bool) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldExp, v))
+// Preserved applies equality check predicate on the "preserved" field. It's identical to PreservedEQ.
+func Preserved(v bool) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldPreserved, v))
 }
 
 // UID applies equality check predicate on the "uid" field. It's identical to UIDEQ.
@@ -111,14 +111,14 @@ func IatLTE(v time.Time) predicate.HusSession {
 	return predicate.HusSession(sql.FieldLTE(FieldIat, v))
 }
 
-// ExpEQ applies the EQ predicate on the "exp" field.
-func ExpEQ(v bool) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldExp, v))
+// PreservedEQ applies the EQ predicate on the "preserved" field.
+func PreservedEQ(v bool) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldPreserved, v))
 }
 
-// ExpNEQ applies the NEQ predicate on the "exp" field.
-func ExpNEQ(v bool) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNEQ(FieldExp, v))
+// PreservedNEQ applies the NEQ predicate on the "preserved" field.
+func PreservedNEQ(v bool) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldPreserved, v))
 }
 
 // UIDEQ applies the EQ predicate on the "uid" field.

@@ -44,16 +44,16 @@ func (hsu *HusSessionUpdate) SetNillableIat(t *time.Time) *HusSessionUpdate {
 	return hsu
 }
 
-// SetExp sets the "exp" field.
-func (hsu *HusSessionUpdate) SetExp(b bool) *HusSessionUpdate {
-	hsu.mutation.SetExp(b)
+// SetPreserved sets the "preserved" field.
+func (hsu *HusSessionUpdate) SetPreserved(b bool) *HusSessionUpdate {
+	hsu.mutation.SetPreserved(b)
 	return hsu
 }
 
-// SetNillableExp sets the "exp" field if the given value is not nil.
-func (hsu *HusSessionUpdate) SetNillableExp(b *bool) *HusSessionUpdate {
+// SetNillablePreserved sets the "preserved" field if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillablePreserved(b *bool) *HusSessionUpdate {
 	if b != nil {
-		hsu.SetExp(*b)
+		hsu.SetPreserved(*b)
 	}
 	return hsu
 }
@@ -136,8 +136,8 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := hsu.mutation.Iat(); ok {
 		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
 	}
-	if value, ok := hsu.mutation.Exp(); ok {
-		_spec.SetField(hussession.FieldExp, field.TypeBool, value)
+	if value, ok := hsu.mutation.Preserved(); ok {
+		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
 	}
 	if hsu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -208,16 +208,16 @@ func (hsuo *HusSessionUpdateOne) SetNillableIat(t *time.Time) *HusSessionUpdateO
 	return hsuo
 }
 
-// SetExp sets the "exp" field.
-func (hsuo *HusSessionUpdateOne) SetExp(b bool) *HusSessionUpdateOne {
-	hsuo.mutation.SetExp(b)
+// SetPreserved sets the "preserved" field.
+func (hsuo *HusSessionUpdateOne) SetPreserved(b bool) *HusSessionUpdateOne {
+	hsuo.mutation.SetPreserved(b)
 	return hsuo
 }
 
-// SetNillableExp sets the "exp" field if the given value is not nil.
-func (hsuo *HusSessionUpdateOne) SetNillableExp(b *bool) *HusSessionUpdateOne {
+// SetNillablePreserved sets the "preserved" field if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillablePreserved(b *bool) *HusSessionUpdateOne {
 	if b != nil {
-		hsuo.SetExp(*b)
+		hsuo.SetPreserved(*b)
 	}
 	return hsuo
 }
@@ -330,8 +330,8 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 	if value, ok := hsuo.mutation.Iat(); ok {
 		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
 	}
-	if value, ok := hsuo.mutation.Exp(); ok {
-		_spec.SetField(hussession.FieldExp, field.TypeBool, value)
+	if value, ok := hsuo.mutation.Preserved(); ok {
+		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
 	}
 	if hsuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

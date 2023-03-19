@@ -20,8 +20,8 @@ func (HusSession) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).StructTag(`json:"sid,omitempty"`).Default(uuid.New).Unique(), // sid
 		field.Time("iat").Default(time.Now), // issued at
 		// if exp is nil, the session expires when the brwoser's session ends.
-		field.Bool("exp").Default(false), // expires at
-		field.UUID("uid", uuid.UUID{}),   // uear id
+		field.Bool("preserved").Default(false), // preserved
+		field.UUID("uid", uuid.UUID{}),         // uear id
 	}
 }
 
