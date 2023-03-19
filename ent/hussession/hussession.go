@@ -13,6 +13,8 @@ const (
 	Label = "hus_session"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTid holds the string denoting the tid field in the database.
+	FieldTid = "tid"
 	// FieldIat holds the string denoting the iat field in the database.
 	FieldIat = "iat"
 	// FieldPreserved holds the string denoting the preserved field in the database.
@@ -35,6 +37,7 @@ const (
 // Columns holds all SQL columns for hussession fields.
 var Columns = []string{
 	FieldID,
+	FieldTid,
 	FieldIat,
 	FieldPreserved,
 	FieldUID,
@@ -51,6 +54,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultTid holds the default value on creation for the "tid" field.
+	DefaultTid func() uuid.UUID
 	// DefaultIat holds the default value on creation for the "iat" field.
 	DefaultIat func() time.Time
 	// DefaultPreserved holds the default value on creation for the "preserved" field.

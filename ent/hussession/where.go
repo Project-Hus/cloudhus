@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.HusSession {
 	return predicate.HusSession(sql.FieldLTE(FieldID, id))
 }
 
+// Tid applies equality check predicate on the "tid" field. It's identical to TidEQ.
+func Tid(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldTid, v))
+}
+
 // Iat applies equality check predicate on the "iat" field. It's identical to IatEQ.
 func Iat(v time.Time) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldIat, v))
@@ -69,6 +74,46 @@ func Preserved(v bool) predicate.HusSession {
 // UID applies equality check predicate on the "uid" field. It's identical to UIDEQ.
 func UID(v uuid.UUID) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldUID, v))
+}
+
+// TidEQ applies the EQ predicate on the "tid" field.
+func TidEQ(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldTid, v))
+}
+
+// TidNEQ applies the NEQ predicate on the "tid" field.
+func TidNEQ(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldTid, v))
+}
+
+// TidIn applies the In predicate on the "tid" field.
+func TidIn(vs ...uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldIn(FieldTid, vs...))
+}
+
+// TidNotIn applies the NotIn predicate on the "tid" field.
+func TidNotIn(vs ...uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotIn(FieldTid, vs...))
+}
+
+// TidGT applies the GT predicate on the "tid" field.
+func TidGT(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGT(FieldTid, v))
+}
+
+// TidGTE applies the GTE predicate on the "tid" field.
+func TidGTE(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGTE(FieldTid, v))
+}
+
+// TidLT applies the LT predicate on the "tid" field.
+func TidLT(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLT(FieldTid, v))
+}
+
+// TidLTE applies the LTE predicate on the "tid" field.
+func TidLTE(v uuid.UUID) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLTE(FieldTid, v))
 }
 
 // IatEQ applies the EQ predicate on the "iat" field.

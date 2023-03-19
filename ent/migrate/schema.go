@@ -11,6 +11,7 @@ var (
 	// HusSessionsColumns holds the columns for the "hus_sessions" table.
 	HusSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "tid", Type: field.TypeUUID, Unique: true},
 		{Name: "iat", Type: field.TypeTime},
 		{Name: "preserved", Type: field.TypeBool, Default: false},
 		{Name: "uid", Type: field.TypeUUID},
@@ -23,7 +24,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "hus_sessions_users_hus_sessions",
-				Columns:    []*schema.Column{HusSessionsColumns[3]},
+				Columns:    []*schema.Column{HusSessionsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

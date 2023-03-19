@@ -30,6 +30,20 @@ func (hsu *HusSessionUpdate) Where(ps ...predicate.HusSession) *HusSessionUpdate
 	return hsu
 }
 
+// SetTid sets the "tid" field.
+func (hsu *HusSessionUpdate) SetTid(u uuid.UUID) *HusSessionUpdate {
+	hsu.mutation.SetTid(u)
+	return hsu
+}
+
+// SetNillableTid sets the "tid" field if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableTid(u *uuid.UUID) *HusSessionUpdate {
+	if u != nil {
+		hsu.SetTid(*u)
+	}
+	return hsu
+}
+
 // SetIat sets the "iat" field.
 func (hsu *HusSessionUpdate) SetIat(t time.Time) *HusSessionUpdate {
 	hsu.mutation.SetIat(t)
@@ -133,6 +147,9 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := hsu.mutation.Tid(); ok {
+		_spec.SetField(hussession.FieldTid, field.TypeUUID, value)
+	}
 	if value, ok := hsu.mutation.Iat(); ok {
 		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
 	}
@@ -192,6 +209,20 @@ type HusSessionUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *HusSessionMutation
+}
+
+// SetTid sets the "tid" field.
+func (hsuo *HusSessionUpdateOne) SetTid(u uuid.UUID) *HusSessionUpdateOne {
+	hsuo.mutation.SetTid(u)
+	return hsuo
+}
+
+// SetNillableTid sets the "tid" field if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableTid(u *uuid.UUID) *HusSessionUpdateOne {
+	if u != nil {
+		hsuo.SetTid(*u)
+	}
+	return hsuo
 }
 
 // SetIat sets the "iat" field.
@@ -326,6 +357,9 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := hsuo.mutation.Tid(); ok {
+		_spec.SetField(hussession.FieldTid, field.TypeUUID, value)
 	}
 	if value, ok := hsuo.mutation.Iat(); ok {
 		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
