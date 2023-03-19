@@ -2,7 +2,7 @@ package auth
 
 import (
 	"errors"
-	"fmt"
+	"hus-auth/common"
 	"hus-auth/db"
 	"hus-auth/service/session"
 	"log"
@@ -28,15 +28,16 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// from cookie get hus_pst
 	hus_psid, err := c.Cookie("hus_psid")
 	if err != nil && !errors.Is(err, http.ErrNoCookie) {
-		log.Println("[F]Error getting hus_pst cookie:", err)
-		return c.String(http.StatusInternalServerError, "[F]Error getting hus_pst")
+		log.Println("getting hus_psid cookie failed:", err)
+		return c.String(http.StatusInternalServerError, "getting hus_psid cookie faield")
 	}
+	// if there is existing hus session, revoke it.
 	if hus_psid != nil && hus_psid.Value != "" {
 		// revoke the old session.
 		err = session.RevokeHusSession(c.Request().Context(), ac.dbClient, hus_psid.Value)
 		if err != nil {
-			log.Println("[F]Error revoking hus session:", err)
-			return c.String(http.StatusInternalServerError, "[F]Error revoking hus session")
+			log.Println("rovoking hus session failed", err)
+			return c.String(http.StatusInternalServerError, "revoking hus session failed")
 		}
 	}
 
@@ -44,27 +45,24 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 
 	serviceParam := c.Param("service")
-	var serviceUrl string
-	switch serviceParam {
-	case "lifthus":
-		serviceUrl = os.Getenv("LIFTHUS_URL")
+	subservice, ok := common.Subservice[serviceParam]
+	if !ok {
+		return c.String(http.StatusNotFound, "no such service")
 	}
+	serviceUrl := subservice.Domain.URL
 
 	// credential sent from Google
 	credential := c.FormValue("credential")
 
-	// get where the user redirected from
-	fmt.Println(c.FormValue("redirect"))
-
 	// validating and parsing Google ID token
 	payload, err := idtoken.Validate(c.Request().Context(), credential, clientID)
 	if err != nil {
-		log.Println("[F] Invalid ID token: %w", err)
+		log.Println("invalid id token:%w", err)
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 	// check if the user's ID token was intended for Hus.
 	if payload.Audience != clientID {
-		log.Println("[F] Invalid client ID:", payload.Audience)
+		log.Println("invalid client id:", payload.Audience)
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
