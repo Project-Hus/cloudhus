@@ -36,16 +36,16 @@ func (hsc *HusSessionCreate) SetNillableIat(t *time.Time) *HusSessionCreate {
 	return hsc
 }
 
-// SetExp sets the "exp" field.
-func (hsc *HusSessionCreate) SetExp(b bool) *HusSessionCreate {
-	hsc.mutation.SetExp(b)
+// SetPreserved sets the "preserved" field.
+func (hsc *HusSessionCreate) SetPreserved(b bool) *HusSessionCreate {
+	hsc.mutation.SetPreserved(b)
 	return hsc
 }
 
-// SetNillableExp sets the "exp" field if the given value is not nil.
-func (hsc *HusSessionCreate) SetNillableExp(b *bool) *HusSessionCreate {
+// SetNillablePreserved sets the "preserved" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillablePreserved(b *bool) *HusSessionCreate {
 	if b != nil {
-		hsc.SetExp(*b)
+		hsc.SetPreserved(*b)
 	}
 	return hsc
 }
@@ -120,9 +120,9 @@ func (hsc *HusSessionCreate) defaults() {
 		v := hussession.DefaultIat()
 		hsc.mutation.SetIat(v)
 	}
-	if _, ok := hsc.mutation.Exp(); !ok {
-		v := hussession.DefaultExp
-		hsc.mutation.SetExp(v)
+	if _, ok := hsc.mutation.Preserved(); !ok {
+		v := hussession.DefaultPreserved
+		hsc.mutation.SetPreserved(v)
 	}
 	if _, ok := hsc.mutation.ID(); !ok {
 		v := hussession.DefaultID()
@@ -135,8 +135,8 @@ func (hsc *HusSessionCreate) check() error {
 	if _, ok := hsc.mutation.Iat(); !ok {
 		return &ValidationError{Name: "iat", err: errors.New(`ent: missing required field "HusSession.iat"`)}
 	}
-	if _, ok := hsc.mutation.Exp(); !ok {
-		return &ValidationError{Name: "exp", err: errors.New(`ent: missing required field "HusSession.exp"`)}
+	if _, ok := hsc.mutation.Preserved(); !ok {
+		return &ValidationError{Name: "preserved", err: errors.New(`ent: missing required field "HusSession.preserved"`)}
 	}
 	if _, ok := hsc.mutation.UID(); !ok {
 		return &ValidationError{Name: "uid", err: errors.New(`ent: missing required field "HusSession.uid"`)}
@@ -183,9 +183,9 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
 		_node.Iat = value
 	}
-	if value, ok := hsc.mutation.Exp(); ok {
-		_spec.SetField(hussession.FieldExp, field.TypeBool, value)
-		_node.Exp = value
+	if value, ok := hsc.mutation.Preserved(); ok {
+		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
+		_node.Preserved = value
 	}
 	if nodes := hsc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

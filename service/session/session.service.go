@@ -14,15 +14,11 @@ import (
 )
 
 // CreateHusSession takes user's uuid and create new hus session and return it.
-func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID, exp bool) (
+func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID, preserved bool) (
 	new_sid, new_token string, err error,
 ) {
 	// create new Hus session in database
-	nhs := client.HusSession.Create().SetUID(uid)
-	if exp { // if it's set to expired, give it 7 days expiration
-		nhs = nhs.SetExp(true)
-	}
-	hs, err := nhs.Save(ctx)
+	hs, err := client.HusSession.Create().SetUID(uid).SetPreserved(preserved).Save(ctx)
 	if err != nil {
 		return "", "", fmt.Errorf("!!creating new hus session failed:%w", err)
 	}
@@ -30,7 +26,7 @@ func CreateNewHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID,
 	var rt *jwt.Token
 
 	// using created session's UUID, create session token
-	if exp {
+	if preserved {
 		rt = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"sid":     hs.ID,                              // session token's uuid
 			"purpose": "hus_session",                      // purpose

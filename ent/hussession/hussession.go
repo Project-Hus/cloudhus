@@ -15,8 +15,8 @@ const (
 	FieldID = "id"
 	// FieldIat holds the string denoting the iat field in the database.
 	FieldIat = "iat"
-	// FieldExp holds the string denoting the exp field in the database.
-	FieldExp = "exp"
+	// FieldPreserved holds the string denoting the preserved field in the database.
+	FieldPreserved = "preserved"
 	// FieldUID holds the string denoting the uid field in the database.
 	FieldUID = "uid"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -36,7 +36,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldIat,
-	FieldExp,
+	FieldPreserved,
 	FieldUID,
 }
 
@@ -53,8 +53,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultIat holds the default value on creation for the "iat" field.
 	DefaultIat func() time.Time
-	// DefaultExp holds the default value on creation for the "exp" field.
-	DefaultExp bool
+	// DefaultPreserved holds the default value on creation for the "preserved" field.
+	DefaultPreserved bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

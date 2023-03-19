@@ -42,7 +42,7 @@ type HusSessionMutation struct {
 	typ           string
 	id            *uuid.UUID
 	iat           *time.Time
-	exp           *bool
+	preserved     *bool
 	clearedFields map[string]struct{}
 	user          *uuid.UUID
 	cleareduser   bool
@@ -191,40 +191,40 @@ func (m *HusSessionMutation) ResetIat() {
 	m.iat = nil
 }
 
-// SetExp sets the "exp" field.
-func (m *HusSessionMutation) SetExp(b bool) {
-	m.exp = &b
+// SetPreserved sets the "preserved" field.
+func (m *HusSessionMutation) SetPreserved(b bool) {
+	m.preserved = &b
 }
 
-// Exp returns the value of the "exp" field in the mutation.
-func (m *HusSessionMutation) Exp() (r bool, exists bool) {
-	v := m.exp
+// Preserved returns the value of the "preserved" field in the mutation.
+func (m *HusSessionMutation) Preserved() (r bool, exists bool) {
+	v := m.preserved
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldExp returns the old "exp" field's value of the HusSession entity.
+// OldPreserved returns the old "preserved" field's value of the HusSession entity.
 // If the HusSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HusSessionMutation) OldExp(ctx context.Context) (v bool, err error) {
+func (m *HusSessionMutation) OldPreserved(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExp is only allowed on UpdateOne operations")
+		return v, errors.New("OldPreserved is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExp requires an ID field in the mutation")
+		return v, errors.New("OldPreserved requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExp: %w", err)
+		return v, fmt.Errorf("querying old value for OldPreserved: %w", err)
 	}
-	return oldValue.Exp, nil
+	return oldValue.Preserved, nil
 }
 
-// ResetExp resets all changes to the "exp" field.
-func (m *HusSessionMutation) ResetExp() {
-	m.exp = nil
+// ResetPreserved resets all changes to the "preserved" field.
+func (m *HusSessionMutation) ResetPreserved() {
+	m.preserved = nil
 }
 
 // SetUID sets the "uid" field.
@@ -340,8 +340,8 @@ func (m *HusSessionMutation) Fields() []string {
 	if m.iat != nil {
 		fields = append(fields, hussession.FieldIat)
 	}
-	if m.exp != nil {
-		fields = append(fields, hussession.FieldExp)
+	if m.preserved != nil {
+		fields = append(fields, hussession.FieldPreserved)
 	}
 	if m.user != nil {
 		fields = append(fields, hussession.FieldUID)
@@ -356,8 +356,8 @@ func (m *HusSessionMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case hussession.FieldIat:
 		return m.Iat()
-	case hussession.FieldExp:
-		return m.Exp()
+	case hussession.FieldPreserved:
+		return m.Preserved()
 	case hussession.FieldUID:
 		return m.UID()
 	}
@@ -371,8 +371,8 @@ func (m *HusSessionMutation) OldField(ctx context.Context, name string) (ent.Val
 	switch name {
 	case hussession.FieldIat:
 		return m.OldIat(ctx)
-	case hussession.FieldExp:
-		return m.OldExp(ctx)
+	case hussession.FieldPreserved:
+		return m.OldPreserved(ctx)
 	case hussession.FieldUID:
 		return m.OldUID(ctx)
 	}
@@ -391,12 +391,12 @@ func (m *HusSessionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetIat(v)
 		return nil
-	case hussession.FieldExp:
+	case hussession.FieldPreserved:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetExp(v)
+		m.SetPreserved(v)
 		return nil
 	case hussession.FieldUID:
 		v, ok := value.(uuid.UUID)
@@ -457,8 +457,8 @@ func (m *HusSessionMutation) ResetField(name string) error {
 	case hussession.FieldIat:
 		m.ResetIat()
 		return nil
-	case hussession.FieldExp:
-		m.ResetExp()
+	case hussession.FieldPreserved:
+		m.ResetPreserved()
 		return nil
 	case hussession.FieldUID:
 		m.ResetUID()

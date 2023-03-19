@@ -133,7 +133,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 			Domain:   os.Getenv("HUS_DOMAIN"),
 			Expires:  time.Now().Add(time.Hour * 1),
 			HttpOnly: true,
-			Secure:   true,
+			Secure:   false,
 		}
 		c.SetCookie(nhstCookie)
 		return c.String(http.StatusOK, "session injection to "+subservice.Domain.Name+" success")
@@ -154,7 +154,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 	// get hus_st from cookie
 	hus_st, _ := c.Cookie("hus_st")
-	if hus_st == nil {
+	if hus_st == nil || hus_st.Value == "" {
 		return c.NoContent(http.StatusOK)
 	}
 
@@ -193,4 +193,13 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 	c.SetCookie(cookie)
 
 	return c.NoContent(http.StatusOK)
+}
+
+// function that unmarsahls the jwt token and returns the claims.
+func ParseJWTwithHMAC(token string) (jwt.MapClaims, *jwt.Token, error) {
+	claims := jwt.MapClaims{}
+	parsedToken, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("HUS_SECRET_KEY")), nil
+	})
+	return claims, parsedToken, err
 }

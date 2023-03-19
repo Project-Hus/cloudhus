@@ -12,7 +12,7 @@ var (
 	HusSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "iat", Type: field.TypeTime},
-		{Name: "exp", Type: field.TypeBool, Default: false},
+		{Name: "preserved", Type: field.TypeBool, Default: false},
 		{Name: "uid", Type: field.TypeUUID},
 	}
 	// HusSessionsTable holds the schema information for the "hus_sessions" table.
