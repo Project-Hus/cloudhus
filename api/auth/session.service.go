@@ -19,13 +19,16 @@ import (
 
 // HusSessionCheckHandler godoc
 // @Router /session/check/:service/:sid [post]
-// @Summary accepts sid and service name to check if the session is valid.
-// @Description  checks the hus session in cookie and tells the subservice server if the session is valid with SID.
+// @Summary chekcs the service and sid and tells the subservice server that the client is signed in.
+// @Description checks the service and sid and tells the subservice server that the client is signed in.
+// @Description after the subservice server updates the session and responds with 200,
+// @Description Hus auth server also reponds with 200 to the client.
 // @Tags         auth
 // @Param service path string true "subservice name"
 // @Param sid path string true "session id"
 // @Success      200 "Ok, theclient now should go to subservice's signing endpoint"
 // @Failure      401 "Unauthorized, the client is not signed in"
+// @Failure 404 "Not Found, the service is not registered"
 // @Failure 500 "Internal Server Error"
 func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	// get service name and sid from path
@@ -40,7 +43,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 
 	// get hus_st from cookie
 	hus_st, err := c.Cookie("hus_st")
-	// no valid st cookie, then return 401
+	// no valid session token, then return 401
 	if err != nil || hus_st.Value == "" {
 		return c.String(http.StatusUnauthorized, "not sigend in")
 	}
@@ -53,7 +56,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, "not signed in")
 	}
 
-	// if valid Hus session requests, rotate the session token in cookie.
+	// if session token is valid, rotate the session token in cookie.
 	nhstSigned, err := session.RefreshHusSession(c.Request().Context(), ac.dbClient, hus_sid)
 	if err != nil {
 		err = fmt.Errorf("refreshing hus session failed:%w", err)
@@ -96,7 +99,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	}
 
 	// with ac.httpClient, transfer the validation result to subservice auth server.
-	req, err := http.NewRequest("POST", subservice.Subdomains["auth"].URL+"/hus/session/sign", strings.NewReader(hscbSigned))
+	req, err := http.NewRequest("PATCH", subservice.Subdomains["auth"].URL+"/hus/session/sign", strings.NewReader(hscbSigned))
 	if err != nil {
 		err = fmt.Errorf("session injection to "+subservice.Domain.Name+" failed:", err)
 		return c.String(http.StatusInternalServerError, err.Error())

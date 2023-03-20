@@ -24,11 +24,11 @@ import (
 // @Success      301 "to /auth/{token_string}"
 // @Failure      301 "to /error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
-	stsToRevoke := []string{}
 
-	// from cookie get hus sessions
-	hus_pst, err := c.Cookie("hus_pst")
-	hus_st, err := c.Cookie("hus_st")
+	// revoke all previous hus sessions.
+	stsToRevoke := []string{}
+	hus_pst, _ := c.Cookie("hus_pst")
+	hus_st, _ := c.Cookie("hus_st")
 	if hus_pst != nil && hus_pst.Value != "" {
 		stsToRevoke = append(stsToRevoke, hus_pst.Value)
 	}
@@ -45,9 +45,10 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		}
 	}
 
-	// client ID that Google issued to lifthus
+	// client ID that Google issued to Cloudhus.
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 
+	// check if the service is registered.
 	serviceParam := c.Param("service")
 	subservice, ok := common.Subservice[serviceParam]
 	if !ok {
@@ -58,15 +59,10 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// credential sent from Google
 	credential := c.FormValue("credential")
 
-	// validating and parsing Google ID token
+	// validate and parse the Google ID token
 	payload, err := idtoken.Validate(c.Request().Context(), credential, clientID)
 	if err != nil {
 		log.Println("invalid id token:%w", err)
-		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
-	}
-	// check if the user's ID token was intended for Hus.
-	if payload.Audience != clientID {
-		log.Println("invalid client id:", payload.Audience)
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
