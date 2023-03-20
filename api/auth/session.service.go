@@ -134,12 +134,12 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 
 	// get hus_st from cookie
 	hus_st, _ := c.Cookie("hus_st")
-	hus_psid, _ := c.Cookie("hus_pst")
+	hus_pst, _ := c.Cookie("hus_pst")
 	if hus_st != nil && hus_st.Value != "" {
 		stsToRevoke = append(stsToRevoke, hus_st.Value)
 	}
-	if hus_psid != nil || hus_psid.Value != "" {
-		stsToRevoke = append(stsToRevoke, hus_psid.Value)
+	if hus_pst != nil && hus_pst.Value != "" {
+		stsToRevoke = append(stsToRevoke, hus_pst.Value)
 	}
 
 	// Revoke all captured session tokens
