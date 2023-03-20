@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"hus-auth/common"
 	"hus-auth/db"
 	"hus-auth/service/session"
@@ -25,19 +24,24 @@ import (
 // @Success      301 "to /auth/{token_string}"
 // @Failure      301 "to /error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
-	// from cookie get hus_pst
-	hus_psid, err := c.Cookie("hus_psid")
-	if err != nil && !errors.Is(err, http.ErrNoCookie) {
-		log.Println("getting hus_psid cookie failed:", err)
-		return c.String(http.StatusInternalServerError, "getting hus_psid cookie faield")
+	stsToRevoke := []string{}
+
+	// from cookie get hus sessions
+	hus_pst, err := c.Cookie("hus_pst")
+	hus_st, err := c.Cookie("hus_st")
+	if hus_pst != nil && hus_pst.Value != "" {
+		stsToRevoke = append(stsToRevoke, hus_pst.Value)
 	}
-	// if there is existing hus session, revoke it.
-	if hus_psid != nil && hus_psid.Value != "" {
-		// revoke the old session.
-		err = session.RevokeHusSession(c.Request().Context(), ac.dbClient, hus_psid.Value)
+	if hus_st != nil && hus_st.Value != "" {
+		stsToRevoke = append(stsToRevoke, hus_st.Value)
+	}
+
+	// revoke all captured hus session tokens
+	for _, st := range stsToRevoke {
+		err := session.RevokeHusSessionToken(c.Request().Context(), ac.dbClient, st)
 		if err != nil {
-			log.Println("rovoking hus session failed", err)
-			return c.String(http.StatusInternalServerError, "revoking hus session failed")
+			log.Println("revoking hus session token failed:", err)
+			return c.String(http.StatusInternalServerError, "revoking hus session token failed")
 		}
 	}
 
@@ -88,7 +92,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
-	nsid, HusSessionTokenSigned, err := session.CreateHusSession(c.Request().Context(), ac.dbClient, u.ID, false)
+	_, HusSessionTokenSigned, err := session.CreateHusSession(c.Request().Context(), ac.dbClient, u.ID, false)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
@@ -105,8 +109,8 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	c.SetCookie(cookie)
 
 	cookie2 := &http.Cookie{
-		Name:     "hus_psid",
-		Value:    nsid,
+		Name:     "hus_pst",
+		Value:    HusSessionTokenSigned,
 		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
