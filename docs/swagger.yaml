@@ -17,7 +17,7 @@ paths:
   /session/check/:service/:sid:
     post:
       description: checks the hus session in cookie and tells the subservice server
-        if the session is valid.
+        if the session is valid with SID.
       parameters:
       - description: subservice name
         in: path
@@ -31,28 +31,30 @@ paths:
         type: string
       responses:
         "200":
-          description: Ok
+          description: Ok, theclient now should go to subservice's signing endpoint
         "401":
-          description: Unauthorized
+          description: Unauthorized, the client is not signed in
+        "404":
+          description: Not Found, the service is not registered
+        "500":
+          description: Internal Server Error
       summary: accepts sid and service name to check if the session is valid.
       tags:
       - auth
   /session/revoke:
     delete:
-      description: gets hus session token from cookie and revoke it by deleting it
-        from database.
+      description: can be used to sign out.
       parameters:
-      - description: Hus session token in cookie
+      - description: Hus session tokens in cookie
         in: header
         name: jwt
-        required: true
         type: string
       responses:
         "200":
           description: Ok
         "500":
           description: doesn't have to be handled
-      summary: gets hus session token from cookie and revoke it.
+      summary: revokes every hus session in cookie from database.
       tags:
       - auth
   /social/google/{subservice_name}:

@@ -139,18 +139,18 @@ func RevokeHusSession(ctx context.Context, client *ent.Client, sid string) error
 	return nil
 }
 
-// RevokeHusSessionToken takes session tokens and revokes them.
+// RevokeHusSessionToken takes session token and revokes them.
 func RevokeHusSessionToken(ctx context.Context, client *ent.Client, st string) error {
 	stClaims, _, err := helper.ParseJWTwithHMAC(st)
 
 	sid_uuid, err := uuid.Parse(stClaims["sid"].(string))
 	if err != nil {
-		return fmt.Errorf("!!invalid sid:%w", err)
+		return err
 	}
 
 	err = client.HusSession.DeleteOneID(sid_uuid).Exec(ctx)
 	if err != nil && !ent.IsNotFound(err) {
-		return fmt.Errorf("!!revoking hus session failed:%w", err)
+		return err
 	}
 	return nil
 }

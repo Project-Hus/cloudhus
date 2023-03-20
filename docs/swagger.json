@@ -20,7 +20,7 @@
     "paths": {
         "/session/check/:service/:sid": {
             "post": {
-                "description": "checks the hus session in cookie and tells the subservice server if the session is valid.",
+                "description": "checks the hus session in cookie and tells the subservice server if the session is valid with SID.",
                 "tags": [
                     "auth"
                 ],
@@ -43,28 +43,33 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Ok"
+                        "description": "Ok, theclient now should go to subservice's signing endpoint"
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized, the client is not signed in"
+                    },
+                    "404": {
+                        "description": "Not Found, the service is not registered"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }
         },
         "/session/revoke": {
             "delete": {
-                "description": "gets hus session token from cookie and revoke it by deleting it from database.",
+                "description": "can be used to sign out.",
                 "tags": [
                     "auth"
                 ],
-                "summary": "gets hus session token from cookie and revoke it.",
+                "summary": "revokes every hus session in cookie from database.",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Hus session token in cookie",
+                        "description": "Hus session tokens in cookie",
                         "name": "jwt",
-                        "in": "header",
-                        "required": true
+                        "in": "header"
                     }
                 ],
                 "responses": {
