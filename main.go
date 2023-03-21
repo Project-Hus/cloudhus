@@ -7,11 +7,13 @@ import (
 	"time"
 
 	"hus-auth/api/auth"
+	"hus-auth/common/hus"
 	"hus-auth/db"
-	"hus-auth/middleware"
+	mw "hus-auth/middleware"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -50,12 +52,25 @@ func main() {
 		log.Fatalf("[F] creating schema resources failed : %v", err)
 	}
 
+	// Initialize Hus common variables
+	hus.InitHusVars(dbClient)
+
 	// subdomains
 	hosts := map[string]*Host{}
 
 	//  Create echo web server instance and set CORS headers
 	e := echo.New()
-	e.Use(middleware.SetHusCorsHeaders)
+	e.Use(mw.SetHusCorsHeaders)
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: hus.Origins,
+		AllowHeaders: []string{
+			echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization,
+		},
+		AllowCredentials: true,
+		AllowMethods: []string{
+			http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions, http.MethodPatch,
+		},
+	}))
 
 	/* authApi, which controls auth all over the services */
 	// create new http.Client for authApi
