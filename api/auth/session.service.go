@@ -92,7 +92,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 		"exp":            time.Now().Add(time.Second * 10).Unix(),
 	})
 
-	hscbSigned, err := hscbJWT.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
+	hscbSigned, err := hscbJWT.SignedString([]byte(hus.HusSecretKey))
 	if err != nil {
 		err = fmt.Errorf("signing jwt for %s failed:%w", service, err)
 		log.Println(err)

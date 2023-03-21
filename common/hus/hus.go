@@ -21,6 +21,7 @@ func InitHusVars(_ *ent.Client) {
 	goenv := os.Getenv("GOENV")
 	//common
 	GoogleClientID = os.Getenv("GOOGLE_CLIENT_ID")
+	HusSecretKey = os.Getenv("HUS_SECRET_KEY")
 	if goenv == "production" {
 		Host = "cloudhus.com"
 		URL = "https://cloudhus.com"
@@ -28,7 +29,6 @@ func InitHusVars(_ *ent.Client) {
 		AuthCookieDomain = "auth.cloudhus.com"
 		AuthURL = "https://auth.cloudhus.com"
 		ApiURL = "https://api.cloudhus.com"
-		HusSecretKey = os.Getenv("HUS_SECRET_KEY")
 	} else { // development
 		Host = "localhost:9090"
 		URL = "http://localhost:9090"
@@ -36,6 +36,5 @@ func InitHusVars(_ *ent.Client) {
 		AuthCookieDomain = ""
 		AuthURL = "http://localhost:9090"
 		ApiURL = "http://localhost:9090"
-		HusSecretKey = os.Getenv("HUS_SECRET_KEY")
 	}
 }

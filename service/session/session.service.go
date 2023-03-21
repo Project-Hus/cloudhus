@@ -9,7 +9,6 @@ import (
 	"hus-auth/helper"
 
 	"log"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -51,7 +50,7 @@ func CreateHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID, pr
 		})
 	}
 
-	hsk := []byte(os.Getenv("HUS_SECRET_KEY"))
+	hsk := []byte(hus.HusSecretKey)
 
 	rts, err := rt.SignedString(hsk)
 	if err != nil {
@@ -119,7 +118,7 @@ func RefreshHusSession(ctx context.Context, client *ent.Client, sid string) (nst
 		"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
 	})
 
-	nstSigned, err = nst.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
+	nstSigned, err = nst.SignedString([]byte(hus.HusSecretKey))
 	if err != nil {
 		return "", fmt.Errorf("signing hus_st failed")
 	}
