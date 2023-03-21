@@ -5,6 +5,7 @@ import (
 
 	"fmt"
 	"hus-auth/common"
+	"hus-auth/common/hus"
 
 	"hus-auth/service/session"
 	"log"
@@ -158,7 +159,7 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
-		Domain:   os.Getenv("HUS_AUTH_DOMAIN"),
+		Domain:   hus.AuthCookieDomain,
 		SameSite: http.SameSiteDefaultMode,
 	}
 	c.SetCookie(cookie)
@@ -169,7 +170,7 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
-		Domain:   os.Getenv("HUS_AUTH_DOMAIN"),
+		Domain:   hus.AuthCookieDomain,
 		SameSite: http.SameSiteDefaultMode,
 	}
 	c.SetCookie(cookie2)

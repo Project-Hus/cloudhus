@@ -3,6 +3,7 @@ package session
 import (
 	"context"
 	"fmt"
+	"hus-auth/common/hus"
 	"hus-auth/db"
 	"hus-auth/ent"
 	"hus-auth/helper"
@@ -33,7 +34,7 @@ func CreateHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID, pr
 			"sid":     hs.ID,                              // session token's uuid
 			"tid":     hs.Tid,                             // token id
 			"purpose": "hus_session",                      // purpose
-			"iss":     os.Getenv("HUS_AUTH_URL"),          // issuer
+			"iss":     hus.AuthURL,                        // issuer
 			"uid":     uid,                                // user's uuid
 			"iat":     hs.Iat.Unix(),                      // issued at
 			"exp":     time.Now().AddDate(0, 0, 7).Unix(), // expiration : one week
@@ -43,7 +44,7 @@ func CreateHusSession(ctx context.Context, client *ent.Client, uid uuid.UUID, pr
 			"sid":     hs.ID,                                // session token's uuid
 			"tid":     hs.Tid,                               // token id
 			"purpose": "hus_session",                        // purpose
-			"iss":     os.Getenv("HUS_AUTH_URL"),            // issuer
+			"iss":     hus.AuthURL,                          // issuer
 			"uid":     uid,                                  // user's uuid
 			"iat":     hs.Iat.Unix(),                        // issued at
 			"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
@@ -112,7 +113,7 @@ func RefreshHusSession(ctx context.Context, client *ent.Client, sid string) (nst
 		"sid":     hs.ID.String(),                       // session token's uuid
 		"tid":     hs.Tid.String(),                      // token id
 		"purpose": "hus_session",                        // purpose
-		"iss":     os.Getenv("HUS_AUTH_URL"),            // issuer
+		"iss":     hus.AuthURL,                          // issuer
 		"uid":     hs.UID,                               // user's uuid
 		"iat":     hs.Iat.Unix(),                        // issued at
 		"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour

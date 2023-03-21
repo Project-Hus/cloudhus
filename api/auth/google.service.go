@@ -2,11 +2,11 @@ package auth
 
 import (
 	"hus-auth/common"
+	"hus-auth/common/hus"
 	"hus-auth/db"
 	"hus-auth/service/session"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -46,7 +46,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	}
 
 	// client ID that Google issued to Cloudhus.
-	clientID := os.Getenv("GOOGLE_CLIENT_ID")
+	clientID := hus.GoogleClientID
 
 	// check if the service is registered.
 	serviceParam := c.Param("service")
@@ -99,7 +99,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
-		Domain:   os.Getenv("HUS_AUTH_DOMAIN"),
+		Domain:   hus.AuthCookieDomain,
 		SameSite: http.SameSiteDefaultMode,
 	}
 	c.SetCookie(cookie)
@@ -111,7 +111,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		Secure:   false,
 		HttpOnly: true,
 		Expires:  time.Now().AddDate(1, 0, 0),
-		Domain:   os.Getenv("HUS_AUTH_DOMAIN"),
+		Domain:   hus.AuthCookieDomain,
 		SameSite: http.SameSiteDefaultMode,
 	}
 	c.SetCookie(cookie2)
