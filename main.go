@@ -9,7 +9,6 @@ import (
 	"hus-auth/api/auth"
 	"hus-auth/common/hus"
 	"hus-auth/db"
-	mw "hus-auth/middleware"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -60,8 +59,9 @@ func main() {
 
 	//  Create echo web server instance and set CORS headers
 	e := echo.New()
-	e.Use(mw.SetHusCorsHeaders)
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		// If your Backend is deployed in AWS and using API Gateway to call through,
+		// then all these headers need to be applied in API Gateway level also.
 		AllowOrigins: hus.Origins,
 		AllowHeaders: []string{
 			echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization,
