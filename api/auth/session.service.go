@@ -10,7 +10,6 @@ import (
 	"hus-auth/service/session"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -68,7 +67,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 		Name:     "hus_st",
 		Value:    nhstSigned,
 		Path:     "/",
-		Domain:   os.Getenv("HUS_DOMAIN"),
+		Domain:   hus.AuthCookieDomain,
 		Expires:  time.Now().Add(time.Hour * 1),
 		HttpOnly: true,
 		Secure:   false,

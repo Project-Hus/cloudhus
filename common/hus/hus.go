@@ -1,6 +1,7 @@
 package hus
 
 import (
+	"fmt"
 	"hus-auth/ent"
 	"os"
 )
@@ -17,8 +18,7 @@ var ApiURL = ""
 
 var LifthusURL = "http://localhost:3000"
 
-func InitHusVars(_ *ent.Client) {
-	goenv := os.Getenv("GOENV")
+func InitHusVars(goenv string, _ *ent.Client) {
 	//common
 	GoogleClientID = os.Getenv("GOOGLE_CLIENT_ID")
 	HusSecretKey = os.Getenv("HUS_SECRET_KEY")
@@ -37,4 +37,5 @@ func InitHusVars(_ *ent.Client) {
 		AuthURL = "http://localhost:9090"
 		ApiURL = "http://localhost:9090"
 	}
+	fmt.Println("initialized Hus vars for" + goenv)
 }
