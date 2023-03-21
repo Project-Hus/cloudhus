@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"hus-auth/api/auth"
@@ -52,7 +53,7 @@ func main() {
 	}
 
 	// Initialize Hus common variables
-	hus.InitHusVars(dbClient)
+	hus.InitHusVars(os.Getenv("GOENV"), dbClient)
 
 	// subdomains
 	hosts := map[string]*Host{}
