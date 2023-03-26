@@ -1,0 +1,80 @@
+basePath: /auth
+host: lifthus.com
+info:
+  contact:
+    email: lifthus531@gmail.com
+    name: API Support
+    url: lifthus531@gmail.com
+  description: This is Project-Hus's root authentication server containing each user's
+    UUID, which is unique for all hus services.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Project-Hus auth server
+  version: 0.0.0
+paths:
+  /session/check/:service/:sid:
+    post:
+      description: checks the hus session in cookie and tells the subservice server
+        if the session is valid with SID.
+      parameters:
+      - description: subservice name
+        in: path
+        name: service
+        required: true
+        type: string
+      - description: session id
+        in: path
+        name: sid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Ok, theclient now should go to subservice's signing endpoint
+        "401":
+          description: Unauthorized, the client is not signed in
+        "404":
+          description: Not Found, the service is not registered
+        "500":
+          description: Internal Server Error
+      summary: accepts sid and service name to check if the session is valid.
+      tags:
+      - auth
+  /session/revoke:
+    delete:
+      description: can be used to sign out.
+      parameters:
+      - description: Hus session tokens in cookie
+        in: header
+        name: jwt
+        type: string
+      responses:
+        "200":
+          description: Ok
+        "500":
+          description: doesn't have to be handled
+      summary: revokes every hus session in cookie from database.
+      tags:
+      - auth
+  /social/google/{subservice_name}:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
+        the refresh token will be expired in 7 days.
+      parameters:
+      - description: Google ID token
+        in: body
+        name: jwt
+        required: true
+        schema:
+          type: string
+      responses:
+        "301":
+          description: to /error
+      summary: gets google IDtoken and redirect with hus session cookie.
+      tags:
+      - auth
+swagger: "2.0"
