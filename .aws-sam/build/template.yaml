@@ -56,7 +56,7 @@ Resources:
             Fn::Sub: '{{resolve:ssm:HUS_DB_PORT:1}}'
           HUS_SECRET_KEY:
             Fn::Sub: '{{resolve:ssm:HUS_SECRET_KEY:1}}'
-          PARAM1: VALUE
+          GOENV: VALUE
     Metadata:
       SamResourceId: HusAuthService
   ApplicationResourceGroup:

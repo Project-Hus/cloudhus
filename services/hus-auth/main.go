@@ -11,6 +11,7 @@ import (
 	"hus-auth/api/auth"
 	"hus-auth/common/hus"
 	"hus-auth/db"
+	"hus-auth/ent"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -28,6 +29,7 @@ import (
 )
 
 var echoLambda *echoadapter.EchoLambda
+var dbClient *ent.Client
 
 // @title Project-Hus auth server
 // @version 0.0.0
@@ -55,12 +57,7 @@ func init() {
 	if err != nil {
 		log.Fatal("%w", err)
 	}
-	defer dbClient.Close()
-
-	// Run the auto migration tool.
-	if err := dbClient.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("creating schema resources failed : %v", err)
-	}
+	//defer dbClient.Close()
 
 	// Initialize Hus common variables
 	hus.InitHusVars(os.Getenv("GOENV"), dbClient)
@@ -124,7 +121,7 @@ type Host struct {
 func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	return echoLambda.ProxyWithContext(ctx, req)
 }
-
 func main() {
+	// it blocks and never returns
 	lambda.Start(Handler)
 }

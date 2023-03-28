@@ -54,7 +54,7 @@ Resources:
           HUS_DB_HOST: !Sub "{{resolve:ssm:HUS_DB_HOST:1}}"
           HUS_DB_PORT: !Sub "{{resolve:ssm:HUS_DB_PORT:1}}"
           HUS_SECRET_KEY: !Sub "{{resolve:ssm:HUS_SECRET_KEY:1}}"
-          PARAM1: VALUE
+          GOENV: VALUE
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
