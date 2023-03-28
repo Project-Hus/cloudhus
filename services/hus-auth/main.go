@@ -43,9 +43,6 @@ var dbClient *ent.Client
 // @host lifthus.com
 // @BasePath /auth
 func init() {
-	fmt.Println("YOYOYO")
-	fmt.Println(os.Getenv("HUS_DB_HOST"))
-
 	// set .env
 	//err = godotenv.Load()
 	//if err != nil {
@@ -71,6 +68,7 @@ func init() {
 		// If your Backend is deployed in AWS and using API Gateway to call through,
 		// then all these headers need to be applied in API Gateway level also.
 		AllowOrigins: hus.Origins,
+
 		AllowHeaders: []string{
 			echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization,
 		},
@@ -97,6 +95,8 @@ func init() {
 	e.Any("/*", func(c echo.Context) (err error) {
 		req, res := c.Request(), c.Response()
 		host, ok := hosts[req.Host] // if the host is not registered, it will be nil.
+		// get request origin from c
+
 		if !ok {
 			return c.NoContent(http.StatusNotFound)
 		} else {
@@ -119,7 +119,10 @@ type Host struct {
 }
 
 func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return echoLambda.ProxyWithContext(ctx, req)
+	resp, err := echoLambda.ProxyWithContext(ctx, req)
+	fmt.Println("RESPONSE==========")
+	fmt.Println(fmt.Sprintf("%+v", resp))
+	return resp, err
 }
 func main() {
 	// it blocks and never returns

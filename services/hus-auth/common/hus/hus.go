@@ -1,7 +1,6 @@
 package hus
 
 import (
-	"fmt"
 	"hus-auth/ent"
 	"os"
 )
@@ -37,5 +36,4 @@ func InitHusVars(goenv string, _ *ent.Client) {
 		AuthURL = "http://localhost:9090"
 		ApiURL = "http://localhost:9090"
 	}
-	fmt.Println("initialized Hus vars for " + goenv)
 }

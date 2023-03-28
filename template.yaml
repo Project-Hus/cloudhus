@@ -20,15 +20,21 @@ Parameters:
     Default: /my/parameter/store/path
 
 Resources:
-  HusAuthApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: Prod
-      TracingEnabled: true
-      Cors:
-        AllowOrigin: "'*'"
-        AllowHeaders: "'*'"
-        AllowMethods: "'*'"
+  # HusAuthApi:
+  #   Type: AWS::Serverless::Api
+  #   Properties:
+  #     StageName: Prod
+  #     TracingEnabled: true
+  #     BinaryMediaTypes: ["*/*"]
+  #     Cors:
+  #       AllowOrigins:
+  #         - "*"
+  #       AllowHeaders:
+  #         - "*"
+  #       AllowMethods:
+  #         - "*"
+  #       MaxAge: 43200
+  #       AllowCredentials: true
   HusAuthService:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -38,10 +44,17 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        CatchAll:
+        HusAuthServiceProxy:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            #RestApiId: !Ref HusAuthApi
             Path: /{proxy+}
+            Method: ANY
+        HusAuthServiceRoot:
+          Type: Api
+          Properties:
+            #RestApiId: !Ref HusAuthApi
+            Path: "/"
             Method: ANY
 
       # dynamic reference : https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/dynamic-references.html

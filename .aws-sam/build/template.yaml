@@ -17,15 +17,6 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /my/parameter/store/path
 Resources:
-  HusAuthApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: Prod
-      TracingEnabled: true
-      Cors:
-        AllowOrigin: '''*'''
-        AllowHeaders: '''*'''
-        AllowMethods: '''*'''
   HusAuthService:
     Type: AWS::Serverless::Function
     Properties:
@@ -35,10 +26,15 @@ Resources:
       Architectures:
       - x86_64
       Events:
-        CatchAll:
+        HusAuthServiceProxy:
           Type: Api
           Properties:
             Path: /{proxy+}
+            Method: ANY
+        HusAuthServiceRoot:
+          Type: Api
+          Properties:
+            Path: /
             Method: ANY
       Environment:
         Variables:
