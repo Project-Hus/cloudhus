@@ -133,5 +133,6 @@ func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.AP
 	org := req.Headers["Origin"]
 	fmt.Println("RESPONSE==========", hst, pth, org)
 	fmt.Println(fmt.Sprintf("%+v", resp))
+	fmt.Println("err:", err)
 	return resp, err
 }
