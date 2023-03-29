@@ -34,10 +34,6 @@ func NewAuthApiController(params AuthApiControllerParams) *echo.Echo {
 
 	authApiController := newAuthApiController(params)
 
-	authApi.GET("/test1", func(c echo.Context) error {
-		return c.String(http.StatusOK, "test1 Hello")
-	})
-
 	authApi.POST("/social/google/:service", authApiController.GoogleAuthHandler)
 
 	authApi.POST("/session/check/:service/:sid", authApiController.HusSessionCheckHandler)
