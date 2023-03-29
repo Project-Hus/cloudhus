@@ -93,7 +93,7 @@ func main() {
 	}
 
 	authApi := auth.NewAuthApiController(authApiControllerParams)
-	hosts["localhost:9090"] = &Host{Echo: authApi} // gonna use auth.cloudhus.com later
+	hosts["localhost"] = &Host{Echo: authApi} // gonna use auth.cloudhus.com later
 	// get requset and process by its subdomain
 	e.Any("/*", func(c echo.Context) (err error) {
 		req, res := c.Request(), c.Response()

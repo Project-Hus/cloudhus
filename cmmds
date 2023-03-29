@@ -8,6 +8,10 @@
 - sam local start-api --env-vars env.json -p 9090 --debug<br>
 - sam deploy --guided // deploys to aws.(authorization question must be answered with y or fails) <br>
 
+# Curling with Origin
+
+curl -H "Origin: http://localhost:3000" -i -X POST http://localhost:9090/session/check/lifthus/adsf <br>
+
 # Docker
 
 docker.for.mac.localhost
