@@ -12,29 +12,29 @@ Globals:
     MemorySize: 128
     Tracing: Active
   Api:
+    Cors:
+      AllowOrigin: "'*'"
+      AllowHeaders: "'*'"
+      AllowMethods: "'*'"
+      MaxAge: 43200 # preflight cache
+      AllowCredentials: true
     TracingEnabled: true
 
-Parameters:
-  ca-asdf:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: /my/parameter/store/path
+# Parameters:
+#   ca-asdf:
+#     Type: AWS::SSM::Parameter::Value<String>
+#     Default: /my/parameter/store/path
 
 Resources:
-  # HusAuthApi:
-  #   Type: AWS::Serverless::Api
-  #   Properties:
-  #     StageName: Prod
-  #     TracingEnabled: true
-  #     BinaryMediaTypes: ["*/*"]
-  #     Cors:
-  #       AllowOrigins:
-  #         - "*"
-  #       AllowHeaders:
-  #         - "*"
-  #       AllowMethods:
-  #         - "*"
-  #       MaxAge: 43200
-  #       AllowCredentials: true
+  HusAuthApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Auth:
+        Authorizer: NONE
+        ApiKeyRequired: false
+        AddDefaultAuthorizerToCorsPreflight: false
+      Name: HusAuthApi
+      StageName: prod
   HusAuthService:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -45,15 +45,17 @@ Resources:
         - x86_64
       Events:
         HusAuthServiceProxy:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            #RestApiId: !Ref HusAuthApi
+            ApiId:
+              Ref: HusAuthApi
             Path: /{proxy+}
             Method: ANY
         HusAuthServiceRoot:
-          Type: Api
+          Type: HttpApi
           Properties:
-            #RestApiId: !Ref HusAuthApi
+            ApiId:
+              Ref: HusAuthApi
             Path: "/"
             Method: ANY
 

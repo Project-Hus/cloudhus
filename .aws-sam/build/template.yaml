@@ -11,12 +11,23 @@ Globals:
     MemorySize: 128
     Tracing: Active
   Api:
+    Cors:
+      AllowOrigin: '''*'''
+      AllowHeaders: '''*'''
+      AllowMethods: '''*'''
+      MaxAge: 43200
+      AllowCredentials: true
     TracingEnabled: true
-Parameters:
-  ca-asdf:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: /my/parameter/store/path
 Resources:
+  HusAuthApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Auth:
+        Authorizer: NONE
+        ApiKeyRequired: false
+        AddDefaultAuthorizerToCorsPreflight: false
+      Name: HusAuthApi
+      StageName: prod
   HusAuthService:
     Type: AWS::Serverless::Function
     Properties:
@@ -27,13 +38,17 @@ Resources:
       - x86_64
       Events:
         HusAuthServiceProxy:
-          Type: Api
+          Type: HttpApi
           Properties:
+            ApiId:
+              Ref: HusAuthApi
             Path: /{proxy+}
             Method: ANY
         HusAuthServiceRoot:
-          Type: Api
+          Type: HttpApi
           Properties:
+            ApiId:
+              Ref: HusAuthApi
             Path: /
             Method: ANY
       Environment:
