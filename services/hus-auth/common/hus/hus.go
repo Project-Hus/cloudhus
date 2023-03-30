@@ -28,7 +28,7 @@ func InitHusVars(goenv string, _ *ent.Client) {
 		AuthCookieDomain = "auth.cloudhus.com"
 		AuthURL = "https://auth.cloudhus.com"
 		ApiURL = "https://api.cloudhus.com"
-	} else { // development
+	} else { // development or native
 		Host = "localhost:9090"
 		URL = "http://localhost:9090"
 		Origins = []string{"http://localhost:3000", "http://localhost:9090", "http://localhost:9091"}
@@ -36,4 +36,5 @@ func InitHusVars(goenv string, _ *ent.Client) {
 		AuthURL = "http://localhost:9090"
 		ApiURL = "http://localhost:9090"
 	}
+	return
 }

@@ -1,6 +1,10 @@
 package common
 
-type subservice struct {
+import (
+	"os"
+)
+
+type ServiceDomain struct {
 	Domain     Domain
 	Subdomains map[string]Domain `json:"subdomains"`
 }
@@ -10,37 +14,37 @@ type Domain struct {
 	URL  string `json:"url"`
 }
 
-// later it would be good to have this info in a database and to initialize this map when the server starts
-var Subservice = map[string]subservice{
-	"hus": {
+// later it would be good to have this info in database and to initialize this map when the server starts
+var Subservice = map[string]ServiceDomain{
+	"cloudhus": {
 		Domain: Domain{
-			Name: "hus",
-			URL:  "http://localhost:9090", // cloudhus.com
+			Name: "cloudhus",
+			URL:  "https://cloudhus.com",
 		},
 		Subdomains: map[string]Domain{
 			"auth": {
 				Name: "auth",
-				URL:  "http://localhost:9090", // auth.cloudhus.com
+				URL:  "https://auth.cloudhus.com",
 			},
 			"api": {
 				Name: "api",
-				URL:  "http://localhost:9090", // api.cloudhus.com
+				URL:  "https://api.cloudhus.com",
 			},
 		},
 	},
 	"lifthus": {
 		Domain: Domain{
 			Name: "lifthus",
-			URL:  "http://localhost:3000", // lifthus.com
+			URL:  "https://lifthus.com",
 		},
 		Subdomains: map[string]Domain{
 			"auth": {
 				Name: "auth",
-				URL:  "http://docker.for.mac.localhost:9091", // auth.lifthus.com
+				URL:  "https://auth.lifthus.com",
 			},
 			"api": {
 				Name: "api",
-				URL:  "http://docker.for.mac.localhost:9091", // api.lifthus.com
+				URL:  "https://api.lifthus.com",
 			},
 		},
 	},
@@ -52,12 +56,26 @@ var Subservice = map[string]subservice{
 		Subdomains: map[string]Domain{
 			"auth": {
 				Name: "auth",
-				URL:  "https://auth.surfhus.com", // auth.surfhus.com
+				URL:  "https://auth.surfhus.com",
 			},
 			"api": {
 				Name: "api",
-				URL:  "https://api.surfhus.com", // api.surfhus.com
+				URL:  "https://api.surfhus.com",
 			},
 		},
 	},
+}
+
+func init() {
+	goenv := os.Getenv("GOENV")
+	if cloudhus, ok := Subservice["cloudhus"]; ok {
+		if subdomian, ok := cloudhus.Subdomains["auth"]; ok {
+			subdomian.URL = "abc"
+		}
+	}
+	if goenv == "development" {
+
+	} else if goenv == "native" {
+
+	}
 }

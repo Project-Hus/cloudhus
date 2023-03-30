@@ -13,7 +13,7 @@ curl -H "Origin: http://localhost:3000" -i -X POST http://localhost:9090/session
 
 # Docker
 
-docker.for.mac.localhost
+host.docker.internal
 
 # Commands you can use next
 

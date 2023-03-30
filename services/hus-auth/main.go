@@ -13,6 +13,7 @@ import (
 	"hus-auth/db"
 	"hus-auth/ent"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
@@ -43,11 +44,13 @@ var dbClient *ent.Client
 // @host lifthus.com
 // @BasePath /auth
 func main() {
-	// set .env
-	//err = godotenv.Load()
-	//if err != nil {
-	//	log.Fatalf("loading .env file failed : %s", err)
-	//}
+	goenv := os.Getenv("GOENV")
+	if goenv == "native" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatalf("loading .env file failed : %s", err)
+		}
+	}
 
 	// connecting to hus_auth_db with ent
 	dbClient, err := db.ConnectToHusAuth()
@@ -80,18 +83,15 @@ func main() {
 			http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions, http.MethodPatch,
 		},
 	}))
-
 	/* authApi, which controls auth all over the services */
 	// create new http.Client for authApi
 	authHttpClient := &http.Client{
 		Timeout: time.Second * 5,
 	}
-
 	authApiControllerParams := auth.AuthApiControllerParams{
 		DbClient:   dbClient,
 		HttpClient: authHttpClient,
 	}
-
 	authApi := auth.NewAuthApiController(authApiControllerParams)
 	hosts["localhost"] = &Host{Echo: authApi} // gonna use auth.cloudhus.com later
 	// get requset and process by its subdomain
@@ -107,16 +107,16 @@ func main() {
 		}
 		return err
 	})
-
 	// provide api docs with swagger 2.0
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	echoLambda = echoadapter.NewV2(e)
 
-	// Run the server
-	//e.Logger.Fatal(e.Start(":9090"))
-
-	lambda.Start(Handler)
+	if goenv == "native" {
+		e.Logger.Fatal(e.Start(":9090"))
+	} else {
+		lambda.Start(Handler)
+	}
 }
 
 type Host struct {

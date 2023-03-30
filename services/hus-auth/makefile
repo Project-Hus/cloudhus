@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := build
 
 go: # run the app with nodemon for hot reload
-	GOENV=development nodemon --watch './**/*.go' --signal SIGTERM --exec 'go' run ./main.go
+	GOENV=native nodemon --watch './**/*.go' --signal SIGTERM --exec 'go' run ./main.go
 .PHONY:go
 
 fmt:

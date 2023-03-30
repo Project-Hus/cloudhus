@@ -99,7 +99,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	}
 
 	// with ac.httpClient, transfer the validation result to subservice auth server.
-	req, err := http.NewRequest("PATCH", subservice.Subdomains["auth"].URL+"/hus/session/sign", strings.NewReader(hscbSigned))
+	req, err := http.NewRequest("PATCH", subservice.Subdomains["auth"].URL+"/auth/hus/session/sign", strings.NewReader(hscbSigned))
 	if err != nil {
 		err = fmt.Errorf("session injection to "+subservice.Domain.Name+" failed:", err)
 		return c.String(http.StatusInternalServerError, err.Error())
