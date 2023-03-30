@@ -36,11 +36,11 @@ var Subservice = map[string]subservice{
 		Subdomains: map[string]Domain{
 			"auth": {
 				Name: "auth",
-				URL:  "http://localhost:9091", // auth.lifthus.com
+				URL:  "http://docker.for.mac.localhost:9091", // auth.lifthus.com
 			},
 			"api": {
 				Name: "api",
-				URL:  "http://localhost:9091", // api.lifthus.com
+				URL:  "http://docker.for.mac.localhost:9091", // api.lifthus.com
 			},
 		},
 	},

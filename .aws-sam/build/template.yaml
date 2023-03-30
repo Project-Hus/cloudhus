@@ -24,7 +24,7 @@ Globals:
           Fn::Sub: '{{resolve:ssm:HUS_DB_PORT:1}}'
         HUS_SECRET_KEY:
           Fn::Sub: '{{resolve:ssm:HUS_SECRET_KEY:1}}'
-        GOENV: production or development
+        GOENV: production
   Api:
     Cors:
       AllowOrigin: '''*'''
@@ -43,7 +43,6 @@ Resources:
         CertificateArn:
           Fn::Sub: '{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}'
         EndpointConfiguration: REGIONAL
-        BasePath: ''
         Route53:
           HostedZoneId:
             Fn::Sub: '{{resolve:ssm:CLOUDHUS_HOSTED_ZONE_ID:1}}}'
@@ -62,14 +61,14 @@ Resources:
           Properties:
             ApiId:
               Ref: HusAuthApi
-            Path: /
+            Path: /auth
             Method: ANY
         HusAuthServiceProxy:
           Type: HttpApi
           Properties:
             ApiId:
               Ref: HusAuthApi
-            Path: /{proxy+}
+            Path: /auth/{proxy+}
             Method: ANY
     Metadata:
       SamResourceId: HusAuthService

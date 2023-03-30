@@ -18,7 +18,7 @@ import (
 )
 
 // HusSessionCheckHandler godoc
-// @Router /session/check/:service/:sid [post]
+// @Router /auth/session/check/:service/:sid [post]
 // @Summary chekcs the service and sid and tells the subservice server that the client is signed in.
 // @Description checks the service and sid and tells the subservice server that the client is signed in.
 // @Description after the subservice server updates the session and responds with 200,
@@ -122,7 +122,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 }
 
 // SessionRevocationHandler godoc
-// @Router       /session/revoke [delete]
+// @Router       /auth/session/revoke [delete]
 // @Summary      revokes every hus session in cookie from database.
 // @Description  can be used to sign out.
 // @Tags         auth

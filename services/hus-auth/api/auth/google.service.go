@@ -14,7 +14,7 @@ import (
 )
 
 // GoogleAuthHandler godoc
-// @Router       /social/google/{subservice_name} [post]
+// @Router       /auth/social/google/{subservice_name} [post]
 // @Summary      gets google IDtoken and redirect with hus session cookie.
 // @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
 // @Description the refresh token will be expired in 7 days.

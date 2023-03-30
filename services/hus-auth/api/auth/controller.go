@@ -38,10 +38,10 @@ func NewAuthApiController(params AuthApiControllerParams) *echo.Echo {
 		return c.String(http.StatusOK, "hus-auth!")
 	})
 
-	authApi.POST("/social/google/:service", authApiController.GoogleAuthHandler)
+	authApi.POST("/auth/social/google/:service", authApiController.GoogleAuthHandler)
 
-	authApi.POST("/session/check/:service/:sid", authApiController.HusSessionCheckHandler)
-	authApi.DELETE("/session/revoke", authApiController.SessionRevocationHandler)
+	authApi.POST("/auth/session/check/:service/:sid", authApiController.HusSessionCheckHandler)
+	authApi.DELETE("/auth/session/revoke", authApiController.SessionRevocationHandler)
 
 	return authApi
 }

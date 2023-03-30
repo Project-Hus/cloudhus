@@ -42,7 +42,6 @@ Resources:
         DomainName: "auth.cloudhus.com"
         CertificateArn: !Sub "{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}"
         EndpointConfiguration: REGIONAL
-        BasePath: ""
         Route53:
           HostedZoneId: !Sub "{{resolve:ssm:CLOUDHUS_HOSTED_ZONE_ID:1}}}"
           RecordName: "auth.cloudhus.com"
@@ -60,14 +59,14 @@ Resources:
           Properties:
             ApiId:
               Ref: HusAuthApi
-            Path: "/"
+            Path: "/auth"
             Method: ANY
         HusAuthServiceProxy:
           Type: HttpApi
           Properties:
             ApiId:
               Ref: HusAuthApi
-            Path: /{proxy+}
+            Path: /auth/{proxy+} # unfortunately, to distinguish in local, prefix is needed.
             Method: ANY
 
   ApplicationResourceGroup:
