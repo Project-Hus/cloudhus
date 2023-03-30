@@ -4,7 +4,6 @@
 - sam build :: builds SAM <br>
 - sam local generate-event apigateway aws-proxy > events/apigw-event.json :: generates local event <br>
 - sam local invoke -e events/apigw-event.json :: calls single event <br>
-- sam local start-api -p 9090:: runs sam server locally <br>
 - sam local start-api --env-vars env.json -p 9090 --debug<br>
 - sam deploy --guided // deploys to aws.(authorization question must be answered with y or fails) <br>
 

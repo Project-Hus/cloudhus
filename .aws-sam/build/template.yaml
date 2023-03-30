@@ -1,8 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: 'tmp
-
-  Sample SAM Template for tmp
+Description: 'cloudhus serverless microservices
 
   '
 Globals:
@@ -10,24 +8,46 @@ Globals:
     Timeout: 5
     MemorySize: 128
     Tracing: Active
+    Environment:
+      Variables:
+        GOOGLE_CLIENT_ID:
+          Fn::Sub: '{{resolve:ssm:GOOGLE_CLIENT_ID:1}}'
+        HUS_AUTH_DB_NAME:
+          Fn::Sub: '{{resolve:ssm:HUS_AUTH_DB_NAME:1}}'
+        HUS_AUTH_DB_PASSWORD:
+          Fn::Sub: '{{resolve:ssm:HUS_AUTH_DB_PASSWORD:1}}'
+        HUS_AUTH_DB_USER:
+          Fn::Sub: '{{resolve:ssm:HUS_AUTH_DB_USER:1}}'
+        HUS_DB_HOST:
+          Fn::Sub: '{{resolve:ssm:HUS_DB_HOST:1}}'
+        HUS_DB_PORT:
+          Fn::Sub: '{{resolve:ssm:HUS_DB_PORT:1}}'
+        HUS_SECRET_KEY:
+          Fn::Sub: '{{resolve:ssm:HUS_SECRET_KEY:1}}'
+        GOENV: production or development
   Api:
     Cors:
       AllowOrigin: '''*'''
       AllowHeaders: '''*'''
       AllowMethods: '''*'''
       MaxAge: 43200
-      AllowCredentials: true
     TracingEnabled: true
 Resources:
   HusAuthApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      Auth:
-        Authorizer: NONE
-        ApiKeyRequired: false
-        AddDefaultAuthorizerToCorsPreflight: false
       Name: HusAuthApi
       StageName: prod
+      Domain:
+        DomainName: auth.cloudhus.com
+        CertificateArn:
+          Fn::Sub: '{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}'
+        EndpointConfiguration: REGIONAL
+        BasePath: ''
+        Route53:
+          HostedZoneId:
+            Fn::Sub: '{{resolve:ssm:CLOUDHUS_HOSTED_ZONE_ID:1}}}'
+          RecordName: auth.cloudhus.com
   HusAuthService:
     Type: AWS::Serverless::Function
     Properties:
@@ -37,13 +57,6 @@ Resources:
       Architectures:
       - x86_64
       Events:
-        HusAuthServiceProxy:
-          Type: HttpApi
-          Properties:
-            ApiId:
-              Ref: HusAuthApi
-            Path: /{proxy+}
-            Method: ANY
         HusAuthServiceRoot:
           Type: HttpApi
           Properties:
@@ -51,23 +64,13 @@ Resources:
               Ref: HusAuthApi
             Path: /
             Method: ANY
-      Environment:
-        Variables:
-          GOOGLE_CLIENT_ID:
-            Fn::Sub: '{{resolve:ssm:GOOGLE_CLIENT_ID:1}}'
-          HUS_AUTH_DB_NAME:
-            Fn::Sub: '{{resolve:ssm:HUS_AUTH_DB_NAME:1}}'
-          HUS_AUTH_DB_PASSWORD:
-            Fn::Sub: '{{resolve:ssm:HUS_AUTH_DB_PASSWORD:1}}'
-          HUS_AUTH_DB_USER:
-            Fn::Sub: '{{resolve:ssm:HUS_AUTH_DB_USER:1}}'
-          HUS_DB_HOST:
-            Fn::Sub: '{{resolve:ssm:HUS_DB_HOST:1}}'
-          HUS_DB_PORT:
-            Fn::Sub: '{{resolve:ssm:HUS_DB_PORT:1}}'
-          HUS_SECRET_KEY:
-            Fn::Sub: '{{resolve:ssm:HUS_SECRET_KEY:1}}'
-          GOENV: VALUE
+        HusAuthServiceProxy:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HusAuthApi
+            Path: /{proxy+}
+            Method: ANY
     Metadata:
       SamResourceId: HusAuthService
   ApplicationResourceGroup:
