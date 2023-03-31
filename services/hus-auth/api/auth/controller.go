@@ -33,7 +33,7 @@ func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *e
 
 	authApiController := newAuthApiController(params)
 
-	authApi.GET("/", func(c echo.Context) error {
+	authApi.GET("/auth", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Welcome to Cloudhus")
 	})
 

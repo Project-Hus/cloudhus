@@ -37,13 +37,13 @@ Resources:
       # ApiKeyRequired: false
       # AddDefaultAuthorizerToCorsPreflight: false
       Name: CloudhusAuthApi
-      StageName: prod
+      #StageName: prod
       Domain:
         DomainName: "auth.cloudhus.com"
         CertificateArn: !Sub "{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}"
         EndpointConfiguration: REGIONAL
         Route53:
-          HostedZoneId: Z09783011SYP80T8W0VB6 #!Sub "{{resolve:ssm:CLOUDHUS_HOSTED_ZONE:1}}}"
+          HostedZoneId: #!Sub "{{resolve:ssm:CLOUDHUS_HOSTED_ZONE:1}}}"
   CloudhusAuthService:
     Type: AWS::Serverless::Function
     Properties:
