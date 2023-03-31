@@ -29,17 +29,18 @@ type AuthApiControllerParams struct {
 }
 
 // NewAuthApiController returns Echo comprising of auth api routes. instance to main.
-func NewAuthApiController(params AuthApiControllerParams) *echo.Echo {
-	authApi := echo.New()
+func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *echo.Echo {
 
 	authApiController := newAuthApiController(params)
 
 	authApi.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "hus-auth!")
+		return c.String(http.StatusOK, "Welcome to Cloudhus")
 	})
 
+	// social login services
 	authApi.POST("/auth/social/google/:service", authApiController.GoogleAuthHandler)
 
+	// session services
 	authApi.POST("/auth/session/check/:service/:sid", authApiController.HusSessionCheckHandler)
 	authApi.DELETE("/auth/session/revoke", authApiController.SessionRevocationHandler)
 

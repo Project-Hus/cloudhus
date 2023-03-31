@@ -19,7 +19,7 @@ type Domain struct {
 // in production, we use actual domain names.
 // in development, we use localhost and docker internal network with SAM.
 // in native Go, we use localhost.
-var Subservice map[string]ServiceDomain
+var Subservice = map[string]ServiceDomain{}
 
 func init() {
 	goenv := os.Getenv("GOENV")
@@ -78,82 +78,32 @@ func init() {
 		Subservice["cloudhus"] = ServiceDomain{
 			Domain: Domain{
 				Name: "cloudhus",
-				URL:  "https://localhost:9090",
+				URL:  "http://localhost",
 			},
 			Subdomains: map[string]Domain{
 				"auth": {
 					Name: "auth",
-					URL:  "https://localhost:9090",
+					URL:  "http://localhost",
 				},
 				"api": {
 					Name: "api",
-					URL:  "https://localhost:9090",
+					URL:  "http://localhost",
 				},
 			},
 		}
 		Subservice["lifthus"] = ServiceDomain{
 			Domain: Domain{
 				Name: "lifthus",
-				URL:  "https://host.docker.internal:9091",
+				URL:  "http://localhost:3000",
 			},
 			Subdomains: map[string]Domain{
 				"auth": {
 					Name: "auth",
-					URL:  "https://host.docker.internal:9091",
+					URL:  "http://host.docker.internal:9091",
 				},
 				"api": {
 					Name: "api",
-					URL:  "https://host.docker.internal:9091",
-				},
-			},
-		}
-		Subservice["surfhus"] = ServiceDomain{
-			Domain: Domain{
-				Name: "surfhus",
-				URL:  "https://surfhus.com",
-			},
-			Subdomains: map[string]Domain{
-				"auth": {
-					Name: "auth",
-					URL:  "https://auth.surfhus.com",
-				},
-				"api": {
-					Name: "api",
-					URL:  "https://api.surfhus.com",
-				},
-			},
-		}
-		// at native Go environment, we directly access localhost
-	} else if goenv == "native" {
-		Subservice["cloudhus"] = ServiceDomain{
-			Domain: Domain{
-				Name: "cloudhus",
-				URL:  "https://localhost:9090",
-			},
-			Subdomains: map[string]Domain{
-				"auth": {
-					Name: "auth",
-					URL:  "https://localhost:9090",
-				},
-				"api": {
-					Name: "api",
-					URL:  "https://localhost:9090",
-				},
-			},
-		}
-		Subservice["lifthus"] = ServiceDomain{
-			Domain: Domain{
-				Name: "lifthus",
-				URL:  "https://localhost:9091",
-			},
-			Subdomains: map[string]Domain{
-				"auth": {
-					Name: "auth",
-					URL:  "https://localhost:9091",
-				},
-				"api": {
-					Name: "api",
-					URL:  "https://localhost:9091",
+					URL:  "http://host.docker.internal:9091",
 				},
 			},
 		}
@@ -165,11 +115,61 @@ func init() {
 			Subdomains: map[string]Domain{
 				"auth": {
 					Name: "auth",
-					URL:  "https://localhost:9092",
+					URL:  "https://host.docker.internal:9092",
 				},
 				"api": {
 					Name: "api",
-					URL:  "https://localhost:9092",
+					URL:  "https://host.docker.internal:9092",
+				},
+			},
+		}
+		// at native Go environment, we directly access localhost
+	} else if goenv == "native" {
+		Subservice["cloudhus"] = ServiceDomain{
+			Domain: Domain{
+				Name: "cloudhus",
+				URL:  "http://localhost:9090",
+			},
+			Subdomains: map[string]Domain{
+				"auth": {
+					Name: "auth",
+					URL:  "http://localhost:9090",
+				},
+				"api": {
+					Name: "api",
+					URL:  "http://localhost:9090",
+				},
+			},
+		}
+		Subservice["lifthus"] = ServiceDomain{
+			Domain: Domain{
+				Name: "lifthus",
+				URL:  "http://localhost:3000",
+			},
+			Subdomains: map[string]Domain{
+				"auth": {
+					Name: "auth",
+					URL:  "http://localhost:9091",
+				},
+				"api": {
+					Name: "api",
+					URL:  "http://localhost:9091",
+				},
+			},
+		}
+		Subservice["surfhus"] = ServiceDomain{
+			Domain: Domain{
+				Name: "surfhus",
+				URL:  "http://localhost:9092",
+			},
+			Subdomains: map[string]Domain{
+				"auth": {
+					Name: "auth",
+					URL:  "http://localhost:9092",
+				},
+				"api": {
+					Name: "api",
+					URL:  "http://localhost:9092",
 				},
 			},
 		}

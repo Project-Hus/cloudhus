@@ -24,7 +24,8 @@ Globals:
           Fn::Sub: '{{resolve:ssm:HUS_DB_PORT:1}}'
         HUS_SECRET_KEY:
           Fn::Sub: '{{resolve:ssm:HUS_SECRET_KEY:1}}'
-        GOENV: production
+        GOENV:
+          Fn::Sub: '{{resolve:ssm:GOENV:1}}'
   Api:
     Cors:
       AllowOrigin: '''*'''
@@ -33,10 +34,10 @@ Globals:
       MaxAge: 43200
     TracingEnabled: true
 Resources:
-  HusAuthApi:
+  CloudhusAuthApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      Name: HusAuthApi
+      Name: CloudhusAuthApi
       StageName: prod
       Domain:
         DomainName: auth.cloudhus.com
@@ -44,34 +45,32 @@ Resources:
           Fn::Sub: '{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}'
         EndpointConfiguration: REGIONAL
         Route53:
-          HostedZoneId:
-            Fn::Sub: '{{resolve:ssm:CLOUDHUS_HOSTED_ZONE_ID:1}}}'
-          RecordName: auth.cloudhus.com
-  HusAuthService:
+          HostedZoneId: Z09783011SYP80T8W0VB6
+  CloudhusAuthService:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: HusAuthService
+      CodeUri: CloudhusAuthService
       Handler: hus-auth
       Runtime: go1.x
       Architectures:
       - x86_64
       Events:
-        HusAuthServiceRoot:
+        CloudhusAuthServiceRoot:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: HusAuthApi
+              Ref: CloudhusAuthApi
             Path: /auth
             Method: ANY
-        HusAuthServiceProxy:
+        CloudhusAuthServiceProxy:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: HusAuthApi
+              Ref: CloudhusAuthApi
             Path: /auth/{proxy+}
             Method: ANY
     Metadata:
-      SamResourceId: HusAuthService
+      SamResourceId: CloudhusAuthService
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
     Properties:
@@ -93,19 +92,19 @@ Resources:
       AutoConfigurationEnabled: 'true'
     DependsOn: ApplicationResourceGroup
 Outputs:
-  HelloWorldAPI:
-    Description: API Gateway endpoint URL for Prod environment for First Function
+  CloudhusAuthApi:
+    Description: Cloudhus auth api endpoint base url
     Value:
-      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
-  HelloWorldFunction:
+      Fn::Sub: https://auth.cloudhus.com
+  CloudhusAuthService:
     Description: First Lambda Function ARN
     Value:
       Fn::GetAtt:
-      - HelloWorldFunction
+      - CloudhusAuthService
       - Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
+  CloudhusAuthServiceIamRole:
+    Description: Implicit IAM Role created for CloudhusAuthService
     Value:
       Fn::GetAtt:
-      - HelloWorldFunctionRole
+      - CloudhusAuthServiceRole
       - Arn

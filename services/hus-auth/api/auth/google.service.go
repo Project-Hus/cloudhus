@@ -24,7 +24,6 @@ import (
 // @Success      301 "to /auth/{token_string}"
 // @Failure      301 "to /error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
-
 	// revoke all previous hus sessions.
 	stsToRevoke := []string{}
 	hus_pst, _ := c.Cookie("hus_pst")

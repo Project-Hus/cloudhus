@@ -16,21 +16,21 @@ const docTemplate = `{
             "email": "lifthus531@gmail.com"
         },
         "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "name": "-",
+            "url": "-"
         },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/session/check/:service/:sid": {
+        "/auth/session/check/:service/:sid": {
             "post": {
-                "description": "checks the hus session in cookie and tells the subservice server if the session is valid with SID.",
+                "description": "checks the service and sid and tells the subservice server that the client is signed in.\nafter the subservice server updates the session and responds with 200,\nHus auth server also reponds with 200 to the client.",
                 "tags": [
                     "auth"
                 ],
-                "summary": "accepts sid and service name to check if the session is valid.",
+                "summary": "chekcs the service and sid and tells the subservice server that the client is signed in.",
                 "parameters": [
                     {
                         "type": "string",
@@ -63,7 +63,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/session/revoke": {
+        "/auth/session/revoke": {
             "delete": {
                 "description": "can be used to sign out.",
                 "tags": [
@@ -88,7 +88,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/social/google/{subservice_name}": {
+        "/auth/social/google/{subservice_name}": {
             "post": {
                 "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.\nthe refresh token will be expired in 7 days.",
                 "consumes": [
@@ -122,11 +122,11 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.0.0",
-	Host:             "lifthus.com",
+	Host:             "auth.cloudhus.com",
 	BasePath:         "/auth",
 	Schemes:          []string{},
-	Title:            "Project-Hus auth server",
-	Description:      "This is Project-Hus's root authentication server containing each user's UUID, which is unique for all hus services.",
+	Title:            "Cloudhus auth server",
+	Description:      "This is Cloudhus's root authentication server.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

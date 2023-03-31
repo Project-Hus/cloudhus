@@ -29,23 +29,22 @@ Globals:
 
 Resources:
   # auth services ==================================================
-  HusAuthApi:
+  CloudhusAuthApi:
     Type: AWS::Serverless::HttpApi
     Properties:
       # Auth:
       # Authorizer: NONE
       # ApiKeyRequired: false
       # AddDefaultAuthorizerToCorsPreflight: false
-      Name: HusAuthApi
+      Name: CloudhusAuthApi
       StageName: prod
       Domain:
         DomainName: "auth.cloudhus.com"
         CertificateArn: !Sub "{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}"
         EndpointConfiguration: REGIONAL
         Route53:
-          HostedZoneId: !Sub "{{resolve:ssm:CLOUDHUS_HOSTED_ZONE_ID:1}}}"
-          RecordName: "auth.cloudhus.com"
-  HusAuthService:
+          HostedZoneId: Z09783011SYP80T8W0VB6 #!Sub "{{resolve:ssm:CLOUDHUS_HOSTED_ZONE:1}}}"
+  CloudhusAuthService:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: services/hus-auth/
@@ -54,18 +53,18 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        HusAuthServiceRoot:
+        CloudhusAuthServiceRoot:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: HusAuthApi
+              Ref: CloudhusAuthApi
             Path: "/auth"
             Method: ANY
-        HusAuthServiceProxy:
+        CloudhusAuthServiceProxy:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: HusAuthApi
+              Ref: CloudhusAuthApi
             Path: /auth/{proxy+} # auth service uses subdomain, but to do proxy locally, prefix is needed.
             Method: ANY
 
@@ -89,16 +88,17 @@ Resources:
             - Ref: AWS::StackName
       AutoConfigurationEnabled: "true"
     DependsOn: ApplicationResourceGroup
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldAPI:
-    Description: API Gateway endpoint URL for Prod environment for First Function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
+  CloudhusAuthApi:
+    Description: Cloudhus auth api endpoint base url
+    Value: !Sub "https://auth.cloudhus.com"
+  CloudhusAuthService:
     Description: First Lambda Function ARN
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+    Value: !GetAtt CloudhusAuthService.Arn
+  CloudhusAuthServiceIamRole:
+    Description: Implicit IAM Role created for CloudhusAuthService
+    Value: !GetAtt CloudhusAuthServiceRole.Arn

@@ -5,9 +5,9 @@ codeuri = "/Users/ijeonghun/gitRepos/project-hus/cloudhus/services/hus-auth"
 runtime = "go1.x"
 architecture = "x86_64"
 handler = "hus-auth"
-source_hash = "5f87a2fbdceff11ec887d707cab0f1bd60d8cf92a42bdfd66c21649e382da5bc"
+source_hash = "71183cdf1be86baec13e3c162e8d7c671a3a193e40c90445219260d50ca87adb"
 manifest_hash = ""
 packagetype = "Zip"
-functions = ["HusAuthService"]
+functions = ["CloudhusAuthService"]
 
 [layer_build_definitions]

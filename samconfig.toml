@@ -17,6 +17,11 @@ lint = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
+stack_name = "cloudhus"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-132dqcw27j5y6"
+s3_prefix = "cloudhus"
+region = "us-west-2"
+image_repositories = []
 
 [default.package.parameters]
 resolve_s3 = true
