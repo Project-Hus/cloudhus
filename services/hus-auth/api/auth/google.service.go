@@ -62,6 +62,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	payload, err := idtoken.Validate(c.Request().Context(), credential, clientID)
 	if err != nil {
 		log.Println("invalid id token:%w", err)
+		log.Println("@credential:", credential)
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 

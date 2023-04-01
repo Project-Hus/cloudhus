@@ -6,18 +6,18 @@ Description: >
 Globals:
   Function:
     Timeout: 5
-    MemorySize: 128
+    MemorySize: 128 # 128MB ~ 10240MB
     Tracing: Active
     Environment:
       Variables:
-        GOOGLE_CLIENT_ID: !Sub "{{resolve:ssm:GOOGLE_CLIENT_ID:1}}"
-        HUS_AUTH_DB_NAME: !Sub "{{resolve:ssm:HUS_AUTH_DB_NAME:1}}"
-        HUS_AUTH_DB_PASSWORD: !Sub "{{resolve:ssm:HUS_AUTH_DB_PASSWORD:1}}"
-        HUS_AUTH_DB_USER: !Sub "{{resolve:ssm:HUS_AUTH_DB_USER:1}}"
-        HUS_DB_HOST: !Sub "{{resolve:ssm:HUS_DB_HOST:1}}"
-        HUS_DB_PORT: !Sub "{{resolve:ssm:HUS_DB_PORT:1}}"
-        HUS_SECRET_KEY: !Sub "{{resolve:ssm:HUS_SECRET_KEY:1}}"
-        GOENV: !Sub "{{resolve:ssm:GOENV:1}}" # --env-vars takes precedence over this in sam local
+        GOOGLE_CLIENT_ID: "{{resolve:ssm:GOOGLE_CLIENT_ID:1}}"
+        HUS_AUTH_DB_NAME: "{{resolve:ssm:HUS_AUTH_DB_NAME:1}}"
+        HUS_AUTH_DB_PASSWORD: "{{resolve:ssm:HUS_AUTH_DB_PASSWORD:1}}"
+        HUS_AUTH_DB_USER: "{{resolve:ssm:HUS_AUTH_DB_USER:1}}"
+        HUS_DB_HOST: "{{resolve:ssm:HUS_AUTH_DB_HOST_PRIVATE:1}}"
+        HUS_DB_PORT: "{{resolve:ssm:HUS_DB_PORT:1}}"
+        HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
+        GOENV: "{{resolve:ssm:GOENV:1}}" # --env-vars takes precedence over this in sam local
   Api:
     Cors:
       AllowOrigin: "'*'"
@@ -37,13 +37,13 @@ Resources:
       # ApiKeyRequired: false
       # AddDefaultAuthorizerToCorsPreflight: false
       Name: CloudhusAuthApi
-      #StageName: prod
+      #StageName: prod # it can't be used when signle function works as whole service. because it attaches prefix.
       Domain:
         DomainName: "auth.cloudhus.com"
-        CertificateArn: !Sub "{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}"
+        CertificateArn: "{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}"
         EndpointConfiguration: REGIONAL
         Route53:
-          HostedZoneId: #!Sub "{{resolve:ssm:CLOUDHUS_HOSTED_ZONE:1}}}"
+          HostedZoneId: "{{resolve:ssm:CLOUDHUS_HOSTED_ZONE:1}}"
   CloudhusAuthService:
     Type: AWS::Serverless::Function
     Properties:
@@ -67,6 +67,13 @@ Resources:
               Ref: CloudhusAuthApi
             Path: /auth/{proxy+} # auth service uses subdomain, but to do proxy locally, prefix is needed.
             Method: ANY
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+      VpcConfig:
+        SecurityGroupIds:
+          - "{{resolve:ssm:CLOUDHUS_SG_ID:1}}"
+        SubnetIds:
+          - "{{resolve:ssm:US_WEST_2A_SUBNET_ID:1}}"
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
@@ -78,6 +85,7 @@ Resources:
             - Ref: AWS::StackName
       ResourceQuery:
         Type: CLOUDFORMATION_STACK_1_0
+
   ApplicationInsightsMonitoring:
     Type: AWS::ApplicationInsights::Application
     Properties:
@@ -95,7 +103,7 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   CloudhusAuthApi:
     Description: Cloudhus auth api endpoint base url
-    Value: !Sub "https://auth.cloudhus.com"
+    Value: "https://auth.cloudhus.com"
   CloudhusAuthService:
     Description: First Lambda Function ARN
     Value: !GetAtt CloudhusAuthService.Arn

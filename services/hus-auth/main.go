@@ -48,7 +48,10 @@ func main() {
 	// production : production for aws lambda
 	// development : sam local environment
 	// native : native go environment
-	goenv := os.Getenv("GOENV")
+	goenv, ok := os.LookupEnv("GOENV")
+	if !ok {
+		log.Fatal("GOENV is not set")
+	}
 
 	// in production environment, env vars comes from parameter store.
 	// in development environment, env vars comes from env.json.
@@ -68,6 +71,7 @@ func main() {
 	if goenv == "native" { // if it is not lambda, close dbClient when main function is done.
 		defer dbClient.Close()
 	}
+	log.Println("DB connection success")
 
 	// Initialize Hus common variables
 	hus.InitHusVars(goenv, dbClient)

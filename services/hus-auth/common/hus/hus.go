@@ -24,7 +24,7 @@ func InitHusVars(goenv string, _ *ent.Client) {
 	if goenv == "production" {
 		Host = "cloudhus.com"
 		URL = "https://cloudhus.com"
-		Origins = []string{"https://cloudhus.com", "https://lifthus.com", "https://surfhus.com"}
+		Origins = []string{"https://cloudhus.com", "https://lifthus.com", "https://surfhus.com", "http://localhost:3000"}
 		AuthCookieDomain = "auth.cloudhus.com"
 		AuthURL = "https://auth.cloudhus.com"
 		ApiURL = "https://api.cloudhus.com"
