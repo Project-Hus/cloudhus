@@ -70,7 +70,8 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 		Domain:   hus.AuthCookieDomain,
 		Expires:  time.Now().Add(time.Hour * 1),
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   hus.CookieSecure,
+		SameSite: hus.SameSiteMode,
 	}
 	c.SetCookie(nhstCookie)
 
@@ -156,10 +157,10 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 		Name:     "hus_st",
 		Value:    "",
 		Path:     "/",
-		Secure:   false,
+		Secure:   hus.CookieSecure,
 		HttpOnly: true,
 		Domain:   hus.AuthCookieDomain,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: hus.SameSiteMode,
 	}
 	c.SetCookie(cookie)
 
@@ -167,10 +168,10 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 		Name:     "hus_pst",
 		Value:    "",
 		Path:     "/",
-		Secure:   false,
+		Secure:   hus.CookieSecure,
 		HttpOnly: true,
 		Domain:   hus.AuthCookieDomain,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: hus.SameSiteMode,
 	}
 	c.SetCookie(cookie2)
 

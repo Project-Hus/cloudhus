@@ -5,7 +5,7 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 5
+    Timeout: 60
     MemorySize: 128 # 128MB ~ 10240MB
     Tracing: Active
     Environment:
@@ -14,7 +14,7 @@ Globals:
         HUS_AUTH_DB_NAME: "{{resolve:ssm:HUS_AUTH_DB_NAME:1}}"
         HUS_AUTH_DB_PASSWORD: "{{resolve:ssm:HUS_AUTH_DB_PASSWORD:1}}"
         HUS_AUTH_DB_USER: "{{resolve:ssm:HUS_AUTH_DB_USER:1}}"
-        HUS_DB_HOST: "{{resolve:ssm:HUS_AUTH_DB_HOST_PRIVATE:1}}"
+        HUS_DB_HOST: "{{resolve:ssm:HUS_AUTH_DB_HOST:1}}"
         HUS_DB_PORT: "{{resolve:ssm:HUS_DB_PORT:1}}"
         HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
         GOENV: "{{resolve:ssm:GOENV:1}}" # --env-vars takes precedence over this in sam local
@@ -67,13 +67,11 @@ Resources:
               Ref: CloudhusAuthApi
             Path: /auth/{proxy+} # auth service uses subdomain, but to do proxy locally, prefix is needed.
             Method: ANY
-      Policies:
-        - AWSLambdaVPCAccessExecutionRole
-      VpcConfig:
-        SecurityGroupIds:
-          - "{{resolve:ssm:CLOUDHUS_SG_ID:1}}"
-        SubnetIds:
-          - "{{resolve:ssm:US_WEST_2A_SUBNET_ID:1}}"
+      # VpcConfig:
+      #   SecurityGroupIds:
+      #     - "{{resolve:ssm:CLOUDHUS_SG_ID:1}}"
+      #   SubnetIds:
+      #     - "{{resolve:ssm:US_WEST_2A_SUBNET_ID:1}}"
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group

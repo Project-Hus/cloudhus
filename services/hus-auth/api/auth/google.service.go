@@ -61,7 +61,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// validate and parse the Google ID token
 	payload, err := idtoken.Validate(c.Request().Context(), credential, clientID)
 	if err != nil {
-		log.Println("invalid id token:%w", err)
+		log.Println("invalid id token:", err)
 		log.Println("@credential:", credential)
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
@@ -97,10 +97,10 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		Name:     "hus_st",
 		Value:    HusSessionTokenSigned,
 		Path:     "/",
-		Secure:   false,
+		Secure:   hus.CookieSecure,
 		HttpOnly: true,
 		Domain:   hus.AuthCookieDomain,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: hus.SameSiteMode,
 	}
 	c.SetCookie(cookie)
 
@@ -108,11 +108,11 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		Name:     "hus_pst",
 		Value:    HusSessionTokenSigned,
 		Path:     "/",
-		Secure:   false,
+		Secure:   hus.CookieSecure,
 		HttpOnly: true,
 		Expires:  time.Now().AddDate(1, 0, 0),
 		Domain:   hus.AuthCookieDomain,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: hus.SameSiteMode,
 	}
 	c.SetCookie(cookie2)
 
