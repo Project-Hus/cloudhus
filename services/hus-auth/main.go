@@ -44,7 +44,7 @@ var dbClient *ent.Client
 // @host auth.cloudhus.com
 // @BasePath /auth
 func main() {
-	// GOENT
+	// GOENV
 	// production : production for aws lambda
 	// development : sam local environment
 	// native : native go environment
@@ -71,7 +71,6 @@ func main() {
 	if goenv == "native" { // if it is not lambda, close dbClient when main function is done.
 		defer dbClient.Close()
 	}
-	log.Println("DB connection success")
 
 	// Initialize Hus common variables
 	hus.InitHusVars(goenv, dbClient)

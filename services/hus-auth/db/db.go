@@ -26,6 +26,7 @@ func ConnectToHusAuth() (*ent.Client, error) {
 		log.Print(" opening connection to mysql failed: %w", err)
 		return nil, err
 	}
+
 	// Running the auto migration tool.
 	if err := client.Schema.Create(context.Background()); err != nil {
 		log.Print(" creating schema resources failed: %w", err)
