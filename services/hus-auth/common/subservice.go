@@ -22,7 +22,10 @@ type Domain struct {
 var Subservice = map[string]ServiceDomain{}
 
 func init() {
-	goenv := os.Getenv("GOENV")
+	goenv, ok := os.LookupEnv("GOENV")
+	if !ok {
+		log.Fatal("GOENV is not set")
+	}
 	// at production level, we use actual domain names
 	if goenv == "production" {
 		Subservice["cloudhus"] = ServiceDomain{

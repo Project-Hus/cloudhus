@@ -2,6 +2,7 @@ package hus
 
 import (
 	"hus-auth/ent"
+	"log"
 	"net/http"
 	"os"
 )
@@ -21,9 +22,12 @@ var SameSiteMode = http.SameSiteNoneMode
 var LifthusURL = "http://localhost:3000"
 
 func InitHusVars(goenv string, _ *ent.Client) {
-	//common
-	GoogleClientID = os.Getenv("GOOGLE_CLIENT_ID")
-	HusSecretKey = os.Getenv("HUS_SECRET_KEY")
+	ok1, ok2 := false, false
+	GoogleClientID, ok1 = os.LookupEnv("GOOGLE_CLIENT_ID")
+	HusSecretKey, ok2 = os.LookupEnv("HUS_SECRET_KEY")
+	if !ok1 || !ok2 {
+		log.Fatal("GOOGLE_CLIENT_ID or HUS_SECRET_KEY is not set")
+	}
 	if goenv == "production" {
 		Host = "cloudhus.com"
 		URL = "https://cloudhus.com"
