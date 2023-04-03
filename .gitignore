@@ -16,7 +16,7 @@
 env.json
 
 # build output
-.aws-sam
+.aws-sam/
 hus-auth
 
 # sam config
