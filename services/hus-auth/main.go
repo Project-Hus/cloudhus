@@ -83,7 +83,7 @@ func main() {
 		DbClient:   dbClient,
 		HttpClient: authHttpClient,
 	}
-	//  Create echo web server instance and set CORS headers
+	//  create echo web server instance and set CORS headers
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		// If your Backend is deployed in AWS and using API Gateway to call through,
@@ -104,7 +104,7 @@ func main() {
 	e = auth.NewAuthApiController(e, authApiControllerParams)
 
 	// provide api docs with swagger 2.0
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	e.GET("/auth/openapi/*", echoSwagger.WrapHandler)
 
 	if goenv == "native" {
 		// native Go environment runs echo server

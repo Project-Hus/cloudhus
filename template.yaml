@@ -11,11 +11,13 @@ Globals:
     Environment:
       Variables: # --env-vars takes precedence over this in sam local
         GOOGLE_CLIENT_ID: "{{resolve:ssm:GOOGLE_CLIENT_ID:1}}"
+
+        HUS_AUTH_DB_HOST: "{{resolve:ssm:HUS_AUTH_DB_HOST:1}}"
         HUS_AUTH_DB_NAME: "{{resolve:ssm:HUS_AUTH_DB_NAME:1}}"
         HUS_AUTH_DB_PASSWORD: "{{resolve:ssm:HUS_AUTH_DB_PASSWORD:1}}"
+        HUS_AUTH_DB_PORT: "{{resolve:ssm:HUS_AUTH_DB_PORT:1}}"
         HUS_AUTH_DB_USER: "{{resolve:ssm:HUS_AUTH_DB_USER:1}}"
-        HUS_DB_HOST: "{{resolve:ssm:HUS_AUTH_DB_HOST:1}}"
-        HUS_DB_PORT: "{{resolve:ssm:HUS_DB_PORT:1}}"
+
         HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
         GOENV: "{{resolve:ssm:GOENV:1}}"
   Api:
@@ -107,7 +109,7 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   CloudhusAuthApi:
     Description: Cloudhus auth api endpoint base url
-    Value: "https://auth.cloudhus.com"
+    Value: "https://auth.cloudhus.com/auth"
   CloudhusAuthService:
     Description: CloudhusAuthService Lambda ARN
     Value: !GetAtt CloudhusAuthService.Arn
