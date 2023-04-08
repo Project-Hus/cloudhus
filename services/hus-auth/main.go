@@ -101,6 +101,20 @@ func main() {
 			http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions, http.MethodPatch,
 		},
 	}))
+
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			// get request host and path
+			hst := c.Request().Host
+			// get path from req
+			pth := c.Request().URL.Path
+			// get origin from req
+			org := c.Request().Header.Get("Origin")
+			fmt.Println("REQUEST==========", hst, pth, org)
+			return next(c)
+		}
+	})
+
 	e = auth.NewAuthApiController(e, authApiControllerParams)
 
 	// provide api docs with swagger 2.0

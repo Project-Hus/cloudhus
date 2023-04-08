@@ -9,7 +9,7 @@ Globals:
     MemorySize: 128 # Lambda function memory size(128MB ~ 10240MB)
     Tracing: Active # AWS X-Ray tracing
     Environment:
-      Variables: # --env-vars takes precedence over this in sam local
+      Variables: # --env-vars takes precedence over these values in sam local
         GOOGLE_CLIENT_ID: "{{resolve:ssm:GOOGLE_CLIENT_ID:1}}"
 
         HUS_AUTH_DB_HOST: "{{resolve:ssm:HUS_AUTH_DB_HOST:1}}"
@@ -20,14 +20,14 @@ Globals:
 
         HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
         GOENV: "{{resolve:ssm:GOENV:1}}"
-  Api:
-    Cors: # CORS settings for all APIs
-      AllowOrigin: "'*'"
-      AllowHeaders: "'*'"
-      AllowMethods: "'*'"
-      MaxAge: "'43200'" # preflight cache max age
-      #AllowCredentials: true # with wildcard origin, this is not allowed actually.
-    TracingEnabled: true # AWS X-Ray tracing
+  # Api:
+  #   Cors: # CORS settings for all APIs
+  #     AllowOrigin: "'*'"
+  #     AllowHeaders: "'*'"
+  #     AllowMethods: "'*'"
+  #     MaxAge: "'43200'" # preflight cache max age
+  #     #AllowCredentials: true # with wildcard origin, this is not allowed actually.
+  #   TracingEnabled: true # AWS X-Ray tracing
 
 Resources:
   # auth services ==================================================
