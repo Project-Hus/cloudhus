@@ -65,7 +65,7 @@ Resources:
           Properties:
             ApiId:
               Ref: CloudhusAuthApi # reference to the API that we defined above.
-            Path: "/auth" # auth service uses subdomain, but to do proxy in sam local, prefix is needed to distinguish.
+            Path: /auth # auth service uses subdomain, but to do proxy in sam local, prefix is needed to distinguish.
             Method: ANY # allowed HTTP methods
         CloudhusAuthServiceProxy: # proxy part for api
           Type: HttpApi
