@@ -22,12 +22,13 @@ type Domain struct {
 var Subservice = map[string]ServiceDomain{}
 
 func init() {
-	goenv, ok := os.LookupEnv("GOENV")
+	husenv, ok := os.LookupEnv("HUS_ENV")
 	if !ok {
-		log.Fatal("GOENV is not set")
+		log.Fatal("HUS_ENV is not set")
 	}
 	// at production level, we use actual domain names
-	if goenv == "production" {
+	switch husenv {
+	case "production":
 		Subservice["cloudhus"] = ServiceDomain{
 			Domain: Domain{
 				Name: "cloudhus",
@@ -77,7 +78,7 @@ func init() {
 			},
 		}
 		// at sam local, we have to access localhost with docker network
-	} else if goenv == "development" {
+	case "development":
 		Subservice["cloudhus"] = ServiceDomain{
 			Domain: Domain{
 				Name: "cloudhus",
@@ -127,7 +128,7 @@ func init() {
 			},
 		}
 		// at native Go environment, we directly access localhost
-	} else if goenv == "native" {
+	case "native":
 		Subservice["cloudhus"] = ServiceDomain{
 			Domain: Domain{
 				Name: "cloudhus",
@@ -176,7 +177,7 @@ func init() {
 				},
 			},
 		}
-	} else {
-		log.Fatal("GOENV is not set properly. production|development|native ")
+	default:
+		log.Fatal("HUS_ENV is not set properly. (production|development|native)")
 	}
 }

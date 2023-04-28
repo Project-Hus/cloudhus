@@ -9,9 +9,9 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	envbyjson "github.com/lifthus/envbyjson/go"
 
 	"hus-auth/ent"
 
@@ -44,36 +44,34 @@ var dbClient *ent.Client
 // @host auth.cloudhus.com
 // @BasePath /auth
 func main() {
-	// GOENV
+	// HUS_ENV
 	// production : production for aws lambda
-	// development : sam local environment
+	// development : sam local environment,
 	// native : native go environment
-	goenv, ok := os.LookupEnv("GOENV")
-	if !ok {
-		log.Fatal("GOENV is not set")
+	// in native case, it will load env json file automatically right below.
+	HusEnv, heok := os.LookupEnv("HUS_ENV")
+	if !heok { // no specified HUS_ENV
+		log.Fatal("environment variable HUS_ENV must be set (production|sam|native)")
 	}
-
-	// in production environment, env vars comes from parameter store.
-	// in development environment, env vars comes from env.json.
-	// in native Go environment, load env vars from .env
-	if goenv == "native" {
-		err := godotenv.Load()
+	// in native environment, load env.json file
+	if HusEnv == "native" {
+		// load env vars
+		err := envbyjson.LoadProp("../../env.json", "Parameters")
 		if err != nil {
-			log.Fatalf("loading .env file failed : %s", err)
+			log.Fatal("no configuration file")
 		}
 	}
+
+	// Initialize Hus common variables
+	hus.InitHusVars(HusEnv, dbClient)
 
 	// connecting to hus_auth_db with ent
 	dbClient, err := db.ConnectToHusAuth()
 	if err != nil {
 		log.Fatal("%w", err)
 	}
-	if goenv == "native" { // if it is not lambda, close dbClient when main function is done.
-		defer dbClient.Close()
-	}
-
-	// Initialize Hus common variables
-	hus.InitHusVars(goenv, dbClient)
+	// in lambda environment, actually main's deferred funcs won't be executed.
+	defer dbClient.Close()
 
 	// create new http.Client for authApi
 	authHttpClient := &http.Client{
@@ -83,6 +81,7 @@ func main() {
 		DbClient:   dbClient,
 		HttpClient: authHttpClient,
 	}
+
 	//  create echo web server instance and set CORS headers
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -120,10 +119,11 @@ func main() {
 	// provide api docs with swagger 2.0
 	e.GET("/auth/openapi", echoSwagger.WrapHandler)
 
-	if goenv == "native" {
-		// native Go environment runs echo server
+	// if HusEnv is native, run echo server
+	if HusEnv == "native" {
 		e.Logger.Fatal(e.Start(":9090"))
 	} else {
+		// if it is lambda environment, run lambda.Start
 		// lambda environment runs seprate web server and echo handles requests
 		echoLambda = echoadapter.NewV2(e)
 		lambda.Start(Handler)
