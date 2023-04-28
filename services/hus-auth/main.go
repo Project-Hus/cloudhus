@@ -81,6 +81,7 @@ func main() {
 		DbClient:   dbClient,
 		HttpClient: authHttpClient,
 	}
+
 	//  create echo web server instance and set CORS headers
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
