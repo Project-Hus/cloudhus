@@ -1,7 +1,7 @@
 # Cloudhus
 
 [Cloudhus](https://auth.cloudhus.com/auth)
-is most intelligent cross-platform routine management service.
+central authentication, cloud service for Project-Hus which provides various features for lots of fields.
 
 [Lifthus Beginning](https://docs.google.com/presentation/d/1UiRTRIvArtJDfQevNZeZTeK4EXtu1o76/edit?usp=sharing&ouid=108170774438783580095&rtpof=true&sd=true)
 
