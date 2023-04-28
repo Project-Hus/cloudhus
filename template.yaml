@@ -11,6 +11,7 @@ Globals:
     Environment:
       Variables: # --env-vars takes precedence over these values in sam local
         GOOGLE_CLIENT_ID: "{{resolve:ssm:GOOGLE_CLIENT_ID:1}}"
+        HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
 
         HUS_AUTH_DB_HOST: "{{resolve:ssm:HUS_AUTH_DB_HOST:1}}"
         HUS_AUTH_DB_NAME: "{{resolve:ssm:HUS_AUTH_DB_NAME:1}}"
@@ -18,8 +19,7 @@ Globals:
         HUS_AUTH_DB_PORT: "{{resolve:ssm:HUS_AUTH_DB_PORT:1}}"
         HUS_AUTH_DB_USER: "{{resolve:ssm:HUS_AUTH_DB_USER:1}}"
 
-        HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
-        GOENV: "{{resolve:ssm:GOENV:1}}"
+        HUS_ENV: "{{resolve:ssm:HUS_ENV:1}}"
   # Api:
   #   Cors: # CORS settings for all APIs
   #     AllowOrigin: "'*'"

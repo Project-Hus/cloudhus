@@ -21,14 +21,15 @@ var SameSiteMode = http.SameSiteNoneMode
 
 var LifthusURL = "http://localhost:3000"
 
-func InitHusVars(goenv string, _ *ent.Client) {
+func InitHusVars(husenv string, _ *ent.Client) {
 	ok1, ok2 := false, false
 	GoogleClientID, ok1 = os.LookupEnv("GOOGLE_CLIENT_ID")
 	HusSecretKey, ok2 = os.LookupEnv("HUS_SECRET_KEY")
 	if !ok1 || !ok2 {
 		log.Fatal("GOOGLE_CLIENT_ID or HUS_SECRET_KEY is not set")
 	}
-	if goenv == "production" {
+	switch husenv {
+	case "production":
 		Host = "cloudhus.com"
 		URL = "https://cloudhus.com"
 		Origins = []string{"https://cloudhus.com", "https://lifthus.com", "https://surfhus.com", "http://localhost:3000",
@@ -38,7 +39,9 @@ func InitHusVars(goenv string, _ *ent.Client) {
 		ApiURL = "https://api.cloudhus.com"
 		CookieSecure = true
 		SameSiteMode = http.SameSiteNoneMode
-	} else { // development or native
+	case "development":
+		fallthrough
+	case "native":
 		Host = "localhost:9090"
 		URL = "http://localhost:9090"
 		Origins = []string{"http://localhost:3000", "http://localhost:9090", "http://localhost:9091"}
@@ -47,6 +50,7 @@ func InitHusVars(goenv string, _ *ent.Client) {
 		ApiURL = "http://localhost:9090"
 		CookieSecure = false
 		SameSiteMode = http.SameSiteLaxMode
+	default:
+		log.Fatal("HUS_ENV is not set properly. (production|development|native)")
 	}
-	return
 }
