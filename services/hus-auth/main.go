@@ -117,7 +117,7 @@ func main() {
 	e = auth.NewAuthApiController(e, authApiControllerParams)
 
 	// provide api docs with swagger 2.0
-	e.GET("/auth/openapi", echoSwagger.WrapHandler)
+	e.GET("/auth/openapi/*", echoSwagger.WrapHandler)
 
 	// if HusEnv is native, run echo server
 	if HusEnv == "native" {
