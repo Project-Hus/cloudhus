@@ -20,6 +20,7 @@ import (
 // @Description the refresh token will be expired in 7 days.
 // @Tags         auth
 // @Accept       json
+// @Param subservice_name path string true "subservice name"
 // @Param        jwt body string true "Google ID token"
 // @Response      301 "to /auth/{token_string} or to /error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
