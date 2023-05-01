@@ -37,7 +37,7 @@ var dbClient *ent.Client
 // @description This is Cloudhus's root authentication server.
 // @termsOfService http://swagger.io/terms/
 // @contact.name API Support
-// @contact.url lifthus531@gmail.com
+// @contact.url https://github.com/lifthus
 // @contact.email lifthus531@gmail.com
 // @license.name -
 // @license.url -
