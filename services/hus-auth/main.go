@@ -39,7 +39,7 @@ var dbClient *ent.Client
 // @contact.name API Support
 // @contact.url https://github.com/lifthus
 // @contact.email lifthus531@gmail.com
-// @license.name -
+// @license.name MIT
 // @license.url -
 // @host auth.cloudhus.com
 // @BasePath /auth
