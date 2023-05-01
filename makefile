@@ -6,5 +6,5 @@ build:
 
 # make start DEBUG=--debug
 start:
-	sam local start-api --env-vars env.json -p 9090 $(DEBUG)
+	sam local start-api --env-vars env.json -p 9000 $(DEBUG)
 .PHONY:start

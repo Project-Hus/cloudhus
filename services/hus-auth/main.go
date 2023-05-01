@@ -121,7 +121,7 @@ func main() {
 
 	// if HusEnv is native, run echo server
 	if HusEnv == "native" {
-		e.Logger.Fatal(e.Start(":9090"))
+		e.Logger.Fatal(e.Start(":" + os.Getenv("AUTH_PORT")))
 	} else {
 		// if it is lambda environment, run lambda.Start
 		// lambda environment runs seprate web server and echo handles requests
