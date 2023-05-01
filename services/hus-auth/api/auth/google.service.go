@@ -14,15 +14,14 @@ import (
 )
 
 // GoogleAuthHandler godoc
-// @Router       /auth/social/google/{subservice_name} [post]
+// @Router       /social/google/{subservice_name} [post]
 // @Summary      gets google IDtoken and redirect with hus session cookie.
 // @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
 // @Description the refresh token will be expired in 7 days.
 // @Tags         auth
 // @Accept       json
 // @Param        jwt body string true "Google ID token"
-// @Success      301 "to /auth/{token_string}"
-// @Failure      301 "to /error"
+// @Response      301 "to /auth/{token_string} or to /error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// revoke all previous hus sessions.
 	stsToRevoke := []string{}
