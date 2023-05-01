@@ -2,9 +2,6 @@ name: Improvement
 description: Suggest improvement to the code, structure, etc
 title: "[Improvement]: "
 labels: ["improvement"]
-
-Any alternative solutions that have been considered, and why they may not be suitable.
-
 assignees:
   - cloudhus
 body:
