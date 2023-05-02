@@ -14,7 +14,7 @@ var (
 		{Name: "tid", Type: field.TypeUUID, Unique: true},
 		{Name: "iat", Type: field.TypeTime},
 		{Name: "preserved", Type: field.TypeBool, Default: false},
-		{Name: "uid", Type: field.TypeUUID},
+		{Name: "uid", Type: field.TypeUint64},
 	}
 	// HusSessionsTable holds the schema information for the "hus_sessions" table.
 	HusSessionsTable = &schema.Table{
@@ -68,7 +68,7 @@ var (
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "provider", Type: field.TypeEnum, Enums: []string{"hus", "google"}},
 		{Name: "google_sub", Type: field.TypeString, Unique: true},
 		{Name: "email", Type: field.TypeString, Unique: true},

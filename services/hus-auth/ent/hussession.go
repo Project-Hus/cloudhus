@@ -25,7 +25,7 @@ type HusSession struct {
 	// Preserved holds the value of the "preserved" field.
 	Preserved bool `json:"preserved,omitempty"`
 	// UID holds the value of the "uid" field.
-	UID uuid.UUID `json:"uid,omitempty"`
+	UID uint64 `json:"uid,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the HusSessionQuery when eager-loading is set.
 	Edges HusSessionEdges `json:"edges"`
@@ -60,9 +60,11 @@ func (*HusSession) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case hussession.FieldPreserved:
 			values[i] = new(sql.NullBool)
+		case hussession.FieldUID:
+			values[i] = new(sql.NullInt64)
 		case hussession.FieldIat:
 			values[i] = new(sql.NullTime)
-		case hussession.FieldID, hussession.FieldTid, hussession.FieldUID:
+		case hussession.FieldID, hussession.FieldTid:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type HusSession", columns[i])
@@ -104,10 +106,10 @@ func (hs *HusSession) assignValues(columns []string, values []any) error {
 				hs.Preserved = value.Bool
 			}
 		case hussession.FieldUID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field uid", values[i])
-			} else if value != nil {
-				hs.UID = *value
+			} else if value.Valid {
+				hs.UID = uint64(value.Int64)
 			}
 		}
 	}

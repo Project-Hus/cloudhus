@@ -22,7 +22,7 @@ func (HusSession) Fields() []ent.Field {
 		field.Time("iat").Default(time.Now),                                                        // issued at
 		// if exp is nil, the session expires when the brwoser's session ends.
 		field.Bool("preserved").Default(false), // preserved
-		field.UUID("uid", uuid.UUID{}),         // uear id
+		field.Uint64("uid"),                    // uear id
 	}
 }
 

@@ -72,7 +72,7 @@ func Preserved(v bool) predicate.HusSession {
 }
 
 // UID applies equality check predicate on the "uid" field. It's identical to UIDEQ.
-func UID(v uuid.UUID) predicate.HusSession {
+func UID(v uint64) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldUID, v))
 }
 
@@ -167,22 +167,22 @@ func PreservedNEQ(v bool) predicate.HusSession {
 }
 
 // UIDEQ applies the EQ predicate on the "uid" field.
-func UIDEQ(v uuid.UUID) predicate.HusSession {
+func UIDEQ(v uint64) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldUID, v))
 }
 
 // UIDNEQ applies the NEQ predicate on the "uid" field.
-func UIDNEQ(v uuid.UUID) predicate.HusSession {
+func UIDNEQ(v uint64) predicate.HusSession {
 	return predicate.HusSession(sql.FieldNEQ(FieldUID, v))
 }
 
 // UIDIn applies the In predicate on the "uid" field.
-func UIDIn(vs ...uuid.UUID) predicate.HusSession {
+func UIDIn(vs ...uint64) predicate.HusSession {
 	return predicate.HusSession(sql.FieldIn(FieldUID, vs...))
 }
 
 // UIDNotIn applies the NotIn predicate on the "uid" field.
-func UIDNotIn(vs ...uuid.UUID) predicate.HusSession {
+func UIDNotIn(vs ...uint64) predicate.HusSession {
 	return predicate.HusSession(sql.FieldNotIn(FieldUID, vs...))
 }
 
