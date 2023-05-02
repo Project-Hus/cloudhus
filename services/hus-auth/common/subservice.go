@@ -103,27 +103,27 @@ func init() {
 			Subdomains: map[string]Domain{
 				"auth": {
 					Name: "auth",
-					URL:  "http://host.docker.internal:9091",
+					URL:  "http://host.docker.internal:9100",
 				},
 				"api": {
 					Name: "api",
-					URL:  "http://host.docker.internal:9091",
+					URL:  "http://host.docker.internal:9100",
 				},
 			},
 		}
 		Subservice["surfhus"] = ServiceDomain{
 			Domain: Domain{
 				Name: "surfhus",
-				URL:  "https://localhost:9092",
+				URL:  "https://localhost:3001",
 			},
 			Subdomains: map[string]Domain{
 				"auth": {
 					Name: "auth",
-					URL:  "https://host.docker.internal:9092",
+					URL:  "https://host.docker.internal:9200",
 				},
 				"api": {
 					Name: "api",
-					URL:  "https://host.docker.internal:9092",
+					URL:  "https://host.docker.internal:9200",
 				},
 			},
 		}
@@ -132,16 +132,16 @@ func init() {
 		Subservice["cloudhus"] = ServiceDomain{
 			Domain: Domain{
 				Name: "cloudhus",
-				URL:  "http://localhost:9090",
+				URL:  "http://localhost:9001",
 			},
 			Subdomains: map[string]Domain{
 				"auth": {
 					Name: "auth",
-					URL:  "http://localhost:9090",
+					URL:  "http://localhost:9001",
 				},
 				"api": {
 					Name: "api",
-					URL:  "http://localhost:9090",
+					URL:  "http://localhost:9002",
 				},
 			},
 		}
@@ -153,27 +153,27 @@ func init() {
 			Subdomains: map[string]Domain{
 				"auth": {
 					Name: "auth",
-					URL:  "http://localhost:9091",
+					URL:  "http://localhost:9101",
 				},
 				"api": {
 					Name: "api",
-					URL:  "http://localhost:9091",
+					URL:  "http://localhost:9102",
 				},
 			},
 		}
 		Subservice["surfhus"] = ServiceDomain{
 			Domain: Domain{
 				Name: "surfhus",
-				URL:  "http://localhost:9092",
+				URL:  "http://localhost:3001",
 			},
 			Subdomains: map[string]Domain{
 				"auth": {
 					Name: "auth",
-					URL:  "http://localhost:9092",
+					URL:  "http://localhost:9201",
 				},
 				"api": {
 					Name: "api",
-					URL:  "http://localhost:9092",
+					URL:  "http://localhost:9202",
 				},
 			},
 		}
