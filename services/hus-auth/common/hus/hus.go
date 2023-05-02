@@ -42,7 +42,7 @@ func InitHusVars(husenv string, _ *ent.Client) {
 	case "development":
 		Host = "localhost:9000"
 		URL = "http://localhost:9000"
-		Origins = []string{"http://localhost:3000", "http://localhost:9000", "http://localhost:9100"}
+		Origins = []string{"http://localhost:3000", "http://localhost:9100", "http://localhost:9200"}
 		AuthCookieDomain = ""
 		AuthURL = "http://localhost:9000"
 		ApiURL = "http://localhost:9000"
