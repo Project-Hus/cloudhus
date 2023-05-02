@@ -402,8 +402,8 @@ func (hsq *HusSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 }
 
 func (hsq *HusSessionQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*HusSession, init func(*HusSession), assign func(*HusSession, *User)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*HusSession)
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*HusSession)
 	for i := range nodes {
 		fk := nodes[i].UID
 		if _, ok := nodeids[fk]; !ok {

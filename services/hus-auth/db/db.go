@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"hus-auth/ent"
+	"hus-auth/ent/migrate"
 )
 
 // ConncectToHusAuth returns hus_auth_db's ent client.
@@ -30,7 +31,11 @@ func ConnectToHusAuth() (*ent.Client, error) {
 	}
 
 	// Running the auto migration tool.
-	if err := client.Schema.Create(context.Background()); err != nil {
+	if err := client.Schema.Create(
+		context.Background(),
+		migrate.WithDropIndex(true),
+		migrate.WithDropColumn(true),
+	); err != nil {
 		log.Print(" creating schema resources failed: %w", err)
 		return nil, err
 	}

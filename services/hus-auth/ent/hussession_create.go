@@ -65,7 +65,7 @@ func (hsc *HusSessionCreate) SetNillablePreserved(b *bool) *HusSessionCreate {
 }
 
 // SetUID sets the "uid" field.
-func (hsc *HusSessionCreate) SetUID(u uuid.UUID) *HusSessionCreate {
+func (hsc *HusSessionCreate) SetUID(u uint64) *HusSessionCreate {
 	hsc.mutation.SetUID(u)
 	return hsc
 }
@@ -85,7 +85,7 @@ func (hsc *HusSessionCreate) SetNillableID(u *uuid.UUID) *HusSessionCreate {
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (hsc *HusSessionCreate) SetUserID(id uuid.UUID) *HusSessionCreate {
+func (hsc *HusSessionCreate) SetUserID(id uint64) *HusSessionCreate {
 	hsc.mutation.SetUserID(id)
 	return hsc
 }
@@ -221,7 +221,7 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
+					Type:   field.TypeUint64,
 					Column: user.FieldID,
 				},
 			},

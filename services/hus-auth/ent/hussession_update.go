@@ -73,13 +73,13 @@ func (hsu *HusSessionUpdate) SetNillablePreserved(b *bool) *HusSessionUpdate {
 }
 
 // SetUID sets the "uid" field.
-func (hsu *HusSessionUpdate) SetUID(u uuid.UUID) *HusSessionUpdate {
+func (hsu *HusSessionUpdate) SetUID(u uint64) *HusSessionUpdate {
 	hsu.mutation.SetUID(u)
 	return hsu
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (hsu *HusSessionUpdate) SetUserID(id uuid.UUID) *HusSessionUpdate {
+func (hsu *HusSessionUpdate) SetUserID(id uint64) *HusSessionUpdate {
 	hsu.mutation.SetUserID(id)
 	return hsu
 }
@@ -165,7 +165,7 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
+					Type:   field.TypeUint64,
 					Column: user.FieldID,
 				},
 			},
@@ -181,7 +181,7 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
+					Type:   field.TypeUint64,
 					Column: user.FieldID,
 				},
 			},
@@ -254,13 +254,13 @@ func (hsuo *HusSessionUpdateOne) SetNillablePreserved(b *bool) *HusSessionUpdate
 }
 
 // SetUID sets the "uid" field.
-func (hsuo *HusSessionUpdateOne) SetUID(u uuid.UUID) *HusSessionUpdateOne {
+func (hsuo *HusSessionUpdateOne) SetUID(u uint64) *HusSessionUpdateOne {
 	hsuo.mutation.SetUID(u)
 	return hsuo
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (hsuo *HusSessionUpdateOne) SetUserID(id uuid.UUID) *HusSessionUpdateOne {
+func (hsuo *HusSessionUpdateOne) SetUserID(id uint64) *HusSessionUpdateOne {
 	hsuo.mutation.SetUserID(id)
 	return hsuo
 }
@@ -376,7 +376,7 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
+					Type:   field.TypeUint64,
 					Column: user.FieldID,
 				},
 			},
@@ -392,7 +392,7 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
+					Type:   field.TypeUint64,
 					Column: user.FieldID,
 				},
 			},
