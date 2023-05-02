@@ -40,14 +40,27 @@ func InitHusVars(husenv string, _ *ent.Client) {
 		CookieSecure = true
 		SameSiteMode = http.SameSiteNoneMode
 	case "development":
-		fallthrough
-	case "native":
-		Host = "localhost:9090"
-		URL = "http://localhost:9090"
-		Origins = []string{"http://localhost:3000", "http://localhost:9090", "http://localhost:9091"}
+		Host = "localhost:9000"
+		URL = "http://localhost:9000"
+		Origins = []string{"http://localhost:3000", "http://localhost:9000", "http://localhost:9100"}
 		AuthCookieDomain = ""
-		AuthURL = "http://localhost:9090"
-		ApiURL = "http://localhost:9090"
+		AuthURL = "http://localhost:9000"
+		ApiURL = "http://localhost:9000"
+		CookieSecure = false
+		SameSiteMode = http.SameSiteLaxMode
+	case "native":
+		Host = "localhost:9001"
+		URL = "http://localhost:9001"
+		Origins = []string{
+			"http://localhost:3000",
+			"http://localhost:9001",
+			"http://localhost:9002",
+			"http://localhost:9101",
+			"http://localhost:9102",
+		}
+		AuthCookieDomain = ""
+		AuthURL = "http://localhost:9001"
+		ApiURL = "http://localhost:9002"
 		CookieSecure = false
 		SameSiteMode = http.SameSiteLaxMode
 	default:
