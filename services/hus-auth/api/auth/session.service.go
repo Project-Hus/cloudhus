@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"strconv"
 	"strings"
 
 	"fmt"
@@ -82,7 +83,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 
 	hscbJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid":            lifthus_sid,
-		"uid":            u.ID,
+		"uid":            strconv.FormatUint(u.ID, 10),
 		"email":          u.Email,
 		"email_verified": u.EmailVerified,
 		"name":           u.Name,
