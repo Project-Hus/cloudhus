@@ -7,6 +7,7 @@ import (
 	"hus-auth/db"
 	"hus-auth/ent"
 	"hus-auth/helper"
+	"strconv"
 
 	"log"
 	"time"
@@ -34,7 +35,7 @@ func CreateHusSession(ctx context.Context, client *ent.Client, uid uint64, prese
 			"tid":     hs.Tid,                             // token id
 			"purpose": "hus_session",                      // purpose
 			"iss":     hus.AuthURL,                        // issuer
-			"uid":     uid,                                // user's uuid
+			"uid":     strconv.FormatUint(uid, 10),        // user's uuid
 			"iat":     hs.Iat.Unix(),                      // issued at
 			"exp":     time.Now().AddDate(0, 0, 7).Unix(), // expiration : one week
 		})
@@ -44,7 +45,7 @@ func CreateHusSession(ctx context.Context, client *ent.Client, uid uint64, prese
 			"tid":     hs.Tid,                               // token id
 			"purpose": "hus_session",                        // purpose
 			"iss":     hus.AuthURL,                          // issuer
-			"uid":     uid,                                  // user's uuid
+			"uid":     strconv.FormatUint(uid, 10),          // user's uuid
 			"iat":     hs.Iat.Unix(),                        // issued at
 			"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
 		})
@@ -69,7 +70,7 @@ func ValidateHusSession(ctx context.Context, client *ent.Client, hst string) (si
 
 	hus_sid := claims["sid"].(string)
 	hus_tid := claims["tid"].(string)
-	hus_uid := claims["uid"].(uint64)
+	hus_uid := claims["uid"].(string)
 
 	if exp {
 		return hus_sid, nil, fmt.Errorf("expired sesison")
@@ -89,7 +90,11 @@ func ValidateHusSession(ctx context.Context, client *ent.Client, hst string) (si
 		return hus_sid, nil, fmt.Errorf("invalid token")
 	}
 	// check if the user exists by querying the database with hus_uid.
-	u, err := db.QueryUserByUID(ctx, client, hus_uid)
+	hus_uid_uint64, err := strconv.ParseUint(hus_uid, 10, 64)
+	if err != nil {
+		return hus_sid, nil, fmt.Errorf("invalid uid")
+	}
+	u, err := db.QueryUserByUID(ctx, client, hus_uid_uint64)
 	if err != nil || u == nil {
 		return hus_sid, nil, fmt.Errorf("no such user")
 	}
@@ -113,7 +118,7 @@ func RefreshHusSession(ctx context.Context, client *ent.Client, sid string) (nst
 		"tid":     hs.Tid.String(),                      // token id
 		"purpose": "hus_session",                        // purpose
 		"iss":     hus.AuthURL,                          // issuer
-		"uid":     hs.UID,                               // user's uuid
+		"uid":     strconv.FormatUint(hs.UID, 10),       // user's uuid
 		"iat":     hs.Iat.Unix(),                        // issued at
 		"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
 	})
