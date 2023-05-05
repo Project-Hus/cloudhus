@@ -21,6 +21,3 @@ hus-auth
 
 # sam config
 samconfig.toml
-
-# openapi output
-docs/
