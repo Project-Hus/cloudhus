@@ -29,6 +29,12 @@ func init() {
 	// at production level, we use actual domain names
 	switch husenv {
 	case "production":
+		Subservice["localhost"] = ServiceDomain{
+			Domain: Domain{
+				Name: "localhost",
+				URL:  "http://localhost:3000",
+			},
+		}
 		Subservice["cloudhus"] = ServiceDomain{
 			Domain: Domain{
 				Name: "cloudhus",
