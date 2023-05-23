@@ -31,15 +31,15 @@ func (ac authApiController) husSessionCheckHandler(c echo.Context) error {
 		return c.String(http.StatusNotFound, "no such service")
 	}
 
-	// get hus_st from cookie
-	hus_st, err := c.Cookie("hus_st")
-	// no valid session token, then return 401
-	if err != nil || hus_st.Value == "" {
+	// get hus_st from Authorization header
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
 		return c.String(http.StatusUnauthorized, "not sigend in")
 	}
+	hus_st := authHeader[7:]
 
 	// first validate and parse the session token and get SID, User entity.
-	hus_sid, u, err := session.ValidateHusSession(c.Request().Context(), ac.dbClient, hus_st.Value)
+	hus_sid, u, err := session.ValidateHusSession(c.Request().Context(), ac.dbClient, hus_st)
 	if err != nil {
 		sidUUID, _ := uuid.Parse(hus_sid)
 		_ = ac.dbClient.HusSession.DeleteOneID(sidUUID).Exec(c.Request().Context())
