@@ -7,38 +7,18 @@ import (
 	"hus-auth/service/session"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"google.golang.org/api/idtoken"
 )
 
-// GoogleAuthHandler godoc
-// @Router       /social/google/{subservice_name} [post]
-// @Summary      gets google IDtoken and redirect with hus session cookie.
-// @Description  validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
-// @Description the refresh token will be expired in 7 days.
-// @Tags         auth
-// @Accept       json
-// @Param subservice_name path string true "subservice name"
-// @Param        jwt body string true "Google ID token"
-// @Response      301 "to /auth/{token_string} or to /error"
-func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
-	origin := c.Request().Header.Get("Origin")
-	if origin == "http://localhost:3000" {
-		return ac.googleAuthHandler(c)
-	}
-
-	// revoke all previous hus sessions.
+// googleAuthHandler is a local development version of GoogleAuthHandler.
+// which uses Authorization header instead of cookie.
+func (ac authApiController) googleAuthHandler(c echo.Context) error {
+	// get Authorization header
+	authorization := c.Request().Header.Get("Authorization")
 	stsToRevoke := []string{}
-	hus_pst, _ := c.Cookie("hus_pst")
-	hus_st, _ := c.Cookie("hus_st")
-	if hus_pst != nil && hus_pst.Value != "" {
-		stsToRevoke = append(stsToRevoke, hus_pst.Value)
-	}
-	if hus_st != nil && hus_st.Value != "" {
-		stsToRevoke = append(stsToRevoke, hus_st.Value)
-	}
+	stsToRevoke = append(stsToRevoke, authorization)
 
 	// revoke all captured hus session tokens
 	for _, st := range stsToRevoke {
@@ -98,28 +78,8 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 
-	cookie := &http.Cookie{
-		Name:     "hus_st",
-		Value:    HusSessionTokenSigned,
-		Path:     "/",
-		Secure:   hus.CookieSecure,
-		HttpOnly: true,
-		Domain:   hus.AuthCookieDomain,
-		SameSite: hus.SameSiteMode,
-	}
-	c.SetCookie(cookie)
-
-	cookie2 := &http.Cookie{
-		Name:     "hus_pst",
-		Value:    HusSessionTokenSigned,
-		Path:     "/",
-		Secure:   hus.CookieSecure,
-		HttpOnly: true,
-		Expires:  time.Now().AddDate(1, 0, 0),
-		Domain:   hus.AuthCookieDomain,
-		SameSite: hus.SameSiteMode,
-	}
-	c.SetCookie(cookie2)
+	// set Authorization header with HusSessionTokenSigned
+	c.Response().Header().Set(echo.HeaderAuthorization, "Bearer "+HusSessionTokenSigned)
 
 	// redirects to {serviceUrl}/hus/token/{hus-session-id}
 	return c.Redirect(http.StatusMovedPermanently, serviceUrl)

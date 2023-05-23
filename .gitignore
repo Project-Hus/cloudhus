@@ -17,7 +17,6 @@ env.json
 
 # build output
 .aws-sam/
-hus-auth
 
 # sam config
 samconfig.toml

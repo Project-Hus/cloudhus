@@ -18,25 +18,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// HusSessionCheckHandler godoc
-// @Router /session/check/{service}/{sid} [post]
-// @Summary chekcs the service and sid and tells the subservice server that the client is signed in.
-// @Description checks the service and sid and tells the subservice server that the client is signed in.
-// @Description after the subservice server updates the session and responds with 200,
-// @Description Hus auth server also reponds with 200 to the client.
-// @Tags         auth
-// @Param service path string true "subservice name"
-// @Param sid path string true "session id"
-// @Success      200 "Ok, theclient now should go to subservice's signing endpoint"
-// @Failure      401 "Unauthorized, the client is not signed in"
-// @Failure 404 "Not Found, the service is not registered"
-// @Failure 500 "Internal Server Error"
-func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
-	origin := c.Request().Header.Get("Origin")
-	if origin == "http://localhost:3000" {
-		return ac.husSessionCheckHandler(c)
-	}
-
+// husSessionCheckHandler is a local development version of HusSessionCheckHandler.
+// which uses Authorization header instead of cookie.
+func (ac authApiController) husSessionCheckHandler(c echo.Context) error {
 	// get service name and sid from path
 	service := c.Param("service")
 	lifthus_sid := c.Param("sid")
@@ -136,12 +120,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 // @Param        jwt header string false "Hus session tokens in cookie"
 // @Success      200 "Ok"
 // @Failure      500 "doesn't have to be handled"
-func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
-	origin := c.Request().Header.Get("Origin")
-	if origin == "http://localhost:3000" {
-		return ac.sessionRevocationHandler(c)
-	}
-
+func (ac authApiController) sessionRevocationHandler(c echo.Context) error {
 	stsToRevoke := []string{}
 
 	// get hus_st from cookie
