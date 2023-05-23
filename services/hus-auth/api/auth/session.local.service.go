@@ -112,14 +112,8 @@ func (ac authApiController) husSessionCheckHandler(c echo.Context) error {
 	}
 }
 
-// SessionRevocationHandler godoc
-// @Router       /session/revoke [delete]
-// @Summary      revokes every hus session in cookie from database.
-// @Description  can be used to sign out.
-// @Tags         auth
-// @Param        jwt header string false "Hus session tokens in cookie"
-// @Success      200 "Ok"
-// @Failure      500 "doesn't have to be handled"
+// sessionRevocationHandler is a local development version of SessionRevocationHandler.
+// which uses Authorization header instead of cookie.
 func (ac authApiController) sessionRevocationHandler(c echo.Context) error {
 	stsToRevoke := []string{}
 
