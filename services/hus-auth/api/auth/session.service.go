@@ -32,10 +32,6 @@ import (
 // @Failure 404 "Not Found, the service is not registered"
 // @Failure 500 "Internal Server Error"
 func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
-	origin := c.Request().Header.Get("Origin")
-	if origin == "http://localhost:3000" {
-		return ac.husSessionCheckHandler(c)
-	}
 
 	// get service name and sid from path
 	service := c.Param("service")
@@ -137,10 +133,6 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 // @Success      200 "Ok"
 // @Failure      500 "doesn't have to be handled"
 func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
-	origin := c.Request().Header.Get("Origin")
-	if origin == "http://localhost:3000" {
-		return ac.sessionRevocationHandler(c)
-	}
 
 	stsToRevoke := []string{}
 
