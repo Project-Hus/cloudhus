@@ -24,6 +24,10 @@ import (
 // @Param        jwt body string true "Google ID token"
 // @Response      301 "to /auth/{token_string} or to /error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
+	origin := c.Request().Header.Get("Origin")
+	if origin == "http://localhost:3000" {
+		return ac.googleAuthHandler(c)
+	}
 	// revoke all previous hus sessions.
 	stsToRevoke := []string{}
 	hus_pst, _ := c.Cookie("hus_pst")
