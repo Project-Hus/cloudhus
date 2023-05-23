@@ -33,7 +33,7 @@ func (ac authApiController) husSessionCheckHandler(c echo.Context) error {
 
 	// get hus_st from Authorization header
 	authHeader := c.Request().Header.Get("Authorization")
-	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+	if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
 		return c.String(http.StatusUnauthorized, "not sigend in")
 	}
 	hus_st := authHeader[7:]
@@ -123,15 +123,13 @@ func (ac authApiController) husSessionCheckHandler(c echo.Context) error {
 func (ac authApiController) sessionRevocationHandler(c echo.Context) error {
 	stsToRevoke := []string{}
 
-	// get hus_st from cookie
-	hus_st, _ := c.Cookie("hus_st")
-	hus_pst, _ := c.Cookie("hus_pst")
-	if hus_st != nil && hus_st.Value != "" {
-		stsToRevoke = append(stsToRevoke, hus_st.Value)
+	// get hus_st from Authorization header
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+		return c.String(http.StatusUnauthorized, "not sigend in")
 	}
-	if hus_pst != nil && hus_pst.Value != "" {
-		stsToRevoke = append(stsToRevoke, hus_pst.Value)
-	}
+	hus_st := authHeader[7:]
+	stsToRevoke = append(stsToRevoke, hus_st)
 
 	// Revoke all captured session tokens
 	for _, st := range stsToRevoke {
