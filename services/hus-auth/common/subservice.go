@@ -34,6 +34,16 @@ func init() {
 				Name: "localhost",
 				URL:  "http://localhost:3000",
 			},
+			Subdomains: map[string]Domain{
+				"auth": {
+					Name: "auth",
+					URL:  "https://auth.lifthus.com",
+				},
+				"api": {
+					Name: "api",
+					URL:  "https://api.lifthus.com",
+				},
+			},
 		}
 		Subservice["cloudhus"] = ServiceDomain{
 			Domain: Domain{
