@@ -3,8 +3,6 @@
 [Cloudhus](https://auth.cloudhus.com/auth)
 central authentication, cloud service for Project-Hus which provides various features for lots of fields.
 
-[Lifthus Beginning](https://docs.google.com/presentation/d/1UiRTRIvArtJDfQevNZeZTeK4EXtu1o76/edit?usp=sharing&ouid=108170774438783580095&rtpof=true&sd=true)
-
 ```bash
 .
 ├── makefile                    <-- Make to automate build
@@ -20,14 +18,14 @@ central authentication, cloud service for Project-Hus which provides various fea
 - AWS CLI with Administrator permission
 - SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 - [Golang](https://golang.org)
-- [Node.js](https://nodejs.org/en/)
+- Makefile
 
 ## Setup process
 
 ### Installing dependencies & building the target
 
-1. "swag init" at hus-auth
-2. "make build" at root
+1. "swag init" from hus-auth
+2. "make build" from root
 
 ### Local development
 
