@@ -95,6 +95,9 @@ func main() {
 			echo.HeaderAccessControlAllowOrigin, echo.HeaderAccessControlAllowHeaders, echo.HeaderAccessControlAllowMethods,
 			echo.HeaderXRequestedWith,
 		},
+		ExposeHeaders: []string{
+			echo.HeaderAuthorization,
+		},
 		AllowCredentials: true,
 		AllowMethods: []string{
 			http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions, http.MethodPatch,

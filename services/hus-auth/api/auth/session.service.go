@@ -87,15 +87,16 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	}
 
 	hscbJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sid":            lifthus_sid,
-		"uid":            strconv.FormatUint(u.ID, 10),
-		"email":          u.Email,
-		"email_verified": u.EmailVerified,
-		"name":           u.Name,
-		"given_name":     u.GivenName,
-		"family_name":    u.FamilyName,
-		"birthdate":      bd,
-		"exp":            time.Now().Add(time.Second * 10).Unix(),
+		"sid":               lifthus_sid,
+		"uid":               strconv.FormatUint(u.ID, 10),
+		"profile_image_url": u.ProfilePictureURL,
+		"email":             u.Email,
+		"email_verified":    u.EmailVerified,
+		"name":              u.Name,
+		"given_name":        u.GivenName,
+		"family_name":       u.FamilyName,
+		"birthdate":         bd,
+		"exp":               time.Now().Add(time.Second * 10).Unix(),
 	})
 
 	hscbSigned, err := hscbJWT.SignedString([]byte(hus.HusSecretKey))

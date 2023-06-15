@@ -17,7 +17,7 @@ func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *e
 	authApiController := newAuthApiController(params)
 
 	authApi.GET("/auth", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Welcome to Cloudhus")
+		return c.String(http.StatusOK, "\"모든 인증은 Cloudhus로 통한다\" -Cloudhus-")
 	})
 
 	// social login services
