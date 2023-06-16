@@ -20,6 +20,16 @@ func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *e
 		return c.String(http.StatusOK, "\"모든 인증은 Cloudhus로 통한다\" -Cloudhus-")
 	})
 
+	authApi.GET("/auth/test/cookie", func(c echo.Context) error {
+		// return all cookies as a string
+		cookies := c.Cookies()
+		cookiesString := "COOKIES:"
+		for _, cookie := range cookies {
+			cookiesString += cookie.Name + ": " + cookie.Value + "\n"
+		}
+		return c.String(http.StatusOK, cookiesString)
+	})
+
 	// social login services
 	authApi.POST("/auth/social/google/:service", authApiController.GoogleAuthHandler)
 
