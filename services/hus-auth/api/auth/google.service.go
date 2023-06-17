@@ -24,10 +24,10 @@ import (
 // @Param        jwt body string true "Google ID token"
 // @Response      301 "to /auth/{token_string} or to /error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
-	origin := c.Request().Header.Get("Origin")
-	if origin == "http://localhost:3000" {
-		return ac.googleAuthHandler(c)
-	}
+	// origin := c.Request().Header.Get("Origin")
+	// if origin == "http://localhost:3000" {
+	// 	return ac.googleAuthHandler(c)
+	// }
 
 	// revoke all previous hus sessions.
 	stsToRevoke := []string{}
@@ -120,6 +120,17 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		SameSite: hus.SameSiteMode,
 	}
 	c.SetCookie(cookie2)
+
+	cookieTest := &http.Cookie{
+		Name:     "hus_test",
+		Value:    "TESTCOOKIEHAPPYCOOKIE",
+		Path:     "/",
+		Secure:   hus.CookieSecure,
+		HttpOnly: true,
+		Domain:   hus.AuthCookieDomain,
+		SameSite: http.SameSiteLaxMode,
+	}
+	c.SetCookie(cookieTest)
 
 	// redirects to {serviceUrl}/hus/token/{hus-session-id}
 	return c.Redirect(http.StatusMovedPermanently, serviceUrl)
