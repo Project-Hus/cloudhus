@@ -118,7 +118,7 @@ func RefreshHusSession(ctx context.Context, client *ent.Client, sid string) (nst
 		"tid":     hs.Tid.String(),                      // token id
 		"purpose": "hus_session",                        // purpose
 		"iss":     hus.AuthURL,                          // issuer
-		"uid":     strconv.FormatUint(hs.UID, 10),       // user's uuid
+		"uid":     strconv.FormatUint(*hs.UID, 10),      // user's uuid
 		"iat":     hs.Iat.Unix(),                        // issued at
 		"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
 	})
