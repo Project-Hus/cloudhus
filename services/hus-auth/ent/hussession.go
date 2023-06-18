@@ -39,9 +39,11 @@ type HusSession struct {
 type HusSessionEdges struct {
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
+	// ConnectedSessions holds the value of the connected_sessions edge.
+	ConnectedSessions []*ConnectedSessions `json:"connected_sessions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -55,6 +57,15 @@ func (e HusSessionEdges) UserOrErr() (*User, error) {
 		return e.User, nil
 	}
 	return nil, &NotLoadedError{edge: "user"}
+}
+
+// ConnectedSessionsOrErr returns the ConnectedSessions value or an error if the edge
+// was not loaded in eager-loading.
+func (e HusSessionEdges) ConnectedSessionsOrErr() ([]*ConnectedSessions, error) {
+	if e.loadedTypes[1] {
+		return e.ConnectedSessions, nil
+	}
+	return nil, &NotLoadedError{edge: "connected_sessions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -136,6 +147,11 @@ func (hs *HusSession) assignValues(columns []string, values []any) error {
 // QueryUser queries the "user" edge of the HusSession entity.
 func (hs *HusSession) QueryUser() *UserQuery {
 	return NewHusSessionClient(hs.config).QueryUser(hs)
+}
+
+// QueryConnectedSessions queries the "connected_sessions" edge of the HusSession entity.
+func (hs *HusSession) QueryConnectedSessions() *ConnectedSessionsQuery {
+	return NewHusSessionClient(hs.config).QueryConnectedSessions(hs)
 }
 
 // Update returns a builder for updating this HusSession.

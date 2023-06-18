@@ -303,6 +303,33 @@ func HasUserWith(preds ...predicate.User) predicate.HusSession {
 	})
 }
 
+// HasConnectedSessions applies the HasEdge predicate on the "connected_sessions" edge.
+func HasConnectedSessions() predicate.HusSession {
+	return predicate.HusSession(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ConnectedSessionsTable, ConnectedSessionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasConnectedSessionsWith applies the HasEdge predicate on the "connected_sessions" edge with a given conditions (other predicates).
+func HasConnectedSessionsWith(preds ...predicate.ConnectedSessions) predicate.HusSession {
+	return predicate.HusSession(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ConnectedSessionsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ConnectedSessionsTable, ConnectedSessionsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.HusSession) predicate.HusSession {
 	return predicate.HusSession(func(s *sql.Selector) {

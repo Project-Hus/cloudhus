@@ -9,16 +9,28 @@ const (
 	FieldID = "id"
 	// FieldHsid holds the string denoting the hsid field in the database.
 	FieldHsid = "hsid"
+	// FieldServiceOrigin holds the string denoting the service_origin field in the database.
+	FieldServiceOrigin = "service_origin"
 	// FieldCsid holds the string denoting the csid field in the database.
 	FieldCsid = "csid"
+	// EdgeHusSession holds the string denoting the hus_session edge name in mutations.
+	EdgeHusSession = "hus_session"
 	// Table holds the table name of the connectedsessions in the database.
 	Table = "connected_sessions"
+	// HusSessionTable is the table that holds the hus_session relation/edge.
+	HusSessionTable = "connected_sessions"
+	// HusSessionInverseTable is the table name for the HusSession entity.
+	// It exists in this package in order to avoid circular dependency with the "hussession" package.
+	HusSessionInverseTable = "hus_sessions"
+	// HusSessionColumn is the table column denoting the hus_session relation/edge.
+	HusSessionColumn = "hsid"
 )
 
 // Columns holds all SQL columns for connectedsessions fields.
 var Columns = []string{
 	FieldID,
 	FieldHsid,
+	FieldServiceOrigin,
 	FieldCsid,
 }
 

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"hus-auth/ent/connectedsessions"
+	"hus-auth/ent/hussession"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -26,10 +27,27 @@ func (csc *ConnectedSessionsCreate) SetHsid(u uuid.UUID) *ConnectedSessionsCreat
 	return csc
 }
 
+// SetServiceOrigin sets the "service_origin" field.
+func (csc *ConnectedSessionsCreate) SetServiceOrigin(s string) *ConnectedSessionsCreate {
+	csc.mutation.SetServiceOrigin(s)
+	return csc
+}
+
 // SetCsid sets the "csid" field.
 func (csc *ConnectedSessionsCreate) SetCsid(u uuid.UUID) *ConnectedSessionsCreate {
 	csc.mutation.SetCsid(u)
 	return csc
+}
+
+// SetHusSessionID sets the "hus_session" edge to the HusSession entity by ID.
+func (csc *ConnectedSessionsCreate) SetHusSessionID(id uuid.UUID) *ConnectedSessionsCreate {
+	csc.mutation.SetHusSessionID(id)
+	return csc
+}
+
+// SetHusSession sets the "hus_session" edge to the HusSession entity.
+func (csc *ConnectedSessionsCreate) SetHusSession(h *HusSession) *ConnectedSessionsCreate {
+	return csc.SetHusSessionID(h.ID)
 }
 
 // Mutation returns the ConnectedSessionsMutation object of the builder.
@@ -69,8 +87,14 @@ func (csc *ConnectedSessionsCreate) check() error {
 	if _, ok := csc.mutation.Hsid(); !ok {
 		return &ValidationError{Name: "hsid", err: errors.New(`ent: missing required field "ConnectedSessions.hsid"`)}
 	}
+	if _, ok := csc.mutation.ServiceOrigin(); !ok {
+		return &ValidationError{Name: "service_origin", err: errors.New(`ent: missing required field "ConnectedSessions.service_origin"`)}
+	}
 	if _, ok := csc.mutation.Csid(); !ok {
 		return &ValidationError{Name: "csid", err: errors.New(`ent: missing required field "ConnectedSessions.csid"`)}
+	}
+	if _, ok := csc.mutation.HusSessionID(); !ok {
+		return &ValidationError{Name: "hus_session", err: errors.New(`ent: missing required edge "ConnectedSessions.hus_session"`)}
 	}
 	return nil
 }
@@ -98,13 +122,33 @@ func (csc *ConnectedSessionsCreate) createSpec() (*ConnectedSessions, *sqlgraph.
 		_node = &ConnectedSessions{config: csc.config}
 		_spec = sqlgraph.NewCreateSpec(connectedsessions.Table, sqlgraph.NewFieldSpec(connectedsessions.FieldID, field.TypeInt))
 	)
-	if value, ok := csc.mutation.Hsid(); ok {
-		_spec.SetField(connectedsessions.FieldHsid, field.TypeUUID, value)
-		_node.Hsid = value
+	if value, ok := csc.mutation.ServiceOrigin(); ok {
+		_spec.SetField(connectedsessions.FieldServiceOrigin, field.TypeString, value)
+		_node.ServiceOrigin = value
 	}
 	if value, ok := csc.mutation.Csid(); ok {
 		_spec.SetField(connectedsessions.FieldCsid, field.TypeUUID, value)
 		_node.Csid = value
+	}
+	if nodes := csc.mutation.HusSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   connectedsessions.HusSessionTable,
+			Columns: []string{connectedsessions.HusSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: hussession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.Hsid = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

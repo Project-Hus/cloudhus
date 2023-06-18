@@ -48,5 +48,7 @@ func (HusSession) Fields() []ent.Field {
 func (HusSession) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("user", User.Type).Ref("hus_sessions").Unique().Field("uid").Required(),
+
+		edge.To("connected_sessions", ConnectedSessions.Type),
 	}
 }

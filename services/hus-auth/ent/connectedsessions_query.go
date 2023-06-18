@@ -6,21 +6,24 @@ import (
 	"context"
 	"fmt"
 	"hus-auth/ent/connectedsessions"
+	"hus-auth/ent/hussession"
 	"hus-auth/ent/predicate"
 	"math"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // ConnectedSessionsQuery is the builder for querying ConnectedSessions entities.
 type ConnectedSessionsQuery struct {
 	config
-	ctx        *QueryContext
-	order      []OrderFunc
-	inters     []Interceptor
-	predicates []predicate.ConnectedSessions
+	ctx            *QueryContext
+	order          []OrderFunc
+	inters         []Interceptor
+	predicates     []predicate.ConnectedSessions
+	withHusSession *HusSessionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -55,6 +58,28 @@ func (csq *ConnectedSessionsQuery) Unique(unique bool) *ConnectedSessionsQuery {
 func (csq *ConnectedSessionsQuery) Order(o ...OrderFunc) *ConnectedSessionsQuery {
 	csq.order = append(csq.order, o...)
 	return csq
+}
+
+// QueryHusSession chains the current query on the "hus_session" edge.
+func (csq *ConnectedSessionsQuery) QueryHusSession() *HusSessionQuery {
+	query := (&HusSessionClient{config: csq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := csq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := csq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(connectedsessions.Table, connectedsessions.FieldID, selector),
+			sqlgraph.To(hussession.Table, hussession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, connectedsessions.HusSessionTable, connectedsessions.HusSessionColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(csq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first ConnectedSessions entity from the query.
@@ -244,15 +269,27 @@ func (csq *ConnectedSessionsQuery) Clone() *ConnectedSessionsQuery {
 		return nil
 	}
 	return &ConnectedSessionsQuery{
-		config:     csq.config,
-		ctx:        csq.ctx.Clone(),
-		order:      append([]OrderFunc{}, csq.order...),
-		inters:     append([]Interceptor{}, csq.inters...),
-		predicates: append([]predicate.ConnectedSessions{}, csq.predicates...),
+		config:         csq.config,
+		ctx:            csq.ctx.Clone(),
+		order:          append([]OrderFunc{}, csq.order...),
+		inters:         append([]Interceptor{}, csq.inters...),
+		predicates:     append([]predicate.ConnectedSessions{}, csq.predicates...),
+		withHusSession: csq.withHusSession.Clone(),
 		// clone intermediate query.
 		sql:  csq.sql.Clone(),
 		path: csq.path,
 	}
+}
+
+// WithHusSession tells the query-builder to eager-load the nodes that are connected to
+// the "hus_session" edge. The optional arguments are used to configure the query builder of the edge.
+func (csq *ConnectedSessionsQuery) WithHusSession(opts ...func(*HusSessionQuery)) *ConnectedSessionsQuery {
+	query := (&HusSessionClient{config: csq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	csq.withHusSession = query
+	return csq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -331,8 +368,11 @@ func (csq *ConnectedSessionsQuery) prepareQuery(ctx context.Context) error {
 
 func (csq *ConnectedSessionsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ConnectedSessions, error) {
 	var (
-		nodes = []*ConnectedSessions{}
-		_spec = csq.querySpec()
+		nodes       = []*ConnectedSessions{}
+		_spec       = csq.querySpec()
+		loadedTypes = [1]bool{
+			csq.withHusSession != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ConnectedSessions).scanValues(nil, columns)
@@ -340,6 +380,7 @@ func (csq *ConnectedSessionsQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &ConnectedSessions{config: csq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -351,7 +392,43 @@ func (csq *ConnectedSessionsQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := csq.withHusSession; query != nil {
+		if err := csq.loadHusSession(ctx, query, nodes, nil,
+			func(n *ConnectedSessions, e *HusSession) { n.Edges.HusSession = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (csq *ConnectedSessionsQuery) loadHusSession(ctx context.Context, query *HusSessionQuery, nodes []*ConnectedSessions, init func(*ConnectedSessions), assign func(*ConnectedSessions, *HusSession)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*ConnectedSessions)
+	for i := range nodes {
+		fk := nodes[i].Hsid
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(hussession.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "hsid" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (csq *ConnectedSessionsQuery) sqlCount(ctx context.Context) (int, error) {

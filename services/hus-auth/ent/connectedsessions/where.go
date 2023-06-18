@@ -6,6 +6,7 @@ import (
 	"hus-auth/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -59,6 +60,11 @@ func Hsid(v uuid.UUID) predicate.ConnectedSessions {
 	return predicate.ConnectedSessions(sql.FieldEQ(FieldHsid, v))
 }
 
+// ServiceOrigin applies equality check predicate on the "service_origin" field. It's identical to ServiceOriginEQ.
+func ServiceOrigin(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldEQ(FieldServiceOrigin, v))
+}
+
 // Csid applies equality check predicate on the "csid" field. It's identical to CsidEQ.
 func Csid(v uuid.UUID) predicate.ConnectedSessions {
 	return predicate.ConnectedSessions(sql.FieldEQ(FieldCsid, v))
@@ -84,24 +90,69 @@ func HsidNotIn(vs ...uuid.UUID) predicate.ConnectedSessions {
 	return predicate.ConnectedSessions(sql.FieldNotIn(FieldHsid, vs...))
 }
 
-// HsidGT applies the GT predicate on the "hsid" field.
-func HsidGT(v uuid.UUID) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldGT(FieldHsid, v))
+// ServiceOriginEQ applies the EQ predicate on the "service_origin" field.
+func ServiceOriginEQ(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldEQ(FieldServiceOrigin, v))
 }
 
-// HsidGTE applies the GTE predicate on the "hsid" field.
-func HsidGTE(v uuid.UUID) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldGTE(FieldHsid, v))
+// ServiceOriginNEQ applies the NEQ predicate on the "service_origin" field.
+func ServiceOriginNEQ(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldNEQ(FieldServiceOrigin, v))
 }
 
-// HsidLT applies the LT predicate on the "hsid" field.
-func HsidLT(v uuid.UUID) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldLT(FieldHsid, v))
+// ServiceOriginIn applies the In predicate on the "service_origin" field.
+func ServiceOriginIn(vs ...string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldIn(FieldServiceOrigin, vs...))
 }
 
-// HsidLTE applies the LTE predicate on the "hsid" field.
-func HsidLTE(v uuid.UUID) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldLTE(FieldHsid, v))
+// ServiceOriginNotIn applies the NotIn predicate on the "service_origin" field.
+func ServiceOriginNotIn(vs ...string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldNotIn(FieldServiceOrigin, vs...))
+}
+
+// ServiceOriginGT applies the GT predicate on the "service_origin" field.
+func ServiceOriginGT(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldGT(FieldServiceOrigin, v))
+}
+
+// ServiceOriginGTE applies the GTE predicate on the "service_origin" field.
+func ServiceOriginGTE(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldGTE(FieldServiceOrigin, v))
+}
+
+// ServiceOriginLT applies the LT predicate on the "service_origin" field.
+func ServiceOriginLT(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldLT(FieldServiceOrigin, v))
+}
+
+// ServiceOriginLTE applies the LTE predicate on the "service_origin" field.
+func ServiceOriginLTE(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldLTE(FieldServiceOrigin, v))
+}
+
+// ServiceOriginContains applies the Contains predicate on the "service_origin" field.
+func ServiceOriginContains(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldContains(FieldServiceOrigin, v))
+}
+
+// ServiceOriginHasPrefix applies the HasPrefix predicate on the "service_origin" field.
+func ServiceOriginHasPrefix(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldHasPrefix(FieldServiceOrigin, v))
+}
+
+// ServiceOriginHasSuffix applies the HasSuffix predicate on the "service_origin" field.
+func ServiceOriginHasSuffix(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldHasSuffix(FieldServiceOrigin, v))
+}
+
+// ServiceOriginEqualFold applies the EqualFold predicate on the "service_origin" field.
+func ServiceOriginEqualFold(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldEqualFold(FieldServiceOrigin, v))
+}
+
+// ServiceOriginContainsFold applies the ContainsFold predicate on the "service_origin" field.
+func ServiceOriginContainsFold(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldContainsFold(FieldServiceOrigin, v))
 }
 
 // CsidEQ applies the EQ predicate on the "csid" field.
@@ -142,6 +193,33 @@ func CsidLT(v uuid.UUID) predicate.ConnectedSessions {
 // CsidLTE applies the LTE predicate on the "csid" field.
 func CsidLTE(v uuid.UUID) predicate.ConnectedSessions {
 	return predicate.ConnectedSessions(sql.FieldLTE(FieldCsid, v))
+}
+
+// HasHusSession applies the HasEdge predicate on the "hus_session" edge.
+func HasHusSession() predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, HusSessionTable, HusSessionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHusSessionWith applies the HasEdge predicate on the "hus_session" edge with a given conditions (other predicates).
+func HasHusSessionWith(preds ...predicate.HusSession) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(HusSessionInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, HusSessionTable, HusSessionColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

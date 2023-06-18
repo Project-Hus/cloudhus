@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"hus-auth/ent/connectedsessions"
+	"hus-auth/ent/hussession"
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
@@ -18,8 +19,35 @@ type ConnectedSessions struct {
 	ID int `json:"id,omitempty"`
 	// Hsid holds the value of the "hsid" field.
 	Hsid uuid.UUID `json:"hsid,omitempty"`
+	// ServiceOrigin holds the value of the "service_origin" field.
+	ServiceOrigin string `json:"service_origin,omitempty"`
 	// Csid holds the value of the "csid" field.
 	Csid uuid.UUID `json:"csid,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ConnectedSessionsQuery when eager-loading is set.
+	Edges ConnectedSessionsEdges `json:"edges"`
+}
+
+// ConnectedSessionsEdges holds the relations/edges for other nodes in the graph.
+type ConnectedSessionsEdges struct {
+	// HusSession holds the value of the hus_session edge.
+	HusSession *HusSession `json:"hus_session,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// HusSessionOrErr returns the HusSession value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ConnectedSessionsEdges) HusSessionOrErr() (*HusSession, error) {
+	if e.loadedTypes[0] {
+		if e.HusSession == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: hussession.Label}
+		}
+		return e.HusSession, nil
+	}
+	return nil, &NotLoadedError{edge: "hus_session"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -29,6 +57,8 @@ func (*ConnectedSessions) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case connectedsessions.FieldID:
 			values[i] = new(sql.NullInt64)
+		case connectedsessions.FieldServiceOrigin:
+			values[i] = new(sql.NullString)
 		case connectedsessions.FieldHsid, connectedsessions.FieldCsid:
 			values[i] = new(uuid.UUID)
 		default:
@@ -58,6 +88,12 @@ func (cs *ConnectedSessions) assignValues(columns []string, values []any) error 
 			} else if value != nil {
 				cs.Hsid = *value
 			}
+		case connectedsessions.FieldServiceOrigin:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field service_origin", values[i])
+			} else if value.Valid {
+				cs.ServiceOrigin = value.String
+			}
 		case connectedsessions.FieldCsid:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field csid", values[i])
@@ -67,6 +103,11 @@ func (cs *ConnectedSessions) assignValues(columns []string, values []any) error 
 		}
 	}
 	return nil
+}
+
+// QueryHusSession queries the "hus_session" edge of the ConnectedSessions entity.
+func (cs *ConnectedSessions) QueryHusSession() *HusSessionQuery {
+	return NewConnectedSessionsClient(cs.config).QueryHusSession(cs)
 }
 
 // Update returns a builder for updating this ConnectedSessions.
@@ -94,6 +135,9 @@ func (cs *ConnectedSessions) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", cs.ID))
 	builder.WriteString("hsid=")
 	builder.WriteString(fmt.Sprintf("%v", cs.Hsid))
+	builder.WriteString(", ")
+	builder.WriteString("service_origin=")
+	builder.WriteString(cs.ServiceOrigin)
 	builder.WriteString(", ")
 	builder.WriteString("csid=")
 	builder.WriteString(fmt.Sprintf("%v", cs.Csid))

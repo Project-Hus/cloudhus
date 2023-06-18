@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hus-auth/ent/connectedsessions"
 	"hus-auth/ent/hussession"
 	"hus-auth/ent/predicate"
 	"hus-auth/ent/user"
@@ -109,6 +110,21 @@ func (hsu *HusSessionUpdate) SetUser(u *User) *HusSessionUpdate {
 	return hsu.SetUserID(u.ID)
 }
 
+// AddConnectedSessionIDs adds the "connected_sessions" edge to the ConnectedSessions entity by IDs.
+func (hsu *HusSessionUpdate) AddConnectedSessionIDs(ids ...int) *HusSessionUpdate {
+	hsu.mutation.AddConnectedSessionIDs(ids...)
+	return hsu
+}
+
+// AddConnectedSessions adds the "connected_sessions" edges to the ConnectedSessions entity.
+func (hsu *HusSessionUpdate) AddConnectedSessions(c ...*ConnectedSessions) *HusSessionUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return hsu.AddConnectedSessionIDs(ids...)
+}
+
 // Mutation returns the HusSessionMutation object of the builder.
 func (hsu *HusSessionUpdate) Mutation() *HusSessionMutation {
 	return hsu.mutation
@@ -118,6 +134,27 @@ func (hsu *HusSessionUpdate) Mutation() *HusSessionMutation {
 func (hsu *HusSessionUpdate) ClearUser() *HusSessionUpdate {
 	hsu.mutation.ClearUser()
 	return hsu
+}
+
+// ClearConnectedSessions clears all "connected_sessions" edges to the ConnectedSessions entity.
+func (hsu *HusSessionUpdate) ClearConnectedSessions() *HusSessionUpdate {
+	hsu.mutation.ClearConnectedSessions()
+	return hsu
+}
+
+// RemoveConnectedSessionIDs removes the "connected_sessions" edge to ConnectedSessions entities by IDs.
+func (hsu *HusSessionUpdate) RemoveConnectedSessionIDs(ids ...int) *HusSessionUpdate {
+	hsu.mutation.RemoveConnectedSessionIDs(ids...)
+	return hsu
+}
+
+// RemoveConnectedSessions removes "connected_sessions" edges to ConnectedSessions entities.
+func (hsu *HusSessionUpdate) RemoveConnectedSessions(c ...*ConnectedSessions) *HusSessionUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return hsu.RemoveConnectedSessionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -226,6 +263,60 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if hsu.mutation.ConnectedSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionsTable,
+			Columns: []string{hussession.ConnectedSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsessions.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := hsu.mutation.RemovedConnectedSessionsIDs(); len(nodes) > 0 && !hsu.mutation.ConnectedSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionsTable,
+			Columns: []string{hussession.ConnectedSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsessions.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := hsu.mutation.ConnectedSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionsTable,
+			Columns: []string{hussession.ConnectedSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsessions.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, hsu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{hussession.Label}
@@ -325,6 +416,21 @@ func (hsuo *HusSessionUpdateOne) SetUser(u *User) *HusSessionUpdateOne {
 	return hsuo.SetUserID(u.ID)
 }
 
+// AddConnectedSessionIDs adds the "connected_sessions" edge to the ConnectedSessions entity by IDs.
+func (hsuo *HusSessionUpdateOne) AddConnectedSessionIDs(ids ...int) *HusSessionUpdateOne {
+	hsuo.mutation.AddConnectedSessionIDs(ids...)
+	return hsuo
+}
+
+// AddConnectedSessions adds the "connected_sessions" edges to the ConnectedSessions entity.
+func (hsuo *HusSessionUpdateOne) AddConnectedSessions(c ...*ConnectedSessions) *HusSessionUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return hsuo.AddConnectedSessionIDs(ids...)
+}
+
 // Mutation returns the HusSessionMutation object of the builder.
 func (hsuo *HusSessionUpdateOne) Mutation() *HusSessionMutation {
 	return hsuo.mutation
@@ -334,6 +440,27 @@ func (hsuo *HusSessionUpdateOne) Mutation() *HusSessionMutation {
 func (hsuo *HusSessionUpdateOne) ClearUser() *HusSessionUpdateOne {
 	hsuo.mutation.ClearUser()
 	return hsuo
+}
+
+// ClearConnectedSessions clears all "connected_sessions" edges to the ConnectedSessions entity.
+func (hsuo *HusSessionUpdateOne) ClearConnectedSessions() *HusSessionUpdateOne {
+	hsuo.mutation.ClearConnectedSessions()
+	return hsuo
+}
+
+// RemoveConnectedSessionIDs removes the "connected_sessions" edge to ConnectedSessions entities by IDs.
+func (hsuo *HusSessionUpdateOne) RemoveConnectedSessionIDs(ids ...int) *HusSessionUpdateOne {
+	hsuo.mutation.RemoveConnectedSessionIDs(ids...)
+	return hsuo
+}
+
+// RemoveConnectedSessions removes "connected_sessions" edges to ConnectedSessions entities.
+func (hsuo *HusSessionUpdateOne) RemoveConnectedSessions(c ...*ConnectedSessions) *HusSessionUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return hsuo.RemoveConnectedSessionIDs(ids...)
 }
 
 // Where appends a list predicates to the HusSessionUpdate builder.
@@ -464,6 +591,60 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUint64,
 					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if hsuo.mutation.ConnectedSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionsTable,
+			Columns: []string{hussession.ConnectedSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsessions.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := hsuo.mutation.RemovedConnectedSessionsIDs(); len(nodes) > 0 && !hsuo.mutation.ConnectedSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionsTable,
+			Columns: []string{hussession.ConnectedSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsessions.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := hsuo.mutation.ConnectedSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionsTable,
+			Columns: []string{hussession.ConnectedSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsessions.FieldID,
 				},
 			},
 		}

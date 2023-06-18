@@ -253,6 +253,22 @@ func (c *ConnectedSessionsClient) GetX(ctx context.Context, id int) *ConnectedSe
 	return obj
 }
 
+// QueryHusSession queries the hus_session edge of a ConnectedSessions.
+func (c *ConnectedSessionsClient) QueryHusSession(cs *ConnectedSessions) *HusSessionQuery {
+	query := (&HusSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(connectedsessions.Table, connectedsessions.FieldID, id),
+			sqlgraph.To(hussession.Table, hussession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, connectedsessions.HusSessionTable, connectedsessions.HusSessionColumn),
+		)
+		fromV = sqlgraph.Neighbors(cs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ConnectedSessionsClient) Hooks() []Hook {
 	return c.hooks.ConnectedSessions
@@ -380,6 +396,22 @@ func (c *HusSessionClient) QueryUser(hs *HusSession) *UserQuery {
 			sqlgraph.From(hussession.Table, hussession.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, hussession.UserTable, hussession.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(hs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryConnectedSessions queries the connected_sessions edge of a HusSession.
+func (c *HusSessionClient) QueryConnectedSessions(hs *HusSession) *ConnectedSessionsQuery {
+	query := (&ConnectedSessionsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := hs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hussession.Table, hussession.FieldID, id),
+			sqlgraph.To(connectedsessions.Table, connectedsessions.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, hussession.ConnectedSessionsTable, hussession.ConnectedSessionsColumn),
 		)
 		fromV = sqlgraph.Neighbors(hs.driver.Dialect(), step)
 		return fromV, nil

@@ -36,15 +36,17 @@ const (
 // ConnectedSessionsMutation represents an operation that mutates the ConnectedSessions nodes in the graph.
 type ConnectedSessionsMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	hsid          *uuid.UUID
-	csid          *uuid.UUID
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*ConnectedSessions, error)
-	predicates    []predicate.ConnectedSessions
+	op                 Op
+	typ                string
+	id                 *int
+	service_origin     *string
+	csid               *uuid.UUID
+	clearedFields      map[string]struct{}
+	hus_session        *uuid.UUID
+	clearedhus_session bool
+	done               bool
+	oldValue           func(context.Context) (*ConnectedSessions, error)
+	predicates         []predicate.ConnectedSessions
 }
 
 var _ ent.Mutation = (*ConnectedSessionsMutation)(nil)
@@ -147,12 +149,12 @@ func (m *ConnectedSessionsMutation) IDs(ctx context.Context) ([]int, error) {
 
 // SetHsid sets the "hsid" field.
 func (m *ConnectedSessionsMutation) SetHsid(u uuid.UUID) {
-	m.hsid = &u
+	m.hus_session = &u
 }
 
 // Hsid returns the value of the "hsid" field in the mutation.
 func (m *ConnectedSessionsMutation) Hsid() (r uuid.UUID, exists bool) {
-	v := m.hsid
+	v := m.hus_session
 	if v == nil {
 		return
 	}
@@ -178,7 +180,43 @@ func (m *ConnectedSessionsMutation) OldHsid(ctx context.Context) (v uuid.UUID, e
 
 // ResetHsid resets all changes to the "hsid" field.
 func (m *ConnectedSessionsMutation) ResetHsid() {
-	m.hsid = nil
+	m.hus_session = nil
+}
+
+// SetServiceOrigin sets the "service_origin" field.
+func (m *ConnectedSessionsMutation) SetServiceOrigin(s string) {
+	m.service_origin = &s
+}
+
+// ServiceOrigin returns the value of the "service_origin" field in the mutation.
+func (m *ConnectedSessionsMutation) ServiceOrigin() (r string, exists bool) {
+	v := m.service_origin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldServiceOrigin returns the old "service_origin" field's value of the ConnectedSessions entity.
+// If the ConnectedSessions object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectedSessionsMutation) OldServiceOrigin(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldServiceOrigin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldServiceOrigin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldServiceOrigin: %w", err)
+	}
+	return oldValue.ServiceOrigin, nil
+}
+
+// ResetServiceOrigin resets all changes to the "service_origin" field.
+func (m *ConnectedSessionsMutation) ResetServiceOrigin() {
+	m.service_origin = nil
 }
 
 // SetCsid sets the "csid" field.
@@ -217,6 +255,45 @@ func (m *ConnectedSessionsMutation) ResetCsid() {
 	m.csid = nil
 }
 
+// SetHusSessionID sets the "hus_session" edge to the HusSession entity by id.
+func (m *ConnectedSessionsMutation) SetHusSessionID(id uuid.UUID) {
+	m.hus_session = &id
+}
+
+// ClearHusSession clears the "hus_session" edge to the HusSession entity.
+func (m *ConnectedSessionsMutation) ClearHusSession() {
+	m.clearedhus_session = true
+}
+
+// HusSessionCleared reports if the "hus_session" edge to the HusSession entity was cleared.
+func (m *ConnectedSessionsMutation) HusSessionCleared() bool {
+	return m.clearedhus_session
+}
+
+// HusSessionID returns the "hus_session" edge ID in the mutation.
+func (m *ConnectedSessionsMutation) HusSessionID() (id uuid.UUID, exists bool) {
+	if m.hus_session != nil {
+		return *m.hus_session, true
+	}
+	return
+}
+
+// HusSessionIDs returns the "hus_session" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HusSessionID instead. It exists only for internal usage by the builders.
+func (m *ConnectedSessionsMutation) HusSessionIDs() (ids []uuid.UUID) {
+	if id := m.hus_session; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetHusSession resets all changes to the "hus_session" edge.
+func (m *ConnectedSessionsMutation) ResetHusSession() {
+	m.hus_session = nil
+	m.clearedhus_session = false
+}
+
 // Where appends a list predicates to the ConnectedSessionsMutation builder.
 func (m *ConnectedSessionsMutation) Where(ps ...predicate.ConnectedSessions) {
 	m.predicates = append(m.predicates, ps...)
@@ -251,9 +328,12 @@ func (m *ConnectedSessionsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ConnectedSessionsMutation) Fields() []string {
-	fields := make([]string, 0, 2)
-	if m.hsid != nil {
+	fields := make([]string, 0, 3)
+	if m.hus_session != nil {
 		fields = append(fields, connectedsessions.FieldHsid)
+	}
+	if m.service_origin != nil {
+		fields = append(fields, connectedsessions.FieldServiceOrigin)
 	}
 	if m.csid != nil {
 		fields = append(fields, connectedsessions.FieldCsid)
@@ -268,6 +348,8 @@ func (m *ConnectedSessionsMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case connectedsessions.FieldHsid:
 		return m.Hsid()
+	case connectedsessions.FieldServiceOrigin:
+		return m.ServiceOrigin()
 	case connectedsessions.FieldCsid:
 		return m.Csid()
 	}
@@ -281,6 +363,8 @@ func (m *ConnectedSessionsMutation) OldField(ctx context.Context, name string) (
 	switch name {
 	case connectedsessions.FieldHsid:
 		return m.OldHsid(ctx)
+	case connectedsessions.FieldServiceOrigin:
+		return m.OldServiceOrigin(ctx)
 	case connectedsessions.FieldCsid:
 		return m.OldCsid(ctx)
 	}
@@ -298,6 +382,13 @@ func (m *ConnectedSessionsMutation) SetField(name string, value ent.Value) error
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetHsid(v)
+		return nil
+	case connectedsessions.FieldServiceOrigin:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetServiceOrigin(v)
 		return nil
 	case connectedsessions.FieldCsid:
 		v, ok := value.(uuid.UUID)
@@ -358,6 +449,9 @@ func (m *ConnectedSessionsMutation) ResetField(name string) error {
 	case connectedsessions.FieldHsid:
 		m.ResetHsid()
 		return nil
+	case connectedsessions.FieldServiceOrigin:
+		m.ResetServiceOrigin()
+		return nil
 	case connectedsessions.FieldCsid:
 		m.ResetCsid()
 		return nil
@@ -367,19 +461,28 @@ func (m *ConnectedSessionsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ConnectedSessionsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.hus_session != nil {
+		edges = append(edges, connectedsessions.EdgeHusSession)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *ConnectedSessionsMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case connectedsessions.EdgeHusSession:
+		if id := m.hus_session; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ConnectedSessionsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -391,45 +494,65 @@ func (m *ConnectedSessionsMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ConnectedSessionsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedhus_session {
+		edges = append(edges, connectedsessions.EdgeHusSession)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *ConnectedSessionsMutation) EdgeCleared(name string) bool {
+	switch name {
+	case connectedsessions.EdgeHusSession:
+		return m.clearedhus_session
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *ConnectedSessionsMutation) ClearEdge(name string) error {
+	switch name {
+	case connectedsessions.EdgeHusSession:
+		m.ClearHusSession()
+		return nil
+	}
 	return fmt.Errorf("unknown ConnectedSessions unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *ConnectedSessionsMutation) ResetEdge(name string) error {
+	switch name {
+	case connectedsessions.EdgeHusSession:
+		m.ResetHusSession()
+		return nil
+	}
 	return fmt.Errorf("unknown ConnectedSessions edge %s", name)
 }
 
 // HusSessionMutation represents an operation that mutates the HusSession nodes in the graph.
 type HusSessionMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	tid           *uuid.UUID
-	iat           *time.Time
-	preserved     *bool
-	created_at    *time.Time
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	user          *uint64
-	cleareduser   bool
-	done          bool
-	oldValue      func(context.Context) (*HusSession, error)
-	predicates    []predicate.HusSession
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	tid                       *uuid.UUID
+	iat                       *time.Time
+	preserved                 *bool
+	created_at                *time.Time
+	updated_at                *time.Time
+	clearedFields             map[string]struct{}
+	user                      *uint64
+	cleareduser               bool
+	connected_sessions        map[int]struct{}
+	removedconnected_sessions map[int]struct{}
+	clearedconnected_sessions bool
+	done                      bool
+	oldValue                  func(context.Context) (*HusSession, error)
+	predicates                []predicate.HusSession
 }
 
 var _ ent.Mutation = (*HusSessionMutation)(nil)
@@ -791,6 +914,60 @@ func (m *HusSessionMutation) ResetUser() {
 	m.cleareduser = false
 }
 
+// AddConnectedSessionIDs adds the "connected_sessions" edge to the ConnectedSessions entity by ids.
+func (m *HusSessionMutation) AddConnectedSessionIDs(ids ...int) {
+	if m.connected_sessions == nil {
+		m.connected_sessions = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.connected_sessions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearConnectedSessions clears the "connected_sessions" edge to the ConnectedSessions entity.
+func (m *HusSessionMutation) ClearConnectedSessions() {
+	m.clearedconnected_sessions = true
+}
+
+// ConnectedSessionsCleared reports if the "connected_sessions" edge to the ConnectedSessions entity was cleared.
+func (m *HusSessionMutation) ConnectedSessionsCleared() bool {
+	return m.clearedconnected_sessions
+}
+
+// RemoveConnectedSessionIDs removes the "connected_sessions" edge to the ConnectedSessions entity by IDs.
+func (m *HusSessionMutation) RemoveConnectedSessionIDs(ids ...int) {
+	if m.removedconnected_sessions == nil {
+		m.removedconnected_sessions = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.connected_sessions, ids[i])
+		m.removedconnected_sessions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedConnectedSessions returns the removed IDs of the "connected_sessions" edge to the ConnectedSessions entity.
+func (m *HusSessionMutation) RemovedConnectedSessionsIDs() (ids []int) {
+	for id := range m.removedconnected_sessions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ConnectedSessionsIDs returns the "connected_sessions" edge IDs in the mutation.
+func (m *HusSessionMutation) ConnectedSessionsIDs() (ids []int) {
+	for id := range m.connected_sessions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetConnectedSessions resets all changes to the "connected_sessions" edge.
+func (m *HusSessionMutation) ResetConnectedSessions() {
+	m.connected_sessions = nil
+	m.clearedconnected_sessions = false
+	m.removedconnected_sessions = nil
+}
+
 // Where appends a list predicates to the HusSessionMutation builder.
 func (m *HusSessionMutation) Where(ps ...predicate.HusSession) {
 	m.predicates = append(m.predicates, ps...)
@@ -1012,9 +1189,12 @@ func (m *HusSessionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *HusSessionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.user != nil {
 		edges = append(edges, hussession.EdgeUser)
+	}
+	if m.connected_sessions != nil {
+		edges = append(edges, hussession.EdgeConnectedSessions)
 	}
 	return edges
 }
@@ -1027,27 +1207,47 @@ func (m *HusSessionMutation) AddedIDs(name string) []ent.Value {
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
+	case hussession.EdgeConnectedSessions:
+		ids := make([]ent.Value, 0, len(m.connected_sessions))
+		for id := range m.connected_sessions {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *HusSessionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedconnected_sessions != nil {
+		edges = append(edges, hussession.EdgeConnectedSessions)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *HusSessionMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case hussession.EdgeConnectedSessions:
+		ids := make([]ent.Value, 0, len(m.removedconnected_sessions))
+		for id := range m.removedconnected_sessions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *HusSessionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.cleareduser {
 		edges = append(edges, hussession.EdgeUser)
+	}
+	if m.clearedconnected_sessions {
+		edges = append(edges, hussession.EdgeConnectedSessions)
 	}
 	return edges
 }
@@ -1058,6 +1258,8 @@ func (m *HusSessionMutation) EdgeCleared(name string) bool {
 	switch name {
 	case hussession.EdgeUser:
 		return m.cleareduser
+	case hussession.EdgeConnectedSessions:
+		return m.clearedconnected_sessions
 	}
 	return false
 }
@@ -1079,6 +1281,9 @@ func (m *HusSessionMutation) ResetEdge(name string) error {
 	switch name {
 	case hussession.EdgeUser:
 		m.ResetUser()
+		return nil
+	case hussession.EdgeConnectedSessions:
+		m.ResetConnectedSessions()
 		return nil
 	}
 	return fmt.Errorf("unknown HusSession edge %s", name)
