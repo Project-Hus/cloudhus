@@ -28,14 +28,10 @@ type config struct {
 type (
 	hooks struct {
 		HusSession []ent.Hook
-		Service    []ent.Hook
-		Subdomain  []ent.Hook
 		User       []ent.Hook
 	}
 	inters struct {
 		HusSession []ent.Interceptor
-		Service    []ent.Interceptor
-		Subdomain  []ent.Interceptor
 		User       []ent.Interceptor
 	}
 )

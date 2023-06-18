@@ -132,6 +132,17 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	}
 	c.SetCookie(cookieTest)
 
+	cookieTest2 := &http.Cookie{
+		Name:     "hus_test2",
+		Value:    "TESTCOOKIEHAPPYCOOKIE",
+		Path:     "/",
+		Secure:   hus.CookieSecure,
+		HttpOnly: true,
+		Domain:   hus.AuthCookieDomain,
+		SameSite: http.SameSiteStrictMode,
+	}
+	c.SetCookie(cookieTest2)
+
 	// redirects to {serviceUrl}/hus/token/{hus-session-id}
 	return c.Redirect(http.StatusMovedPermanently, serviceUrl)
 }

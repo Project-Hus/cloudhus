@@ -5,7 +5,6 @@ package ent
 import (
 	"hus-auth/ent/hussession"
 	"hus-auth/ent/schema"
-	"hus-auth/ent/service"
 	"hus-auth/ent/user"
 	"time"
 
@@ -34,18 +33,6 @@ func init() {
 	hussessionDescID := hussessionFields[0].Descriptor()
 	// hussession.DefaultID holds the default value on creation for the id field.
 	hussession.DefaultID = hussessionDescID.Default.(func() uuid.UUID)
-	serviceFields := schema.Service{}.Fields()
-	_ = serviceFields
-	// serviceDescCreatedAt is the schema descriptor for created_at field.
-	serviceDescCreatedAt := serviceFields[3].Descriptor()
-	// service.DefaultCreatedAt holds the default value on creation for the created_at field.
-	service.DefaultCreatedAt = serviceDescCreatedAt.Default.(func() time.Time)
-	// serviceDescUpdatedAt is the schema descriptor for updated_at field.
-	serviceDescUpdatedAt := serviceFields[4].Descriptor()
-	// service.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	service.DefaultUpdatedAt = serviceDescUpdatedAt.Default.(func() time.Time)
-	// service.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	service.UpdateDefaultUpdatedAt = serviceDescUpdatedAt.UpdateDefault.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for created_at field.
