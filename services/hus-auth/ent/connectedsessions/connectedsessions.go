@@ -9,8 +9,8 @@ const (
 	FieldID = "id"
 	// FieldHsid holds the string denoting the hsid field in the database.
 	FieldHsid = "hsid"
-	// FieldServiceOrigin holds the string denoting the service_origin field in the database.
-	FieldServiceOrigin = "service_origin"
+	// FieldService holds the string denoting the service field in the database.
+	FieldService = "service"
 	// FieldCsid holds the string denoting the csid field in the database.
 	FieldCsid = "csid"
 	// EdgeHusSession holds the string denoting the hus_session edge name in mutations.
@@ -30,7 +30,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldHsid,
-	FieldServiceOrigin,
+	FieldService,
 	FieldCsid,
 }
 

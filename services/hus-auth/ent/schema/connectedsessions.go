@@ -27,8 +27,8 @@ func (ConnectedSessions) Fields() []ent.Field {
 	return []ent.Field{
 		// hus session id
 		field.UUID("hsid", uuid.UUID{}),
-		// subservice's auth server origin
-		field.String("service_origin"),
+		// subservice name
+		field.String("service"),
 		// connected session id from subservice
 		field.UUID("csid", uuid.UUID{}),
 	}

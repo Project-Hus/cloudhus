@@ -39,7 +39,7 @@ type ConnectedSessionsMutation struct {
 	op                 Op
 	typ                string
 	id                 *int
-	service_origin     *string
+	service            *string
 	csid               *uuid.UUID
 	clearedFields      map[string]struct{}
 	hus_session        *uuid.UUID
@@ -183,40 +183,40 @@ func (m *ConnectedSessionsMutation) ResetHsid() {
 	m.hus_session = nil
 }
 
-// SetServiceOrigin sets the "service_origin" field.
-func (m *ConnectedSessionsMutation) SetServiceOrigin(s string) {
-	m.service_origin = &s
+// SetService sets the "service" field.
+func (m *ConnectedSessionsMutation) SetService(s string) {
+	m.service = &s
 }
 
-// ServiceOrigin returns the value of the "service_origin" field in the mutation.
-func (m *ConnectedSessionsMutation) ServiceOrigin() (r string, exists bool) {
-	v := m.service_origin
+// Service returns the value of the "service" field in the mutation.
+func (m *ConnectedSessionsMutation) Service() (r string, exists bool) {
+	v := m.service
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldServiceOrigin returns the old "service_origin" field's value of the ConnectedSessions entity.
+// OldService returns the old "service" field's value of the ConnectedSessions entity.
 // If the ConnectedSessions object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ConnectedSessionsMutation) OldServiceOrigin(ctx context.Context) (v string, err error) {
+func (m *ConnectedSessionsMutation) OldService(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldServiceOrigin is only allowed on UpdateOne operations")
+		return v, errors.New("OldService is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldServiceOrigin requires an ID field in the mutation")
+		return v, errors.New("OldService requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldServiceOrigin: %w", err)
+		return v, fmt.Errorf("querying old value for OldService: %w", err)
 	}
-	return oldValue.ServiceOrigin, nil
+	return oldValue.Service, nil
 }
 
-// ResetServiceOrigin resets all changes to the "service_origin" field.
-func (m *ConnectedSessionsMutation) ResetServiceOrigin() {
-	m.service_origin = nil
+// ResetService resets all changes to the "service" field.
+func (m *ConnectedSessionsMutation) ResetService() {
+	m.service = nil
 }
 
 // SetCsid sets the "csid" field.
@@ -332,8 +332,8 @@ func (m *ConnectedSessionsMutation) Fields() []string {
 	if m.hus_session != nil {
 		fields = append(fields, connectedsessions.FieldHsid)
 	}
-	if m.service_origin != nil {
-		fields = append(fields, connectedsessions.FieldServiceOrigin)
+	if m.service != nil {
+		fields = append(fields, connectedsessions.FieldService)
 	}
 	if m.csid != nil {
 		fields = append(fields, connectedsessions.FieldCsid)
@@ -348,8 +348,8 @@ func (m *ConnectedSessionsMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case connectedsessions.FieldHsid:
 		return m.Hsid()
-	case connectedsessions.FieldServiceOrigin:
-		return m.ServiceOrigin()
+	case connectedsessions.FieldService:
+		return m.Service()
 	case connectedsessions.FieldCsid:
 		return m.Csid()
 	}
@@ -363,8 +363,8 @@ func (m *ConnectedSessionsMutation) OldField(ctx context.Context, name string) (
 	switch name {
 	case connectedsessions.FieldHsid:
 		return m.OldHsid(ctx)
-	case connectedsessions.FieldServiceOrigin:
-		return m.OldServiceOrigin(ctx)
+	case connectedsessions.FieldService:
+		return m.OldService(ctx)
 	case connectedsessions.FieldCsid:
 		return m.OldCsid(ctx)
 	}
@@ -383,12 +383,12 @@ func (m *ConnectedSessionsMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetHsid(v)
 		return nil
-	case connectedsessions.FieldServiceOrigin:
+	case connectedsessions.FieldService:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetServiceOrigin(v)
+		m.SetService(v)
 		return nil
 	case connectedsessions.FieldCsid:
 		v, ok := value.(uuid.UUID)
@@ -449,8 +449,8 @@ func (m *ConnectedSessionsMutation) ResetField(name string) error {
 	case connectedsessions.FieldHsid:
 		m.ResetHsid()
 		return nil
-	case connectedsessions.FieldServiceOrigin:
-		m.ResetServiceOrigin()
+	case connectedsessions.FieldService:
+		m.ResetService()
 		return nil
 	case connectedsessions.FieldCsid:
 		m.ResetCsid()

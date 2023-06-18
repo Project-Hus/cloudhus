@@ -60,9 +60,9 @@ func Hsid(v uuid.UUID) predicate.ConnectedSessions {
 	return predicate.ConnectedSessions(sql.FieldEQ(FieldHsid, v))
 }
 
-// ServiceOrigin applies equality check predicate on the "service_origin" field. It's identical to ServiceOriginEQ.
-func ServiceOrigin(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldEQ(FieldServiceOrigin, v))
+// Service applies equality check predicate on the "service" field. It's identical to ServiceEQ.
+func Service(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldEQ(FieldService, v))
 }
 
 // Csid applies equality check predicate on the "csid" field. It's identical to CsidEQ.
@@ -90,69 +90,69 @@ func HsidNotIn(vs ...uuid.UUID) predicate.ConnectedSessions {
 	return predicate.ConnectedSessions(sql.FieldNotIn(FieldHsid, vs...))
 }
 
-// ServiceOriginEQ applies the EQ predicate on the "service_origin" field.
-func ServiceOriginEQ(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldEQ(FieldServiceOrigin, v))
+// ServiceEQ applies the EQ predicate on the "service" field.
+func ServiceEQ(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldEQ(FieldService, v))
 }
 
-// ServiceOriginNEQ applies the NEQ predicate on the "service_origin" field.
-func ServiceOriginNEQ(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldNEQ(FieldServiceOrigin, v))
+// ServiceNEQ applies the NEQ predicate on the "service" field.
+func ServiceNEQ(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldNEQ(FieldService, v))
 }
 
-// ServiceOriginIn applies the In predicate on the "service_origin" field.
-func ServiceOriginIn(vs ...string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldIn(FieldServiceOrigin, vs...))
+// ServiceIn applies the In predicate on the "service" field.
+func ServiceIn(vs ...string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldIn(FieldService, vs...))
 }
 
-// ServiceOriginNotIn applies the NotIn predicate on the "service_origin" field.
-func ServiceOriginNotIn(vs ...string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldNotIn(FieldServiceOrigin, vs...))
+// ServiceNotIn applies the NotIn predicate on the "service" field.
+func ServiceNotIn(vs ...string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldNotIn(FieldService, vs...))
 }
 
-// ServiceOriginGT applies the GT predicate on the "service_origin" field.
-func ServiceOriginGT(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldGT(FieldServiceOrigin, v))
+// ServiceGT applies the GT predicate on the "service" field.
+func ServiceGT(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldGT(FieldService, v))
 }
 
-// ServiceOriginGTE applies the GTE predicate on the "service_origin" field.
-func ServiceOriginGTE(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldGTE(FieldServiceOrigin, v))
+// ServiceGTE applies the GTE predicate on the "service" field.
+func ServiceGTE(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldGTE(FieldService, v))
 }
 
-// ServiceOriginLT applies the LT predicate on the "service_origin" field.
-func ServiceOriginLT(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldLT(FieldServiceOrigin, v))
+// ServiceLT applies the LT predicate on the "service" field.
+func ServiceLT(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldLT(FieldService, v))
 }
 
-// ServiceOriginLTE applies the LTE predicate on the "service_origin" field.
-func ServiceOriginLTE(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldLTE(FieldServiceOrigin, v))
+// ServiceLTE applies the LTE predicate on the "service" field.
+func ServiceLTE(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldLTE(FieldService, v))
 }
 
-// ServiceOriginContains applies the Contains predicate on the "service_origin" field.
-func ServiceOriginContains(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldContains(FieldServiceOrigin, v))
+// ServiceContains applies the Contains predicate on the "service" field.
+func ServiceContains(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldContains(FieldService, v))
 }
 
-// ServiceOriginHasPrefix applies the HasPrefix predicate on the "service_origin" field.
-func ServiceOriginHasPrefix(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldHasPrefix(FieldServiceOrigin, v))
+// ServiceHasPrefix applies the HasPrefix predicate on the "service" field.
+func ServiceHasPrefix(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldHasPrefix(FieldService, v))
 }
 
-// ServiceOriginHasSuffix applies the HasSuffix predicate on the "service_origin" field.
-func ServiceOriginHasSuffix(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldHasSuffix(FieldServiceOrigin, v))
+// ServiceHasSuffix applies the HasSuffix predicate on the "service" field.
+func ServiceHasSuffix(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldHasSuffix(FieldService, v))
 }
 
-// ServiceOriginEqualFold applies the EqualFold predicate on the "service_origin" field.
-func ServiceOriginEqualFold(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldEqualFold(FieldServiceOrigin, v))
+// ServiceEqualFold applies the EqualFold predicate on the "service" field.
+func ServiceEqualFold(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldEqualFold(FieldService, v))
 }
 
-// ServiceOriginContainsFold applies the ContainsFold predicate on the "service_origin" field.
-func ServiceOriginContainsFold(v string) predicate.ConnectedSessions {
-	return predicate.ConnectedSessions(sql.FieldContainsFold(FieldServiceOrigin, v))
+// ServiceContainsFold applies the ContainsFold predicate on the "service" field.
+func ServiceContainsFold(v string) predicate.ConnectedSessions {
+	return predicate.ConnectedSessions(sql.FieldContainsFold(FieldService, v))
 }
 
 // CsidEQ applies the EQ predicate on the "csid" field.

@@ -35,9 +35,9 @@ func (csu *ConnectedSessionsUpdate) SetHsid(u uuid.UUID) *ConnectedSessionsUpdat
 	return csu
 }
 
-// SetServiceOrigin sets the "service_origin" field.
-func (csu *ConnectedSessionsUpdate) SetServiceOrigin(s string) *ConnectedSessionsUpdate {
-	csu.mutation.SetServiceOrigin(s)
+// SetService sets the "service" field.
+func (csu *ConnectedSessionsUpdate) SetService(s string) *ConnectedSessionsUpdate {
+	csu.mutation.SetService(s)
 	return csu
 }
 
@@ -116,8 +116,8 @@ func (csu *ConnectedSessionsUpdate) sqlSave(ctx context.Context) (n int, err err
 			}
 		}
 	}
-	if value, ok := csu.mutation.ServiceOrigin(); ok {
-		_spec.SetField(connectedsessions.FieldServiceOrigin, field.TypeString, value)
+	if value, ok := csu.mutation.Service(); ok {
+		_spec.SetField(connectedsessions.FieldService, field.TypeString, value)
 	}
 	if value, ok := csu.mutation.Csid(); ok {
 		_spec.SetField(connectedsessions.FieldCsid, field.TypeUUID, value)
@@ -183,9 +183,9 @@ func (csuo *ConnectedSessionsUpdateOne) SetHsid(u uuid.UUID) *ConnectedSessionsU
 	return csuo
 }
 
-// SetServiceOrigin sets the "service_origin" field.
-func (csuo *ConnectedSessionsUpdateOne) SetServiceOrigin(s string) *ConnectedSessionsUpdateOne {
-	csuo.mutation.SetServiceOrigin(s)
+// SetService sets the "service" field.
+func (csuo *ConnectedSessionsUpdateOne) SetService(s string) *ConnectedSessionsUpdateOne {
+	csuo.mutation.SetService(s)
 	return csuo
 }
 
@@ -294,8 +294,8 @@ func (csuo *ConnectedSessionsUpdateOne) sqlSave(ctx context.Context) (_node *Con
 			}
 		}
 	}
-	if value, ok := csuo.mutation.ServiceOrigin(); ok {
-		_spec.SetField(connectedsessions.FieldServiceOrigin, field.TypeString, value)
+	if value, ok := csuo.mutation.Service(); ok {
+		_spec.SetField(connectedsessions.FieldService, field.TypeString, value)
 	}
 	if value, ok := csuo.mutation.Csid(); ok {
 		_spec.SetField(connectedsessions.FieldCsid, field.TypeUUID, value)

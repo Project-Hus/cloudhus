@@ -19,8 +19,8 @@ type ConnectedSessions struct {
 	ID int `json:"id,omitempty"`
 	// Hsid holds the value of the "hsid" field.
 	Hsid uuid.UUID `json:"hsid,omitempty"`
-	// ServiceOrigin holds the value of the "service_origin" field.
-	ServiceOrigin string `json:"service_origin,omitempty"`
+	// Service holds the value of the "service" field.
+	Service string `json:"service,omitempty"`
 	// Csid holds the value of the "csid" field.
 	Csid uuid.UUID `json:"csid,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -57,7 +57,7 @@ func (*ConnectedSessions) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case connectedsessions.FieldID:
 			values[i] = new(sql.NullInt64)
-		case connectedsessions.FieldServiceOrigin:
+		case connectedsessions.FieldService:
 			values[i] = new(sql.NullString)
 		case connectedsessions.FieldHsid, connectedsessions.FieldCsid:
 			values[i] = new(uuid.UUID)
@@ -88,11 +88,11 @@ func (cs *ConnectedSessions) assignValues(columns []string, values []any) error 
 			} else if value != nil {
 				cs.Hsid = *value
 			}
-		case connectedsessions.FieldServiceOrigin:
+		case connectedsessions.FieldService:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field service_origin", values[i])
+				return fmt.Errorf("unexpected type %T for field service", values[i])
 			} else if value.Valid {
-				cs.ServiceOrigin = value.String
+				cs.Service = value.String
 			}
 		case connectedsessions.FieldCsid:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -136,8 +136,8 @@ func (cs *ConnectedSessions) String() string {
 	builder.WriteString("hsid=")
 	builder.WriteString(fmt.Sprintf("%v", cs.Hsid))
 	builder.WriteString(", ")
-	builder.WriteString("service_origin=")
-	builder.WriteString(cs.ServiceOrigin)
+	builder.WriteString("service=")
+	builder.WriteString(cs.Service)
 	builder.WriteString(", ")
 	builder.WriteString("csid=")
 	builder.WriteString(fmt.Sprintf("%v", cs.Csid))

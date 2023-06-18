@@ -27,9 +27,9 @@ func (csc *ConnectedSessionsCreate) SetHsid(u uuid.UUID) *ConnectedSessionsCreat
 	return csc
 }
 
-// SetServiceOrigin sets the "service_origin" field.
-func (csc *ConnectedSessionsCreate) SetServiceOrigin(s string) *ConnectedSessionsCreate {
-	csc.mutation.SetServiceOrigin(s)
+// SetService sets the "service" field.
+func (csc *ConnectedSessionsCreate) SetService(s string) *ConnectedSessionsCreate {
+	csc.mutation.SetService(s)
 	return csc
 }
 
@@ -87,8 +87,8 @@ func (csc *ConnectedSessionsCreate) check() error {
 	if _, ok := csc.mutation.Hsid(); !ok {
 		return &ValidationError{Name: "hsid", err: errors.New(`ent: missing required field "ConnectedSessions.hsid"`)}
 	}
-	if _, ok := csc.mutation.ServiceOrigin(); !ok {
-		return &ValidationError{Name: "service_origin", err: errors.New(`ent: missing required field "ConnectedSessions.service_origin"`)}
+	if _, ok := csc.mutation.Service(); !ok {
+		return &ValidationError{Name: "service", err: errors.New(`ent: missing required field "ConnectedSessions.service"`)}
 	}
 	if _, ok := csc.mutation.Csid(); !ok {
 		return &ValidationError{Name: "csid", err: errors.New(`ent: missing required field "ConnectedSessions.csid"`)}
@@ -122,9 +122,9 @@ func (csc *ConnectedSessionsCreate) createSpec() (*ConnectedSessions, *sqlgraph.
 		_node = &ConnectedSessions{config: csc.config}
 		_spec = sqlgraph.NewCreateSpec(connectedsessions.Table, sqlgraph.NewFieldSpec(connectedsessions.FieldID, field.TypeInt))
 	)
-	if value, ok := csc.mutation.ServiceOrigin(); ok {
-		_spec.SetField(connectedsessions.FieldServiceOrigin, field.TypeString, value)
-		_node.ServiceOrigin = value
+	if value, ok := csc.mutation.Service(); ok {
+		_spec.SetField(connectedsessions.FieldService, field.TypeString, value)
+		_node.Service = value
 	}
 	if value, ok := csc.mutation.Csid(); ok {
 		_spec.SetField(connectedsessions.FieldCsid, field.TypeUUID, value)

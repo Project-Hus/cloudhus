@@ -12,7 +12,7 @@ var (
 	// ConnectedSessionsColumns holds the columns for the "connected_sessions" table.
 	ConnectedSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "service_origin", Type: field.TypeString},
+		{Name: "service", Type: field.TypeString},
 		{Name: "csid", Type: field.TypeUUID},
 		{Name: "hsid", Type: field.TypeUUID},
 	}
