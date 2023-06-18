@@ -70,6 +70,34 @@ func (hsc *HusSessionCreate) SetUID(u uint64) *HusSessionCreate {
 	return hsc
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (hsc *HusSessionCreate) SetCreatedAt(t time.Time) *HusSessionCreate {
+	hsc.mutation.SetCreatedAt(t)
+	return hsc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableCreatedAt(t *time.Time) *HusSessionCreate {
+	if t != nil {
+		hsc.SetCreatedAt(*t)
+	}
+	return hsc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (hsc *HusSessionCreate) SetUpdatedAt(t time.Time) *HusSessionCreate {
+	hsc.mutation.SetUpdatedAt(t)
+	return hsc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableUpdatedAt(t *time.Time) *HusSessionCreate {
+	if t != nil {
+		hsc.SetUpdatedAt(*t)
+	}
+	return hsc
+}
+
 // SetID sets the "id" field.
 func (hsc *HusSessionCreate) SetID(u uuid.UUID) *HusSessionCreate {
 	hsc.mutation.SetID(u)
@@ -142,6 +170,14 @@ func (hsc *HusSessionCreate) defaults() {
 		v := hussession.DefaultPreserved
 		hsc.mutation.SetPreserved(v)
 	}
+	if _, ok := hsc.mutation.CreatedAt(); !ok {
+		v := hussession.DefaultCreatedAt()
+		hsc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := hsc.mutation.UpdatedAt(); !ok {
+		v := hussession.DefaultUpdatedAt()
+		hsc.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := hsc.mutation.ID(); !ok {
 		v := hussession.DefaultID()
 		hsc.mutation.SetID(v)
@@ -161,6 +197,12 @@ func (hsc *HusSessionCreate) check() error {
 	}
 	if _, ok := hsc.mutation.UID(); !ok {
 		return &ValidationError{Name: "uid", err: errors.New(`ent: missing required field "HusSession.uid"`)}
+	}
+	if _, ok := hsc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "HusSession.created_at"`)}
+	}
+	if _, ok := hsc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "HusSession.updated_at"`)}
 	}
 	if _, ok := hsc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "HusSession.user"`)}
@@ -212,6 +254,14 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
 		_node.Preserved = value
 	}
+	if value, ok := hsc.mutation.CreatedAt(); ok {
+		_spec.SetField(hussession.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := hsc.mutation.UpdatedAt(); ok {
+		_spec.SetField(hussession.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if nodes := hsc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -229,7 +279,7 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.UID = nodes[0]
+		_node.UID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

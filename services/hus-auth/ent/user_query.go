@@ -421,9 +421,12 @@ func (uq *UserQuery) loadHusSessions(ctx context.Context, query *HusSessionQuery
 	}
 	for _, n := range neighbors {
 		fk := n.UID
-		node, ok := nodeids[fk]
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "uid" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "uid" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "uid" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

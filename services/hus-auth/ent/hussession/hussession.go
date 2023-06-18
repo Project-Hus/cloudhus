@@ -21,6 +21,10 @@ const (
 	FieldPreserved = "preserved"
 	// FieldUID holds the string denoting the uid field in the database.
 	FieldUID = "uid"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the hussession in the database.
@@ -41,6 +45,8 @@ var Columns = []string{
 	FieldIat,
 	FieldPreserved,
 	FieldUID,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -60,6 +66,12 @@ var (
 	DefaultIat func() time.Time
 	// DefaultPreserved holds the default value on creation for the "preserved" field.
 	DefaultPreserved bool
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

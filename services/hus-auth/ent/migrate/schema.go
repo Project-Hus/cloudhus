@@ -9,12 +9,26 @@ import (
 )
 
 var (
+	// ConnectedSessionsColumns holds the columns for the "connected_sessions" table.
+	ConnectedSessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "hsid", Type: field.TypeUUID},
+		{Name: "csid", Type: field.TypeUUID},
+	}
+	// ConnectedSessionsTable holds the schema information for the "connected_sessions" table.
+	ConnectedSessionsTable = &schema.Table{
+		Name:       "connected_sessions",
+		Columns:    ConnectedSessionsColumns,
+		PrimaryKey: []*schema.Column{ConnectedSessionsColumns[0]},
+	}
 	// HusSessionsColumns holds the columns for the "hus_sessions" table.
 	HusSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "tid", Type: field.TypeUUID, Unique: true},
+		{Name: "tid", Type: field.TypeUUID},
 		{Name: "iat", Type: field.TypeTime},
 		{Name: "preserved", Type: field.TypeBool, Default: false},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "uid", Type: field.TypeUint64},
 	}
 	// HusSessionsTable holds the schema information for the "hus_sessions" table.
@@ -25,7 +39,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "hus_sessions_users_hus_sessions",
-				Columns:    []*schema.Column{HusSessionsColumns[4]},
+				Columns:    []*schema.Column{HusSessionsColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -54,12 +68,16 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ConnectedSessionsTable,
 		HusSessionsTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	ConnectedSessionsTable.Annotation = &entsql.Annotation{
+		Options: "ENGINE=MEMORY",
+	}
 	HusSessionsTable.ForeignKeys[0].RefTable = UsersTable
 	HusSessionsTable.Annotation = &entsql.Annotation{
 		Options: "ENGINE=MEMORY",

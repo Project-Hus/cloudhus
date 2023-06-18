@@ -25,7 +25,11 @@ type HusSession struct {
 	// Preserved holds the value of the "preserved" field.
 	Preserved bool `json:"preserved,omitempty"`
 	// UID holds the value of the "uid" field.
-	UID uint64 `json:"uid,omitempty"`
+	UID *uint64 `json:"uid,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the HusSessionQuery when eager-loading is set.
 	Edges HusSessionEdges `json:"edges"`
@@ -62,7 +66,7 @@ func (*HusSession) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case hussession.FieldUID:
 			values[i] = new(sql.NullInt64)
-		case hussession.FieldIat:
+		case hussession.FieldIat, hussession.FieldCreatedAt, hussession.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case hussession.FieldID, hussession.FieldTid:
 			values[i] = new(uuid.UUID)
@@ -109,7 +113,20 @@ func (hs *HusSession) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field uid", values[i])
 			} else if value.Valid {
-				hs.UID = uint64(value.Int64)
+				hs.UID = new(uint64)
+				*hs.UID = uint64(value.Int64)
+			}
+		case hussession.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				hs.CreatedAt = value.Time
+			}
+		case hussession.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				hs.UpdatedAt = value.Time
 			}
 		}
 	}
@@ -153,8 +170,16 @@ func (hs *HusSession) String() string {
 	builder.WriteString("preserved=")
 	builder.WriteString(fmt.Sprintf("%v", hs.Preserved))
 	builder.WriteString(", ")
-	builder.WriteString("uid=")
-	builder.WriteString(fmt.Sprintf("%v", hs.UID))
+	if v := hs.UID; v != nil {
+		builder.WriteString("uid=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(hs.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(hs.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

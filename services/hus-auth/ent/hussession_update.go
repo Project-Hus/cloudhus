@@ -78,6 +78,26 @@ func (hsu *HusSessionUpdate) SetUID(u uint64) *HusSessionUpdate {
 	return hsu
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (hsu *HusSessionUpdate) SetCreatedAt(t time.Time) *HusSessionUpdate {
+	hsu.mutation.SetCreatedAt(t)
+	return hsu
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableCreatedAt(t *time.Time) *HusSessionUpdate {
+	if t != nil {
+		hsu.SetCreatedAt(*t)
+	}
+	return hsu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (hsu *HusSessionUpdate) SetUpdatedAt(t time.Time) *HusSessionUpdate {
+	hsu.mutation.SetUpdatedAt(t)
+	return hsu
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (hsu *HusSessionUpdate) SetUserID(id uint64) *HusSessionUpdate {
 	hsu.mutation.SetUserID(id)
@@ -102,6 +122,7 @@ func (hsu *HusSessionUpdate) ClearUser() *HusSessionUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (hsu *HusSessionUpdate) Save(ctx context.Context) (int, error) {
+	hsu.defaults()
 	return withHooks[int, HusSessionMutation](ctx, hsu.sqlSave, hsu.mutation, hsu.hooks)
 }
 
@@ -124,6 +145,14 @@ func (hsu *HusSessionUpdate) Exec(ctx context.Context) error {
 func (hsu *HusSessionUpdate) ExecX(ctx context.Context) {
 	if err := hsu.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (hsu *HusSessionUpdate) defaults() {
+	if _, ok := hsu.mutation.UpdatedAt(); !ok {
+		v := hussession.UpdateDefaultUpdatedAt()
+		hsu.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -155,6 +184,12 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := hsu.mutation.Preserved(); ok {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
+	}
+	if value, ok := hsu.mutation.CreatedAt(); ok {
+		_spec.SetField(hussession.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := hsu.mutation.UpdatedAt(); ok {
+		_spec.SetField(hussession.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if hsu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -259,6 +294,26 @@ func (hsuo *HusSessionUpdateOne) SetUID(u uint64) *HusSessionUpdateOne {
 	return hsuo
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (hsuo *HusSessionUpdateOne) SetCreatedAt(t time.Time) *HusSessionUpdateOne {
+	hsuo.mutation.SetCreatedAt(t)
+	return hsuo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableCreatedAt(t *time.Time) *HusSessionUpdateOne {
+	if t != nil {
+		hsuo.SetCreatedAt(*t)
+	}
+	return hsuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (hsuo *HusSessionUpdateOne) SetUpdatedAt(t time.Time) *HusSessionUpdateOne {
+	hsuo.mutation.SetUpdatedAt(t)
+	return hsuo
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (hsuo *HusSessionUpdateOne) SetUserID(id uint64) *HusSessionUpdateOne {
 	hsuo.mutation.SetUserID(id)
@@ -296,6 +351,7 @@ func (hsuo *HusSessionUpdateOne) Select(field string, fields ...string) *HusSess
 
 // Save executes the query and returns the updated HusSession entity.
 func (hsuo *HusSessionUpdateOne) Save(ctx context.Context) (*HusSession, error) {
+	hsuo.defaults()
 	return withHooks[*HusSession, HusSessionMutation](ctx, hsuo.sqlSave, hsuo.mutation, hsuo.hooks)
 }
 
@@ -318,6 +374,14 @@ func (hsuo *HusSessionUpdateOne) Exec(ctx context.Context) error {
 func (hsuo *HusSessionUpdateOne) ExecX(ctx context.Context) {
 	if err := hsuo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (hsuo *HusSessionUpdateOne) defaults() {
+	if _, ok := hsuo.mutation.UpdatedAt(); !ok {
+		v := hussession.UpdateDefaultUpdatedAt()
+		hsuo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -366,6 +430,12 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 	}
 	if value, ok := hsuo.mutation.Preserved(); ok {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
+	}
+	if value, ok := hsuo.mutation.CreatedAt(); ok {
+		_spec.SetField(hussession.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := hsuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(hussession.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if hsuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
