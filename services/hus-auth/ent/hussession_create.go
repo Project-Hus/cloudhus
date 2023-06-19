@@ -79,16 +79,16 @@ func (hsc *HusSessionCreate) SetNillableUID(u *uint64) *HusSessionCreate {
 	return hsc
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (hsc *HusSessionCreate) SetCreatedAt(t time.Time) *HusSessionCreate {
-	hsc.mutation.SetCreatedAt(t)
+// SetSignedAt sets the "signed_at" field.
+func (hsc *HusSessionCreate) SetSignedAt(t time.Time) *HusSessionCreate {
+	hsc.mutation.SetSignedAt(t)
 	return hsc
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (hsc *HusSessionCreate) SetNillableCreatedAt(t *time.Time) *HusSessionCreate {
+// SetNillableSignedAt sets the "signed_at" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableSignedAt(t *time.Time) *HusSessionCreate {
 	if t != nil {
-		hsc.SetCreatedAt(*t)
+		hsc.SetSignedAt(*t)
 	}
 	return hsc
 }
@@ -202,10 +202,6 @@ func (hsc *HusSessionCreate) defaults() {
 		v := hussession.DefaultPreserved
 		hsc.mutation.SetPreserved(v)
 	}
-	if _, ok := hsc.mutation.CreatedAt(); !ok {
-		v := hussession.DefaultCreatedAt()
-		hsc.mutation.SetCreatedAt(v)
-	}
 	if _, ok := hsc.mutation.UpdatedAt(); !ok {
 		v := hussession.DefaultUpdatedAt()
 		hsc.mutation.SetUpdatedAt(v)
@@ -226,9 +222,6 @@ func (hsc *HusSessionCreate) check() error {
 	}
 	if _, ok := hsc.mutation.Preserved(); !ok {
 		return &ValidationError{Name: "preserved", err: errors.New(`ent: missing required field "HusSession.preserved"`)}
-	}
-	if _, ok := hsc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "HusSession.created_at"`)}
 	}
 	if _, ok := hsc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "HusSession.updated_at"`)}
@@ -280,9 +273,9 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
 		_node.Preserved = value
 	}
-	if value, ok := hsc.mutation.CreatedAt(); ok {
-		_spec.SetField(hussession.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
+	if value, ok := hsc.mutation.SignedAt(); ok {
+		_spec.SetField(hussession.FieldSignedAt, field.TypeTime, value)
+		_node.SignedAt = &value
 	}
 	if value, ok := hsc.mutation.UpdatedAt(); ok {
 		_spec.SetField(hussession.FieldUpdatedAt, field.TypeTime, value)

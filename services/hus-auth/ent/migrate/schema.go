@@ -36,7 +36,7 @@ var (
 		{Name: "tid", Type: field.TypeUUID},
 		{Name: "iat", Type: field.TypeTime},
 		{Name: "preserved", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
+		{Name: "signed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "uid", Type: field.TypeUint64, Nullable: true},
 	}

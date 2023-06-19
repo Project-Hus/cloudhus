@@ -29,10 +29,6 @@ func init() {
 	hussessionDescPreserved := hussessionFields[3].Descriptor()
 	// hussession.DefaultPreserved holds the default value on creation for the preserved field.
 	hussession.DefaultPreserved = hussessionDescPreserved.Default.(bool)
-	// hussessionDescCreatedAt is the schema descriptor for created_at field.
-	hussessionDescCreatedAt := hussessionFields[5].Descriptor()
-	// hussession.DefaultCreatedAt holds the default value on creation for the created_at field.
-	hussession.DefaultCreatedAt = hussessionDescCreatedAt.Default.(func() time.Time)
 	// hussessionDescUpdatedAt is the schema descriptor for updated_at field.
 	hussessionDescUpdatedAt := hussessionFields[6].Descriptor()
 	// hussession.DefaultUpdatedAt holds the default value on creation for the updated_at field.

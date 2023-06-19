@@ -26,8 +26,8 @@ type HusSession struct {
 	Preserved bool `json:"preserved,omitempty"`
 	// UID holds the value of the "uid" field.
 	UID *uint64 `json:"uid,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	// SignedAt holds the value of the "signed_at" field.
+	SignedAt *time.Time `json:"signed_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -77,7 +77,7 @@ func (*HusSession) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case hussession.FieldUID:
 			values[i] = new(sql.NullInt64)
-		case hussession.FieldIat, hussession.FieldCreatedAt, hussession.FieldUpdatedAt:
+		case hussession.FieldIat, hussession.FieldSignedAt, hussession.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case hussession.FieldID, hussession.FieldTid:
 			values[i] = new(uuid.UUID)
@@ -127,11 +127,12 @@ func (hs *HusSession) assignValues(columns []string, values []any) error {
 				hs.UID = new(uint64)
 				*hs.UID = uint64(value.Int64)
 			}
-		case hussession.FieldCreatedAt:
+		case hussession.FieldSignedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+				return fmt.Errorf("unexpected type %T for field signed_at", values[i])
 			} else if value.Valid {
-				hs.CreatedAt = value.Time
+				hs.SignedAt = new(time.Time)
+				*hs.SignedAt = value.Time
 			}
 		case hussession.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -191,8 +192,10 @@ func (hs *HusSession) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(hs.CreatedAt.Format(time.ANSIC))
+	if v := hs.SignedAt; v != nil {
+		builder.WriteString("signed_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(hs.UpdatedAt.Format(time.ANSIC))

@@ -76,9 +76,9 @@ func UID(v uint64) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldUID, v))
 }
 
-// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldCreatedAt, v))
+// SignedAt applies equality check predicate on the "signed_at" field. It's identical to SignedAtEQ.
+func SignedAt(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldSignedAt, v))
 }
 
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
@@ -206,44 +206,54 @@ func UIDNotNil() predicate.HusSession {
 	return predicate.HusSession(sql.FieldNotNull(FieldUID))
 }
 
-// CreatedAtEQ applies the EQ predicate on the "created_at" field.
-func CreatedAtEQ(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldEQ(FieldCreatedAt, v))
+// SignedAtEQ applies the EQ predicate on the "signed_at" field.
+func SignedAtEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldSignedAt, v))
 }
 
-// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
-func CreatedAtNEQ(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNEQ(FieldCreatedAt, v))
+// SignedAtNEQ applies the NEQ predicate on the "signed_at" field.
+func SignedAtNEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldSignedAt, v))
 }
 
-// CreatedAtIn applies the In predicate on the "created_at" field.
-func CreatedAtIn(vs ...time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldIn(FieldCreatedAt, vs...))
+// SignedAtIn applies the In predicate on the "signed_at" field.
+func SignedAtIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldIn(FieldSignedAt, vs...))
 }
 
-// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldNotIn(FieldCreatedAt, vs...))
+// SignedAtNotIn applies the NotIn predicate on the "signed_at" field.
+func SignedAtNotIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotIn(FieldSignedAt, vs...))
 }
 
-// CreatedAtGT applies the GT predicate on the "created_at" field.
-func CreatedAtGT(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldGT(FieldCreatedAt, v))
+// SignedAtGT applies the GT predicate on the "signed_at" field.
+func SignedAtGT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGT(FieldSignedAt, v))
 }
 
-// CreatedAtGTE applies the GTE predicate on the "created_at" field.
-func CreatedAtGTE(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldGTE(FieldCreatedAt, v))
+// SignedAtGTE applies the GTE predicate on the "signed_at" field.
+func SignedAtGTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGTE(FieldSignedAt, v))
 }
 
-// CreatedAtLT applies the LT predicate on the "created_at" field.
-func CreatedAtLT(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldLT(FieldCreatedAt, v))
+// SignedAtLT applies the LT predicate on the "signed_at" field.
+func SignedAtLT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLT(FieldSignedAt, v))
 }
 
-// CreatedAtLTE applies the LTE predicate on the "created_at" field.
-func CreatedAtLTE(v time.Time) predicate.HusSession {
-	return predicate.HusSession(sql.FieldLTE(FieldCreatedAt, v))
+// SignedAtLTE applies the LTE predicate on the "signed_at" field.
+func SignedAtLTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLTE(FieldSignedAt, v))
+}
+
+// SignedAtIsNil applies the IsNil predicate on the "signed_at" field.
+func SignedAtIsNil() predicate.HusSession {
+	return predicate.HusSession(sql.FieldIsNull(FieldSignedAt))
+}
+
+// SignedAtNotNil applies the NotNil predicate on the "signed_at" field.
+func SignedAtNotNil() predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotNull(FieldSignedAt))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

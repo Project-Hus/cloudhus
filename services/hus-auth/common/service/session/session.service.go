@@ -21,13 +21,41 @@ import (
 func CreateHusSessionV2(ctx context.Context, client *ent.Client, sid *string) (
 	newSession *ent.HusSession, newToken string, err error,
 ) {
-	// create new Hus session
-	hs, err := client.HusSession.Create().Save(ctx)
+	tx, err := client.Tx(ctx)
 	if err != nil {
+		return nil, "", fmt.Errorf("starting transaction failed:%w", err)
+	}
+
+	// create new Hus session
+	hs, err := tx.HusSession.Create().Save(ctx)
+	if err != nil {
+		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("!!creating new hus session failed:%w", err)
 	}
 
-	return nil, "", fmt.Errorf("!!creating new hus session failed:%w", err)
+	// Hus Session Token
+	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"pps": "hus_session",
+		"sid": hs.ID,
+		"tid": hs.Tid,
+		"iss": hus.AuthURL,
+		"iat": hs.Iat.Unix(),
+		"exp": time.Now().Add(time.Hour).Unix(),
+	})
+	hsk := hus.HusSecretKeyBytes
+	rts, err := rt.SignedString(hsk)
+	if err != nil {
+		err = db.Rollback(tx, err)
+		return nil, "", fmt.Errorf("signing session token failed:%w", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		err = db.Rollback(tx, err)
+		return nil, "", fmt.Errorf("committing transaction failed:%w", err)
+	}
+
+	return hs, rts, nil
 }
 
 // CreateHusSession takes user's uuid and create new hus session and return it.

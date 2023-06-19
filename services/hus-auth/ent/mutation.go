@@ -542,7 +542,7 @@ type HusSessionMutation struct {
 	tid                       *uuid.UUID
 	iat                       *time.Time
 	preserved                 *bool
-	created_at                *time.Time
+	signed_at                 *time.Time
 	updated_at                *time.Time
 	clearedFields             map[string]struct{}
 	user                      *uint64
@@ -816,40 +816,53 @@ func (m *HusSessionMutation) ResetUID() {
 	delete(m.clearedFields, hussession.FieldUID)
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *HusSessionMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
+// SetSignedAt sets the "signed_at" field.
+func (m *HusSessionMutation) SetSignedAt(t time.Time) {
+	m.signed_at = &t
 }
 
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *HusSessionMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
+// SignedAt returns the value of the "signed_at" field in the mutation.
+func (m *HusSessionMutation) SignedAt() (r time.Time, exists bool) {
+	v := m.signed_at
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the HusSession entity.
+// OldSignedAt returns the old "signed_at" field's value of the HusSession entity.
 // If the HusSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HusSessionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *HusSessionMutation) OldSignedAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldSignedAt is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+		return v, errors.New("OldSignedAt requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldSignedAt: %w", err)
 	}
-	return oldValue.CreatedAt, nil
+	return oldValue.SignedAt, nil
 }
 
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *HusSessionMutation) ResetCreatedAt() {
-	m.created_at = nil
+// ClearSignedAt clears the value of the "signed_at" field.
+func (m *HusSessionMutation) ClearSignedAt() {
+	m.signed_at = nil
+	m.clearedFields[hussession.FieldSignedAt] = struct{}{}
+}
+
+// SignedAtCleared returns if the "signed_at" field was cleared in this mutation.
+func (m *HusSessionMutation) SignedAtCleared() bool {
+	_, ok := m.clearedFields[hussession.FieldSignedAt]
+	return ok
+}
+
+// ResetSignedAt resets all changes to the "signed_at" field.
+func (m *HusSessionMutation) ResetSignedAt() {
+	m.signed_at = nil
+	delete(m.clearedFields, hussession.FieldSignedAt)
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -1028,8 +1041,8 @@ func (m *HusSessionMutation) Fields() []string {
 	if m.user != nil {
 		fields = append(fields, hussession.FieldUID)
 	}
-	if m.created_at != nil {
-		fields = append(fields, hussession.FieldCreatedAt)
+	if m.signed_at != nil {
+		fields = append(fields, hussession.FieldSignedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, hussession.FieldUpdatedAt)
@@ -1050,8 +1063,8 @@ func (m *HusSessionMutation) Field(name string) (ent.Value, bool) {
 		return m.Preserved()
 	case hussession.FieldUID:
 		return m.UID()
-	case hussession.FieldCreatedAt:
-		return m.CreatedAt()
+	case hussession.FieldSignedAt:
+		return m.SignedAt()
 	case hussession.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -1071,8 +1084,8 @@ func (m *HusSessionMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldPreserved(ctx)
 	case hussession.FieldUID:
 		return m.OldUID(ctx)
-	case hussession.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
+	case hussession.FieldSignedAt:
+		return m.OldSignedAt(ctx)
 	case hussession.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -1112,12 +1125,12 @@ func (m *HusSessionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUID(v)
 		return nil
-	case hussession.FieldCreatedAt:
+	case hussession.FieldSignedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCreatedAt(v)
+		m.SetSignedAt(v)
 		return nil
 	case hussession.FieldUpdatedAt:
 		v, ok := value.(time.Time)
@@ -1162,6 +1175,9 @@ func (m *HusSessionMutation) ClearedFields() []string {
 	if m.FieldCleared(hussession.FieldUID) {
 		fields = append(fields, hussession.FieldUID)
 	}
+	if m.FieldCleared(hussession.FieldSignedAt) {
+		fields = append(fields, hussession.FieldSignedAt)
+	}
 	return fields
 }
 
@@ -1178,6 +1194,9 @@ func (m *HusSessionMutation) ClearField(name string) error {
 	switch name {
 	case hussession.FieldUID:
 		m.ClearUID()
+		return nil
+	case hussession.FieldSignedAt:
+		m.ClearSignedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown HusSession nullable field %s", name)
@@ -1199,8 +1218,8 @@ func (m *HusSessionMutation) ResetField(name string) error {
 	case hussession.FieldUID:
 		m.ResetUID()
 		return nil
-	case hussession.FieldCreatedAt:
-		m.ResetCreatedAt()
+	case hussession.FieldSignedAt:
+		m.ResetSignedAt()
 		return nil
 	case hussession.FieldUpdatedAt:
 		m.ResetUpdatedAt()

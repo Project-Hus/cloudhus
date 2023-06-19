@@ -93,17 +93,23 @@ func (hsu *HusSessionUpdate) ClearUID() *HusSessionUpdate {
 	return hsu
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (hsu *HusSessionUpdate) SetCreatedAt(t time.Time) *HusSessionUpdate {
-	hsu.mutation.SetCreatedAt(t)
+// SetSignedAt sets the "signed_at" field.
+func (hsu *HusSessionUpdate) SetSignedAt(t time.Time) *HusSessionUpdate {
+	hsu.mutation.SetSignedAt(t)
 	return hsu
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (hsu *HusSessionUpdate) SetNillableCreatedAt(t *time.Time) *HusSessionUpdate {
+// SetNillableSignedAt sets the "signed_at" field if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableSignedAt(t *time.Time) *HusSessionUpdate {
 	if t != nil {
-		hsu.SetCreatedAt(*t)
+		hsu.SetSignedAt(*t)
 	}
+	return hsu
+}
+
+// ClearSignedAt clears the value of the "signed_at" field.
+func (hsu *HusSessionUpdate) ClearSignedAt() *HusSessionUpdate {
+	hsu.mutation.ClearSignedAt()
 	return hsu
 }
 
@@ -233,8 +239,11 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := hsu.mutation.Preserved(); ok {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
 	}
-	if value, ok := hsu.mutation.CreatedAt(); ok {
-		_spec.SetField(hussession.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := hsu.mutation.SignedAt(); ok {
+		_spec.SetField(hussession.FieldSignedAt, field.TypeTime, value)
+	}
+	if hsu.mutation.SignedAtCleared() {
+		_spec.ClearField(hussession.FieldSignedAt, field.TypeTime)
 	}
 	if value, ok := hsu.mutation.UpdatedAt(); ok {
 		_spec.SetField(hussession.FieldUpdatedAt, field.TypeTime, value)
@@ -410,17 +419,23 @@ func (hsuo *HusSessionUpdateOne) ClearUID() *HusSessionUpdateOne {
 	return hsuo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (hsuo *HusSessionUpdateOne) SetCreatedAt(t time.Time) *HusSessionUpdateOne {
-	hsuo.mutation.SetCreatedAt(t)
+// SetSignedAt sets the "signed_at" field.
+func (hsuo *HusSessionUpdateOne) SetSignedAt(t time.Time) *HusSessionUpdateOne {
+	hsuo.mutation.SetSignedAt(t)
 	return hsuo
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (hsuo *HusSessionUpdateOne) SetNillableCreatedAt(t *time.Time) *HusSessionUpdateOne {
+// SetNillableSignedAt sets the "signed_at" field if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableSignedAt(t *time.Time) *HusSessionUpdateOne {
 	if t != nil {
-		hsuo.SetCreatedAt(*t)
+		hsuo.SetSignedAt(*t)
 	}
+	return hsuo
+}
+
+// ClearSignedAt clears the value of the "signed_at" field.
+func (hsuo *HusSessionUpdateOne) ClearSignedAt() *HusSessionUpdateOne {
+	hsuo.mutation.ClearSignedAt()
 	return hsuo
 }
 
@@ -580,8 +595,11 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 	if value, ok := hsuo.mutation.Preserved(); ok {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
 	}
-	if value, ok := hsuo.mutation.CreatedAt(); ok {
-		_spec.SetField(hussession.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := hsuo.mutation.SignedAt(); ok {
+		_spec.SetField(hussession.FieldSignedAt, field.TypeTime, value)
+	}
+	if hsuo.mutation.SignedAtCleared() {
+		_spec.ClearField(hussession.FieldSignedAt, field.TypeTime)
 	}
 	if value, ok := hsuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(hussession.FieldUpdatedAt, field.TypeTime, value)

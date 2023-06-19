@@ -36,10 +36,10 @@ func (HusSession) Fields() []ent.Field {
 		// in preserved mode, the session token is extended by a week each time the user is redirected to cloudhus.
 		// but tid is rotated each time.
 		field.Bool("preserved").Default(false), // preserved
-		// User ID for the case the user is signed in.
+		// User ID for the case the user signed in.
 		field.Uint64("uid").Optional().Nillable(),
+		field.Time("signed_at").Optional().Nillable(),
 
-		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
