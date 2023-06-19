@@ -9,12 +9,12 @@ import (
 	"github.com/google/uuid"
 )
 
-// ConnectedSessions holds the schema definition for the ConnectedSessions entity.
-type ConnectedSessions struct {
+// ConnectedSession holds the schema definition for the ConnectedSessions entity.
+type ConnectedSession struct {
 	ent.Schema
 }
 
-func (ConnectedSessions) Annotations() []schema.Annotation {
+func (ConnectedSession) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entsql.Annotation{
 			Options: "ENGINE=MEMORY",
@@ -22,8 +22,8 @@ func (ConnectedSessions) Annotations() []schema.Annotation {
 	}
 }
 
-// Fields of the ConnectedSessions.
-func (ConnectedSessions) Fields() []ent.Field {
+// Fields of the ConnectedSession.
+func (ConnectedSession) Fields() []ent.Field {
 	return []ent.Field{
 		// hus session id
 		field.UUID("hsid", uuid.UUID{}),
@@ -35,8 +35,8 @@ func (ConnectedSessions) Fields() []ent.Field {
 }
 
 // Edges of the ConnectedSessions.
-func (ConnectedSessions) Edges() []ent.Edge {
+func (ConnectedSession) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("hus_session", HusSession.Type).Unique().Ref("connected_sessions").Field("hsid").Required(),
+		edge.From("hus_session", HusSession.Type).Unique().Ref("connected_session").Field("hsid").Required(),
 	}
 }

@@ -4,7 +4,7 @@ package ent
 
 import (
 	"fmt"
-	"hus-auth/ent/connectedsessions"
+	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
 	"strings"
 
@@ -12,8 +12,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// ConnectedSessions is the model entity for the ConnectedSessions schema.
-type ConnectedSessions struct {
+// ConnectedSession is the model entity for the ConnectedSession schema.
+type ConnectedSession struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
@@ -24,12 +24,12 @@ type ConnectedSessions struct {
 	// Csid holds the value of the "csid" field.
 	Csid uuid.UUID `json:"csid,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the ConnectedSessionsQuery when eager-loading is set.
-	Edges ConnectedSessionsEdges `json:"edges"`
+	// The values are being populated by the ConnectedSessionQuery when eager-loading is set.
+	Edges ConnectedSessionEdges `json:"edges"`
 }
 
-// ConnectedSessionsEdges holds the relations/edges for other nodes in the graph.
-type ConnectedSessionsEdges struct {
+// ConnectedSessionEdges holds the relations/edges for other nodes in the graph.
+type ConnectedSessionEdges struct {
 	// HusSession holds the value of the hus_session edge.
 	HusSession *HusSession `json:"hus_session,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -39,7 +39,7 @@ type ConnectedSessionsEdges struct {
 
 // HusSessionOrErr returns the HusSession value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e ConnectedSessionsEdges) HusSessionOrErr() (*HusSession, error) {
+func (e ConnectedSessionEdges) HusSessionOrErr() (*HusSession, error) {
 	if e.loadedTypes[0] {
 		if e.HusSession == nil {
 			// Edge was loaded but was not found.
@@ -51,50 +51,50 @@ func (e ConnectedSessionsEdges) HusSessionOrErr() (*HusSession, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*ConnectedSessions) scanValues(columns []string) ([]any, error) {
+func (*ConnectedSession) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case connectedsessions.FieldID:
+		case connectedsession.FieldID:
 			values[i] = new(sql.NullInt64)
-		case connectedsessions.FieldService:
+		case connectedsession.FieldService:
 			values[i] = new(sql.NullString)
-		case connectedsessions.FieldHsid, connectedsessions.FieldCsid:
+		case connectedsession.FieldHsid, connectedsession.FieldCsid:
 			values[i] = new(uuid.UUID)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type ConnectedSessions", columns[i])
+			return nil, fmt.Errorf("unexpected column %q for type ConnectedSession", columns[i])
 		}
 	}
 	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the ConnectedSessions fields.
-func (cs *ConnectedSessions) assignValues(columns []string, values []any) error {
+// to the ConnectedSession fields.
+func (cs *ConnectedSession) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case connectedsessions.FieldID:
+		case connectedsession.FieldID:
 			value, ok := values[i].(*sql.NullInt64)
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			cs.ID = int(value.Int64)
-		case connectedsessions.FieldHsid:
+		case connectedsession.FieldHsid:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field hsid", values[i])
 			} else if value != nil {
 				cs.Hsid = *value
 			}
-		case connectedsessions.FieldService:
+		case connectedsession.FieldService:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field service", values[i])
 			} else if value.Valid {
 				cs.Service = value.String
 			}
-		case connectedsessions.FieldCsid:
+		case connectedsession.FieldCsid:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field csid", values[i])
 			} else if value != nil {
@@ -105,33 +105,33 @@ func (cs *ConnectedSessions) assignValues(columns []string, values []any) error 
 	return nil
 }
 
-// QueryHusSession queries the "hus_session" edge of the ConnectedSessions entity.
-func (cs *ConnectedSessions) QueryHusSession() *HusSessionQuery {
-	return NewConnectedSessionsClient(cs.config).QueryHusSession(cs)
+// QueryHusSession queries the "hus_session" edge of the ConnectedSession entity.
+func (cs *ConnectedSession) QueryHusSession() *HusSessionQuery {
+	return NewConnectedSessionClient(cs.config).QueryHusSession(cs)
 }
 
-// Update returns a builder for updating this ConnectedSessions.
-// Note that you need to call ConnectedSessions.Unwrap() before calling this method if this ConnectedSessions
+// Update returns a builder for updating this ConnectedSession.
+// Note that you need to call ConnectedSession.Unwrap() before calling this method if this ConnectedSession
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (cs *ConnectedSessions) Update() *ConnectedSessionsUpdateOne {
-	return NewConnectedSessionsClient(cs.config).UpdateOne(cs)
+func (cs *ConnectedSession) Update() *ConnectedSessionUpdateOne {
+	return NewConnectedSessionClient(cs.config).UpdateOne(cs)
 }
 
-// Unwrap unwraps the ConnectedSessions entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the ConnectedSession entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (cs *ConnectedSessions) Unwrap() *ConnectedSessions {
+func (cs *ConnectedSession) Unwrap() *ConnectedSession {
 	_tx, ok := cs.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: ConnectedSessions is not a transactional entity")
+		panic("ent: ConnectedSession is not a transactional entity")
 	}
 	cs.config.driver = _tx.drv
 	return cs
 }
 
 // String implements the fmt.Stringer.
-func (cs *ConnectedSessions) String() string {
+func (cs *ConnectedSession) String() string {
 	var builder strings.Builder
-	builder.WriteString("ConnectedSessions(")
+	builder.WriteString("ConnectedSession(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", cs.ID))
 	builder.WriteString("hsid=")
 	builder.WriteString(fmt.Sprintf("%v", cs.Hsid))
@@ -145,5 +145,5 @@ func (cs *ConnectedSessions) String() string {
 	return builder.String()
 }
 
-// ConnectedSessionsSlice is a parsable slice of ConnectedSessions.
-type ConnectedSessionsSlice []*ConnectedSessions
+// ConnectedSessions is a parsable slice of ConnectedSession.
+type ConnectedSessions []*ConnectedSession

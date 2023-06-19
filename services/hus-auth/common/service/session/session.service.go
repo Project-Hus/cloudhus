@@ -18,7 +18,7 @@ import (
 
 // CreateHusSessionV2 issues new Hus session and returns it.
 // and if subservice's session ID is provided, it will be connected to the Hus session.
-func CreateHusSessionV2(ctx context.Context, client *ent.Client, sid *string) (
+func CreateHusSessionV2(ctx context.Context, client *ent.Client, service *string, sid *uuid.UUID) (
 	newSession *ent.HusSession, newToken string, err error,
 ) {
 	tx, err := client.Tx(ctx)
@@ -31,6 +31,15 @@ func CreateHusSessionV2(ctx context.Context, client *ent.Client, sid *string) (
 	if err != nil {
 		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("!!creating new hus session failed:%w", err)
+	}
+
+	// if there are service and sid, connect them to the Huse session created above.
+	if service != nil && sid != nil {
+		_, err := tx.ConnectedSession.Create().SetHsid(hs.ID).SetService(*service).SetCsid(*sid).Save(ctx)
+		if err != nil {
+			err = db.Rollback(tx, err)
+			return nil, "", fmt.Errorf("connecting sessions failed:%w", err)
+		}
 	}
 
 	// Hus Session Token

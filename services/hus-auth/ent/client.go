@@ -10,7 +10,7 @@ import (
 
 	"hus-auth/ent/migrate"
 
-	"hus-auth/ent/connectedsessions"
+	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
 	"hus-auth/ent/user"
 
@@ -25,8 +25,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// ConnectedSessions is the client for interacting with the ConnectedSessions builders.
-	ConnectedSessions *ConnectedSessionsClient
+	// ConnectedSession is the client for interacting with the ConnectedSession builders.
+	ConnectedSession *ConnectedSessionClient
 	// HusSession is the client for interacting with the HusSession builders.
 	HusSession *HusSessionClient
 	// User is the client for interacting with the User builders.
@@ -44,7 +44,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.ConnectedSessions = NewConnectedSessionsClient(c.config)
+	c.ConnectedSession = NewConnectedSessionClient(c.config)
 	c.HusSession = NewHusSessionClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -78,11 +78,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:               ctx,
-		config:            cfg,
-		ConnectedSessions: NewConnectedSessionsClient(cfg),
-		HusSession:        NewHusSessionClient(cfg),
-		User:              NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		ConnectedSession: NewConnectedSessionClient(cfg),
+		HusSession:       NewHusSessionClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
@@ -100,18 +100,18 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:               ctx,
-		config:            cfg,
-		ConnectedSessions: NewConnectedSessionsClient(cfg),
-		HusSession:        NewHusSessionClient(cfg),
-		User:              NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		ConnectedSession: NewConnectedSessionClient(cfg),
+		HusSession:       NewHusSessionClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		ConnectedSessions.
+//		ConnectedSession.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -133,7 +133,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.ConnectedSessions.Use(hooks...)
+	c.ConnectedSession.Use(hooks...)
 	c.HusSession.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -141,7 +141,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.ConnectedSessions.Intercept(interceptors...)
+	c.ConnectedSession.Intercept(interceptors...)
 	c.HusSession.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
@@ -149,8 +149,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *ConnectedSessionsMutation:
-		return c.ConnectedSessions.mutate(ctx, m)
+	case *ConnectedSessionMutation:
+		return c.ConnectedSession.mutate(ctx, m)
 	case *HusSessionMutation:
 		return c.HusSession.mutate(ctx, m)
 	case *UserMutation:
@@ -160,92 +160,92 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	}
 }
 
-// ConnectedSessionsClient is a client for the ConnectedSessions schema.
-type ConnectedSessionsClient struct {
+// ConnectedSessionClient is a client for the ConnectedSession schema.
+type ConnectedSessionClient struct {
 	config
 }
 
-// NewConnectedSessionsClient returns a client for the ConnectedSessions from the given config.
-func NewConnectedSessionsClient(c config) *ConnectedSessionsClient {
-	return &ConnectedSessionsClient{config: c}
+// NewConnectedSessionClient returns a client for the ConnectedSession from the given config.
+func NewConnectedSessionClient(c config) *ConnectedSessionClient {
+	return &ConnectedSessionClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `connectedsessions.Hooks(f(g(h())))`.
-func (c *ConnectedSessionsClient) Use(hooks ...Hook) {
-	c.hooks.ConnectedSessions = append(c.hooks.ConnectedSessions, hooks...)
+// A call to `Use(f, g, h)` equals to `connectedsession.Hooks(f(g(h())))`.
+func (c *ConnectedSessionClient) Use(hooks ...Hook) {
+	c.hooks.ConnectedSession = append(c.hooks.ConnectedSession, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `connectedsessions.Intercept(f(g(h())))`.
-func (c *ConnectedSessionsClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ConnectedSessions = append(c.inters.ConnectedSessions, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `connectedsession.Intercept(f(g(h())))`.
+func (c *ConnectedSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ConnectedSession = append(c.inters.ConnectedSession, interceptors...)
 }
 
-// Create returns a builder for creating a ConnectedSessions entity.
-func (c *ConnectedSessionsClient) Create() *ConnectedSessionsCreate {
-	mutation := newConnectedSessionsMutation(c.config, OpCreate)
-	return &ConnectedSessionsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a ConnectedSession entity.
+func (c *ConnectedSessionClient) Create() *ConnectedSessionCreate {
+	mutation := newConnectedSessionMutation(c.config, OpCreate)
+	return &ConnectedSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of ConnectedSessions entities.
-func (c *ConnectedSessionsClient) CreateBulk(builders ...*ConnectedSessionsCreate) *ConnectedSessionsCreateBulk {
-	return &ConnectedSessionsCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of ConnectedSession entities.
+func (c *ConnectedSessionClient) CreateBulk(builders ...*ConnectedSessionCreate) *ConnectedSessionCreateBulk {
+	return &ConnectedSessionCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for ConnectedSessions.
-func (c *ConnectedSessionsClient) Update() *ConnectedSessionsUpdate {
-	mutation := newConnectedSessionsMutation(c.config, OpUpdate)
-	return &ConnectedSessionsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for ConnectedSession.
+func (c *ConnectedSessionClient) Update() *ConnectedSessionUpdate {
+	mutation := newConnectedSessionMutation(c.config, OpUpdate)
+	return &ConnectedSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ConnectedSessionsClient) UpdateOne(cs *ConnectedSessions) *ConnectedSessionsUpdateOne {
-	mutation := newConnectedSessionsMutation(c.config, OpUpdateOne, withConnectedSessions(cs))
-	return &ConnectedSessionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ConnectedSessionClient) UpdateOne(cs *ConnectedSession) *ConnectedSessionUpdateOne {
+	mutation := newConnectedSessionMutation(c.config, OpUpdateOne, withConnectedSession(cs))
+	return &ConnectedSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ConnectedSessionsClient) UpdateOneID(id int) *ConnectedSessionsUpdateOne {
-	mutation := newConnectedSessionsMutation(c.config, OpUpdateOne, withConnectedSessionsID(id))
-	return &ConnectedSessionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ConnectedSessionClient) UpdateOneID(id int) *ConnectedSessionUpdateOne {
+	mutation := newConnectedSessionMutation(c.config, OpUpdateOne, withConnectedSessionID(id))
+	return &ConnectedSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for ConnectedSessions.
-func (c *ConnectedSessionsClient) Delete() *ConnectedSessionsDelete {
-	mutation := newConnectedSessionsMutation(c.config, OpDelete)
-	return &ConnectedSessionsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for ConnectedSession.
+func (c *ConnectedSessionClient) Delete() *ConnectedSessionDelete {
+	mutation := newConnectedSessionMutation(c.config, OpDelete)
+	return &ConnectedSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *ConnectedSessionsClient) DeleteOne(cs *ConnectedSessions) *ConnectedSessionsDeleteOne {
+func (c *ConnectedSessionClient) DeleteOne(cs *ConnectedSession) *ConnectedSessionDeleteOne {
 	return c.DeleteOneID(cs.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ConnectedSessionsClient) DeleteOneID(id int) *ConnectedSessionsDeleteOne {
-	builder := c.Delete().Where(connectedsessions.ID(id))
+func (c *ConnectedSessionClient) DeleteOneID(id int) *ConnectedSessionDeleteOne {
+	builder := c.Delete().Where(connectedsession.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &ConnectedSessionsDeleteOne{builder}
+	return &ConnectedSessionDeleteOne{builder}
 }
 
-// Query returns a query builder for ConnectedSessions.
-func (c *ConnectedSessionsClient) Query() *ConnectedSessionsQuery {
-	return &ConnectedSessionsQuery{
+// Query returns a query builder for ConnectedSession.
+func (c *ConnectedSessionClient) Query() *ConnectedSessionQuery {
+	return &ConnectedSessionQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeConnectedSessions},
+		ctx:    &QueryContext{Type: TypeConnectedSession},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a ConnectedSessions entity by its id.
-func (c *ConnectedSessionsClient) Get(ctx context.Context, id int) (*ConnectedSessions, error) {
-	return c.Query().Where(connectedsessions.ID(id)).Only(ctx)
+// Get returns a ConnectedSession entity by its id.
+func (c *ConnectedSessionClient) Get(ctx context.Context, id int) (*ConnectedSession, error) {
+	return c.Query().Where(connectedsession.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ConnectedSessionsClient) GetX(ctx context.Context, id int) *ConnectedSessions {
+func (c *ConnectedSessionClient) GetX(ctx context.Context, id int) *ConnectedSession {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -253,15 +253,15 @@ func (c *ConnectedSessionsClient) GetX(ctx context.Context, id int) *ConnectedSe
 	return obj
 }
 
-// QueryHusSession queries the hus_session edge of a ConnectedSessions.
-func (c *ConnectedSessionsClient) QueryHusSession(cs *ConnectedSessions) *HusSessionQuery {
+// QueryHusSession queries the hus_session edge of a ConnectedSession.
+func (c *ConnectedSessionClient) QueryHusSession(cs *ConnectedSession) *HusSessionQuery {
 	query := (&HusSessionClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := cs.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(connectedsessions.Table, connectedsessions.FieldID, id),
+			sqlgraph.From(connectedsession.Table, connectedsession.FieldID, id),
 			sqlgraph.To(hussession.Table, hussession.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, connectedsessions.HusSessionTable, connectedsessions.HusSessionColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, connectedsession.HusSessionTable, connectedsession.HusSessionColumn),
 		)
 		fromV = sqlgraph.Neighbors(cs.driver.Dialect(), step)
 		return fromV, nil
@@ -270,27 +270,27 @@ func (c *ConnectedSessionsClient) QueryHusSession(cs *ConnectedSessions) *HusSes
 }
 
 // Hooks returns the client hooks.
-func (c *ConnectedSessionsClient) Hooks() []Hook {
-	return c.hooks.ConnectedSessions
+func (c *ConnectedSessionClient) Hooks() []Hook {
+	return c.hooks.ConnectedSession
 }
 
 // Interceptors returns the client interceptors.
-func (c *ConnectedSessionsClient) Interceptors() []Interceptor {
-	return c.inters.ConnectedSessions
+func (c *ConnectedSessionClient) Interceptors() []Interceptor {
+	return c.inters.ConnectedSession
 }
 
-func (c *ConnectedSessionsClient) mutate(ctx context.Context, m *ConnectedSessionsMutation) (Value, error) {
+func (c *ConnectedSessionClient) mutate(ctx context.Context, m *ConnectedSessionMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&ConnectedSessionsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ConnectedSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&ConnectedSessionsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ConnectedSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&ConnectedSessionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ConnectedSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&ConnectedSessionsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&ConnectedSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown ConnectedSessions mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown ConnectedSession mutation op: %q", m.Op())
 	}
 }
 
@@ -403,15 +403,15 @@ func (c *HusSessionClient) QueryUser(hs *HusSession) *UserQuery {
 	return query
 }
 
-// QueryConnectedSessions queries the connected_sessions edge of a HusSession.
-func (c *HusSessionClient) QueryConnectedSessions(hs *HusSession) *ConnectedSessionsQuery {
-	query := (&ConnectedSessionsClient{config: c.config}).Query()
+// QueryConnectedSession queries the connected_session edge of a HusSession.
+func (c *HusSessionClient) QueryConnectedSession(hs *HusSession) *ConnectedSessionQuery {
+	query := (&ConnectedSessionClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := hs.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(hussession.Table, hussession.FieldID, id),
-			sqlgraph.To(connectedsessions.Table, connectedsessions.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, hussession.ConnectedSessionsTable, hussession.ConnectedSessionsColumn),
+			sqlgraph.To(connectedsession.Table, connectedsession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, hussession.ConnectedSessionTable, hussession.ConnectedSessionColumn),
 		)
 		fromV = sqlgraph.Neighbors(hs.driver.Dialect(), step)
 		return fromV, nil

@@ -8,16 +8,16 @@ import (
 	"hus-auth/ent"
 )
 
-// The ConnectedSessionsFunc type is an adapter to allow the use of ordinary
-// function as ConnectedSessions mutator.
-type ConnectedSessionsFunc func(context.Context, *ent.ConnectedSessionsMutation) (ent.Value, error)
+// The ConnectedSessionFunc type is an adapter to allow the use of ordinary
+// function as ConnectedSession mutator.
+type ConnectedSessionFunc func(context.Context, *ent.ConnectedSessionMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f ConnectedSessionsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ConnectedSessionsMutation); ok {
+func (f ConnectedSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ConnectedSessionMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ConnectedSessionsMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ConnectedSessionMutation", m)
 }
 
 // The HusSessionFunc type is an adapter to allow the use of ordinary

@@ -27,8 +27,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
-	// EdgeConnectedSessions holds the string denoting the connected_sessions edge name in mutations.
-	EdgeConnectedSessions = "connected_sessions"
+	// EdgeConnectedSession holds the string denoting the connected_session edge name in mutations.
+	EdgeConnectedSession = "connected_session"
 	// Table holds the table name of the hussession in the database.
 	Table = "hus_sessions"
 	// UserTable is the table that holds the user relation/edge.
@@ -38,13 +38,13 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "uid"
-	// ConnectedSessionsTable is the table that holds the connected_sessions relation/edge.
-	ConnectedSessionsTable = "connected_sessions"
-	// ConnectedSessionsInverseTable is the table name for the ConnectedSessions entity.
-	// It exists in this package in order to avoid circular dependency with the "connectedsessions" package.
-	ConnectedSessionsInverseTable = "connected_sessions"
-	// ConnectedSessionsColumn is the table column denoting the connected_sessions relation/edge.
-	ConnectedSessionsColumn = "hsid"
+	// ConnectedSessionTable is the table that holds the connected_session relation/edge.
+	ConnectedSessionTable = "connected_sessions"
+	// ConnectedSessionInverseTable is the table name for the ConnectedSession entity.
+	// It exists in this package in order to avoid circular dependency with the "connectedsession" package.
+	ConnectedSessionInverseTable = "connected_sessions"
+	// ConnectedSessionColumn is the table column denoting the connected_session relation/edge.
+	ConnectedSessionColumn = "hsid"
 )
 
 // Columns holds all SQL columns for hussession fields.

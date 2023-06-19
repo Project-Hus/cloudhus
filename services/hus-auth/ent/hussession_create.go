@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hus-auth/ent/connectedsessions"
+	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
 	"hus-auth/ent/user"
 	"time"
@@ -140,14 +140,14 @@ func (hsc *HusSessionCreate) SetUser(u *User) *HusSessionCreate {
 	return hsc.SetUserID(u.ID)
 }
 
-// AddConnectedSessionIDs adds the "connected_sessions" edge to the ConnectedSessions entity by IDs.
+// AddConnectedSessionIDs adds the "connected_session" edge to the ConnectedSession entity by IDs.
 func (hsc *HusSessionCreate) AddConnectedSessionIDs(ids ...int) *HusSessionCreate {
 	hsc.mutation.AddConnectedSessionIDs(ids...)
 	return hsc
 }
 
-// AddConnectedSessions adds the "connected_sessions" edges to the ConnectedSessions entity.
-func (hsc *HusSessionCreate) AddConnectedSessions(c ...*ConnectedSessions) *HusSessionCreate {
+// AddConnectedSession adds the "connected_session" edges to the ConnectedSession entity.
+func (hsc *HusSessionCreate) AddConnectedSession(c ...*ConnectedSession) *HusSessionCreate {
 	ids := make([]int, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
@@ -301,17 +301,17 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 		_node.UID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := hsc.mutation.ConnectedSessionsIDs(); len(nodes) > 0 {
+	if nodes := hsc.mutation.ConnectedSessionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   hussession.ConnectedSessionsTable,
-			Columns: []string{hussession.ConnectedSessionsColumn},
+			Table:   hussession.ConnectedSessionTable,
+			Columns: []string{hussession.ConnectedSessionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: connectedsessions.FieldID,
+					Column: connectedsession.FieldID,
 				},
 			},
 		}

@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hus-auth/ent/connectedsessions"
+	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
 	"hus-auth/ent/predicate"
 	"hus-auth/ent/user"
@@ -28,13 +28,13 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeConnectedSessions = "ConnectedSessions"
-	TypeHusSession        = "HusSession"
-	TypeUser              = "User"
+	TypeConnectedSession = "ConnectedSession"
+	TypeHusSession       = "HusSession"
+	TypeUser             = "User"
 )
 
-// ConnectedSessionsMutation represents an operation that mutates the ConnectedSessions nodes in the graph.
-type ConnectedSessionsMutation struct {
+// ConnectedSessionMutation represents an operation that mutates the ConnectedSession nodes in the graph.
+type ConnectedSessionMutation struct {
 	config
 	op                 Op
 	typ                string
@@ -45,21 +45,21 @@ type ConnectedSessionsMutation struct {
 	hus_session        *uuid.UUID
 	clearedhus_session bool
 	done               bool
-	oldValue           func(context.Context) (*ConnectedSessions, error)
-	predicates         []predicate.ConnectedSessions
+	oldValue           func(context.Context) (*ConnectedSession, error)
+	predicates         []predicate.ConnectedSession
 }
 
-var _ ent.Mutation = (*ConnectedSessionsMutation)(nil)
+var _ ent.Mutation = (*ConnectedSessionMutation)(nil)
 
-// connectedsessionsOption allows management of the mutation configuration using functional options.
-type connectedsessionsOption func(*ConnectedSessionsMutation)
+// connectedsessionOption allows management of the mutation configuration using functional options.
+type connectedsessionOption func(*ConnectedSessionMutation)
 
-// newConnectedSessionsMutation creates new mutation for the ConnectedSessions entity.
-func newConnectedSessionsMutation(c config, op Op, opts ...connectedsessionsOption) *ConnectedSessionsMutation {
-	m := &ConnectedSessionsMutation{
+// newConnectedSessionMutation creates new mutation for the ConnectedSession entity.
+func newConnectedSessionMutation(c config, op Op, opts ...connectedsessionOption) *ConnectedSessionMutation {
+	m := &ConnectedSessionMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeConnectedSessions,
+		typ:           TypeConnectedSession,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -68,20 +68,20 @@ func newConnectedSessionsMutation(c config, op Op, opts ...connectedsessionsOpti
 	return m
 }
 
-// withConnectedSessionsID sets the ID field of the mutation.
-func withConnectedSessionsID(id int) connectedsessionsOption {
-	return func(m *ConnectedSessionsMutation) {
+// withConnectedSessionID sets the ID field of the mutation.
+func withConnectedSessionID(id int) connectedsessionOption {
+	return func(m *ConnectedSessionMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *ConnectedSessions
+			value *ConnectedSession
 		)
-		m.oldValue = func(ctx context.Context) (*ConnectedSessions, error) {
+		m.oldValue = func(ctx context.Context) (*ConnectedSession, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().ConnectedSessions.Get(ctx, id)
+					value, err = m.Client().ConnectedSession.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -90,10 +90,10 @@ func withConnectedSessionsID(id int) connectedsessionsOption {
 	}
 }
 
-// withConnectedSessions sets the old ConnectedSessions of the mutation.
-func withConnectedSessions(node *ConnectedSessions) connectedsessionsOption {
-	return func(m *ConnectedSessionsMutation) {
-		m.oldValue = func(context.Context) (*ConnectedSessions, error) {
+// withConnectedSession sets the old ConnectedSession of the mutation.
+func withConnectedSession(node *ConnectedSession) connectedsessionOption {
+	return func(m *ConnectedSessionMutation) {
+		m.oldValue = func(context.Context) (*ConnectedSession, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -102,7 +102,7 @@ func withConnectedSessions(node *ConnectedSessions) connectedsessionsOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ConnectedSessionsMutation) Client() *Client {
+func (m ConnectedSessionMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -110,7 +110,7 @@ func (m ConnectedSessionsMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m ConnectedSessionsMutation) Tx() (*Tx, error) {
+func (m ConnectedSessionMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -121,7 +121,7 @@ func (m ConnectedSessionsMutation) Tx() (*Tx, error) {
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ConnectedSessionsMutation) ID() (id int, exists bool) {
+func (m *ConnectedSessionMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -132,7 +132,7 @@ func (m *ConnectedSessionsMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ConnectedSessionsMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *ConnectedSessionMutation) IDs(ctx context.Context) ([]int, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -141,19 +141,19 @@ func (m *ConnectedSessionsMutation) IDs(ctx context.Context) ([]int, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ConnectedSessions.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().ConnectedSession.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetHsid sets the "hsid" field.
-func (m *ConnectedSessionsMutation) SetHsid(u uuid.UUID) {
+func (m *ConnectedSessionMutation) SetHsid(u uuid.UUID) {
 	m.hus_session = &u
 }
 
 // Hsid returns the value of the "hsid" field in the mutation.
-func (m *ConnectedSessionsMutation) Hsid() (r uuid.UUID, exists bool) {
+func (m *ConnectedSessionMutation) Hsid() (r uuid.UUID, exists bool) {
 	v := m.hus_session
 	if v == nil {
 		return
@@ -161,10 +161,10 @@ func (m *ConnectedSessionsMutation) Hsid() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldHsid returns the old "hsid" field's value of the ConnectedSessions entity.
-// If the ConnectedSessions object wasn't provided to the builder, the object is fetched from the database.
+// OldHsid returns the old "hsid" field's value of the ConnectedSession entity.
+// If the ConnectedSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ConnectedSessionsMutation) OldHsid(ctx context.Context) (v uuid.UUID, err error) {
+func (m *ConnectedSessionMutation) OldHsid(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldHsid is only allowed on UpdateOne operations")
 	}
@@ -179,17 +179,17 @@ func (m *ConnectedSessionsMutation) OldHsid(ctx context.Context) (v uuid.UUID, e
 }
 
 // ResetHsid resets all changes to the "hsid" field.
-func (m *ConnectedSessionsMutation) ResetHsid() {
+func (m *ConnectedSessionMutation) ResetHsid() {
 	m.hus_session = nil
 }
 
 // SetService sets the "service" field.
-func (m *ConnectedSessionsMutation) SetService(s string) {
+func (m *ConnectedSessionMutation) SetService(s string) {
 	m.service = &s
 }
 
 // Service returns the value of the "service" field in the mutation.
-func (m *ConnectedSessionsMutation) Service() (r string, exists bool) {
+func (m *ConnectedSessionMutation) Service() (r string, exists bool) {
 	v := m.service
 	if v == nil {
 		return
@@ -197,10 +197,10 @@ func (m *ConnectedSessionsMutation) Service() (r string, exists bool) {
 	return *v, true
 }
 
-// OldService returns the old "service" field's value of the ConnectedSessions entity.
-// If the ConnectedSessions object wasn't provided to the builder, the object is fetched from the database.
+// OldService returns the old "service" field's value of the ConnectedSession entity.
+// If the ConnectedSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ConnectedSessionsMutation) OldService(ctx context.Context) (v string, err error) {
+func (m *ConnectedSessionMutation) OldService(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldService is only allowed on UpdateOne operations")
 	}
@@ -215,17 +215,17 @@ func (m *ConnectedSessionsMutation) OldService(ctx context.Context) (v string, e
 }
 
 // ResetService resets all changes to the "service" field.
-func (m *ConnectedSessionsMutation) ResetService() {
+func (m *ConnectedSessionMutation) ResetService() {
 	m.service = nil
 }
 
 // SetCsid sets the "csid" field.
-func (m *ConnectedSessionsMutation) SetCsid(u uuid.UUID) {
+func (m *ConnectedSessionMutation) SetCsid(u uuid.UUID) {
 	m.csid = &u
 }
 
 // Csid returns the value of the "csid" field in the mutation.
-func (m *ConnectedSessionsMutation) Csid() (r uuid.UUID, exists bool) {
+func (m *ConnectedSessionMutation) Csid() (r uuid.UUID, exists bool) {
 	v := m.csid
 	if v == nil {
 		return
@@ -233,10 +233,10 @@ func (m *ConnectedSessionsMutation) Csid() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldCsid returns the old "csid" field's value of the ConnectedSessions entity.
-// If the ConnectedSessions object wasn't provided to the builder, the object is fetched from the database.
+// OldCsid returns the old "csid" field's value of the ConnectedSession entity.
+// If the ConnectedSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ConnectedSessionsMutation) OldCsid(ctx context.Context) (v uuid.UUID, err error) {
+func (m *ConnectedSessionMutation) OldCsid(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCsid is only allowed on UpdateOne operations")
 	}
@@ -251,27 +251,27 @@ func (m *ConnectedSessionsMutation) OldCsid(ctx context.Context) (v uuid.UUID, e
 }
 
 // ResetCsid resets all changes to the "csid" field.
-func (m *ConnectedSessionsMutation) ResetCsid() {
+func (m *ConnectedSessionMutation) ResetCsid() {
 	m.csid = nil
 }
 
 // SetHusSessionID sets the "hus_session" edge to the HusSession entity by id.
-func (m *ConnectedSessionsMutation) SetHusSessionID(id uuid.UUID) {
+func (m *ConnectedSessionMutation) SetHusSessionID(id uuid.UUID) {
 	m.hus_session = &id
 }
 
 // ClearHusSession clears the "hus_session" edge to the HusSession entity.
-func (m *ConnectedSessionsMutation) ClearHusSession() {
+func (m *ConnectedSessionMutation) ClearHusSession() {
 	m.clearedhus_session = true
 }
 
 // HusSessionCleared reports if the "hus_session" edge to the HusSession entity was cleared.
-func (m *ConnectedSessionsMutation) HusSessionCleared() bool {
+func (m *ConnectedSessionMutation) HusSessionCleared() bool {
 	return m.clearedhus_session
 }
 
 // HusSessionID returns the "hus_session" edge ID in the mutation.
-func (m *ConnectedSessionsMutation) HusSessionID() (id uuid.UUID, exists bool) {
+func (m *ConnectedSessionMutation) HusSessionID() (id uuid.UUID, exists bool) {
 	if m.hus_session != nil {
 		return *m.hus_session, true
 	}
@@ -281,7 +281,7 @@ func (m *ConnectedSessionsMutation) HusSessionID() (id uuid.UUID, exists bool) {
 // HusSessionIDs returns the "hus_session" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // HusSessionID instead. It exists only for internal usage by the builders.
-func (m *ConnectedSessionsMutation) HusSessionIDs() (ids []uuid.UUID) {
+func (m *ConnectedSessionMutation) HusSessionIDs() (ids []uuid.UUID) {
 	if id := m.hus_session; id != nil {
 		ids = append(ids, *id)
 	}
@@ -289,20 +289,20 @@ func (m *ConnectedSessionsMutation) HusSessionIDs() (ids []uuid.UUID) {
 }
 
 // ResetHusSession resets all changes to the "hus_session" edge.
-func (m *ConnectedSessionsMutation) ResetHusSession() {
+func (m *ConnectedSessionMutation) ResetHusSession() {
 	m.hus_session = nil
 	m.clearedhus_session = false
 }
 
-// Where appends a list predicates to the ConnectedSessionsMutation builder.
-func (m *ConnectedSessionsMutation) Where(ps ...predicate.ConnectedSessions) {
+// Where appends a list predicates to the ConnectedSessionMutation builder.
+func (m *ConnectedSessionMutation) Where(ps ...predicate.ConnectedSession) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the ConnectedSessionsMutation builder. Using this method,
+// WhereP appends storage-level predicates to the ConnectedSessionMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ConnectedSessionsMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ConnectedSessions, len(ps))
+func (m *ConnectedSessionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ConnectedSession, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -310,33 +310,33 @@ func (m *ConnectedSessionsMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *ConnectedSessionsMutation) Op() Op {
+func (m *ConnectedSessionMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *ConnectedSessionsMutation) SetOp(op Op) {
+func (m *ConnectedSessionMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (ConnectedSessions).
-func (m *ConnectedSessionsMutation) Type() string {
+// Type returns the node type of this mutation (ConnectedSession).
+func (m *ConnectedSessionMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *ConnectedSessionsMutation) Fields() []string {
+func (m *ConnectedSessionMutation) Fields() []string {
 	fields := make([]string, 0, 3)
 	if m.hus_session != nil {
-		fields = append(fields, connectedsessions.FieldHsid)
+		fields = append(fields, connectedsession.FieldHsid)
 	}
 	if m.service != nil {
-		fields = append(fields, connectedsessions.FieldService)
+		fields = append(fields, connectedsession.FieldService)
 	}
 	if m.csid != nil {
-		fields = append(fields, connectedsessions.FieldCsid)
+		fields = append(fields, connectedsession.FieldCsid)
 	}
 	return fields
 }
@@ -344,13 +344,13 @@ func (m *ConnectedSessionsMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *ConnectedSessionsMutation) Field(name string) (ent.Value, bool) {
+func (m *ConnectedSessionMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case connectedsessions.FieldHsid:
+	case connectedsession.FieldHsid:
 		return m.Hsid()
-	case connectedsessions.FieldService:
+	case connectedsession.FieldService:
 		return m.Service()
-	case connectedsessions.FieldCsid:
+	case connectedsession.FieldCsid:
 		return m.Csid()
 	}
 	return nil, false
@@ -359,38 +359,38 @@ func (m *ConnectedSessionsMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *ConnectedSessionsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *ConnectedSessionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case connectedsessions.FieldHsid:
+	case connectedsession.FieldHsid:
 		return m.OldHsid(ctx)
-	case connectedsessions.FieldService:
+	case connectedsession.FieldService:
 		return m.OldService(ctx)
-	case connectedsessions.FieldCsid:
+	case connectedsession.FieldCsid:
 		return m.OldCsid(ctx)
 	}
-	return nil, fmt.Errorf("unknown ConnectedSessions field %s", name)
+	return nil, fmt.Errorf("unknown ConnectedSession field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *ConnectedSessionsMutation) SetField(name string, value ent.Value) error {
+func (m *ConnectedSessionMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case connectedsessions.FieldHsid:
+	case connectedsession.FieldHsid:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetHsid(v)
 		return nil
-	case connectedsessions.FieldService:
+	case connectedsession.FieldService:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetService(v)
 		return nil
-	case connectedsessions.FieldCsid:
+	case connectedsession.FieldCsid:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -398,81 +398,81 @@ func (m *ConnectedSessionsMutation) SetField(name string, value ent.Value) error
 		m.SetCsid(v)
 		return nil
 	}
-	return fmt.Errorf("unknown ConnectedSessions field %s", name)
+	return fmt.Errorf("unknown ConnectedSession field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *ConnectedSessionsMutation) AddedFields() []string {
+func (m *ConnectedSessionMutation) AddedFields() []string {
 	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *ConnectedSessionsMutation) AddedField(name string) (ent.Value, bool) {
+func (m *ConnectedSessionMutation) AddedField(name string) (ent.Value, bool) {
 	return nil, false
 }
 
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *ConnectedSessionsMutation) AddField(name string, value ent.Value) error {
+func (m *ConnectedSessionMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown ConnectedSessions numeric field %s", name)
+	return fmt.Errorf("unknown ConnectedSession numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *ConnectedSessionsMutation) ClearedFields() []string {
+func (m *ConnectedSessionMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *ConnectedSessionsMutation) FieldCleared(name string) bool {
+func (m *ConnectedSessionMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *ConnectedSessionsMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown ConnectedSessions nullable field %s", name)
+func (m *ConnectedSessionMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ConnectedSession nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *ConnectedSessionsMutation) ResetField(name string) error {
+func (m *ConnectedSessionMutation) ResetField(name string) error {
 	switch name {
-	case connectedsessions.FieldHsid:
+	case connectedsession.FieldHsid:
 		m.ResetHsid()
 		return nil
-	case connectedsessions.FieldService:
+	case connectedsession.FieldService:
 		m.ResetService()
 		return nil
-	case connectedsessions.FieldCsid:
+	case connectedsession.FieldCsid:
 		m.ResetCsid()
 		return nil
 	}
-	return fmt.Errorf("unknown ConnectedSessions field %s", name)
+	return fmt.Errorf("unknown ConnectedSession field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ConnectedSessionsMutation) AddedEdges() []string {
+func (m *ConnectedSessionMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
 	if m.hus_session != nil {
-		edges = append(edges, connectedsessions.EdgeHusSession)
+		edges = append(edges, connectedsession.EdgeHusSession)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *ConnectedSessionsMutation) AddedIDs(name string) []ent.Value {
+func (m *ConnectedSessionMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case connectedsessions.EdgeHusSession:
+	case connectedsession.EdgeHusSession:
 		if id := m.hus_session; id != nil {
 			return []ent.Value{*id}
 		}
@@ -481,31 +481,31 @@ func (m *ConnectedSessionsMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ConnectedSessionsMutation) RemovedEdges() []string {
+func (m *ConnectedSessionMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *ConnectedSessionsMutation) RemovedIDs(name string) []ent.Value {
+func (m *ConnectedSessionMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ConnectedSessionsMutation) ClearedEdges() []string {
+func (m *ConnectedSessionMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
 	if m.clearedhus_session {
-		edges = append(edges, connectedsessions.EdgeHusSession)
+		edges = append(edges, connectedsession.EdgeHusSession)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *ConnectedSessionsMutation) EdgeCleared(name string) bool {
+func (m *ConnectedSessionMutation) EdgeCleared(name string) bool {
 	switch name {
-	case connectedsessions.EdgeHusSession:
+	case connectedsession.EdgeHusSession:
 		return m.clearedhus_session
 	}
 	return false
@@ -513,46 +513,46 @@ func (m *ConnectedSessionsMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *ConnectedSessionsMutation) ClearEdge(name string) error {
+func (m *ConnectedSessionMutation) ClearEdge(name string) error {
 	switch name {
-	case connectedsessions.EdgeHusSession:
+	case connectedsession.EdgeHusSession:
 		m.ClearHusSession()
 		return nil
 	}
-	return fmt.Errorf("unknown ConnectedSessions unique edge %s", name)
+	return fmt.Errorf("unknown ConnectedSession unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *ConnectedSessionsMutation) ResetEdge(name string) error {
+func (m *ConnectedSessionMutation) ResetEdge(name string) error {
 	switch name {
-	case connectedsessions.EdgeHusSession:
+	case connectedsession.EdgeHusSession:
 		m.ResetHusSession()
 		return nil
 	}
-	return fmt.Errorf("unknown ConnectedSessions edge %s", name)
+	return fmt.Errorf("unknown ConnectedSession edge %s", name)
 }
 
 // HusSessionMutation represents an operation that mutates the HusSession nodes in the graph.
 type HusSessionMutation struct {
 	config
-	op                        Op
-	typ                       string
-	id                        *uuid.UUID
-	tid                       *uuid.UUID
-	iat                       *time.Time
-	preserved                 *bool
-	signed_at                 *time.Time
-	updated_at                *time.Time
-	clearedFields             map[string]struct{}
-	user                      *uint64
-	cleareduser               bool
-	connected_sessions        map[int]struct{}
-	removedconnected_sessions map[int]struct{}
-	clearedconnected_sessions bool
-	done                      bool
-	oldValue                  func(context.Context) (*HusSession, error)
-	predicates                []predicate.HusSession
+	op                       Op
+	typ                      string
+	id                       *uuid.UUID
+	tid                      *uuid.UUID
+	iat                      *time.Time
+	preserved                *bool
+	signed_at                *time.Time
+	updated_at               *time.Time
+	clearedFields            map[string]struct{}
+	user                     *uint64
+	cleareduser              bool
+	connected_session        map[int]struct{}
+	removedconnected_session map[int]struct{}
+	clearedconnected_session bool
+	done                     bool
+	oldValue                 func(context.Context) (*HusSession, error)
+	predicates               []predicate.HusSession
 }
 
 var _ ent.Mutation = (*HusSessionMutation)(nil)
@@ -940,58 +940,58 @@ func (m *HusSessionMutation) ResetUser() {
 	m.cleareduser = false
 }
 
-// AddConnectedSessionIDs adds the "connected_sessions" edge to the ConnectedSessions entity by ids.
+// AddConnectedSessionIDs adds the "connected_session" edge to the ConnectedSession entity by ids.
 func (m *HusSessionMutation) AddConnectedSessionIDs(ids ...int) {
-	if m.connected_sessions == nil {
-		m.connected_sessions = make(map[int]struct{})
+	if m.connected_session == nil {
+		m.connected_session = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.connected_sessions[ids[i]] = struct{}{}
+		m.connected_session[ids[i]] = struct{}{}
 	}
 }
 
-// ClearConnectedSessions clears the "connected_sessions" edge to the ConnectedSessions entity.
-func (m *HusSessionMutation) ClearConnectedSessions() {
-	m.clearedconnected_sessions = true
+// ClearConnectedSession clears the "connected_session" edge to the ConnectedSession entity.
+func (m *HusSessionMutation) ClearConnectedSession() {
+	m.clearedconnected_session = true
 }
 
-// ConnectedSessionsCleared reports if the "connected_sessions" edge to the ConnectedSessions entity was cleared.
-func (m *HusSessionMutation) ConnectedSessionsCleared() bool {
-	return m.clearedconnected_sessions
+// ConnectedSessionCleared reports if the "connected_session" edge to the ConnectedSession entity was cleared.
+func (m *HusSessionMutation) ConnectedSessionCleared() bool {
+	return m.clearedconnected_session
 }
 
-// RemoveConnectedSessionIDs removes the "connected_sessions" edge to the ConnectedSessions entity by IDs.
+// RemoveConnectedSessionIDs removes the "connected_session" edge to the ConnectedSession entity by IDs.
 func (m *HusSessionMutation) RemoveConnectedSessionIDs(ids ...int) {
-	if m.removedconnected_sessions == nil {
-		m.removedconnected_sessions = make(map[int]struct{})
+	if m.removedconnected_session == nil {
+		m.removedconnected_session = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.connected_sessions, ids[i])
-		m.removedconnected_sessions[ids[i]] = struct{}{}
+		delete(m.connected_session, ids[i])
+		m.removedconnected_session[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedConnectedSessions returns the removed IDs of the "connected_sessions" edge to the ConnectedSessions entity.
-func (m *HusSessionMutation) RemovedConnectedSessionsIDs() (ids []int) {
-	for id := range m.removedconnected_sessions {
+// RemovedConnectedSession returns the removed IDs of the "connected_session" edge to the ConnectedSession entity.
+func (m *HusSessionMutation) RemovedConnectedSessionIDs() (ids []int) {
+	for id := range m.removedconnected_session {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ConnectedSessionsIDs returns the "connected_sessions" edge IDs in the mutation.
-func (m *HusSessionMutation) ConnectedSessionsIDs() (ids []int) {
-	for id := range m.connected_sessions {
+// ConnectedSessionIDs returns the "connected_session" edge IDs in the mutation.
+func (m *HusSessionMutation) ConnectedSessionIDs() (ids []int) {
+	for id := range m.connected_session {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetConnectedSessions resets all changes to the "connected_sessions" edge.
-func (m *HusSessionMutation) ResetConnectedSessions() {
-	m.connected_sessions = nil
-	m.clearedconnected_sessions = false
-	m.removedconnected_sessions = nil
+// ResetConnectedSession resets all changes to the "connected_session" edge.
+func (m *HusSessionMutation) ResetConnectedSession() {
+	m.connected_session = nil
+	m.clearedconnected_session = false
+	m.removedconnected_session = nil
 }
 
 // Where appends a list predicates to the HusSessionMutation builder.
@@ -1234,8 +1234,8 @@ func (m *HusSessionMutation) AddedEdges() []string {
 	if m.user != nil {
 		edges = append(edges, hussession.EdgeUser)
 	}
-	if m.connected_sessions != nil {
-		edges = append(edges, hussession.EdgeConnectedSessions)
+	if m.connected_session != nil {
+		edges = append(edges, hussession.EdgeConnectedSession)
 	}
 	return edges
 }
@@ -1248,9 +1248,9 @@ func (m *HusSessionMutation) AddedIDs(name string) []ent.Value {
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
-	case hussession.EdgeConnectedSessions:
-		ids := make([]ent.Value, 0, len(m.connected_sessions))
-		for id := range m.connected_sessions {
+	case hussession.EdgeConnectedSession:
+		ids := make([]ent.Value, 0, len(m.connected_session))
+		for id := range m.connected_session {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1261,8 +1261,8 @@ func (m *HusSessionMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *HusSessionMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removedconnected_sessions != nil {
-		edges = append(edges, hussession.EdgeConnectedSessions)
+	if m.removedconnected_session != nil {
+		edges = append(edges, hussession.EdgeConnectedSession)
 	}
 	return edges
 }
@@ -1271,9 +1271,9 @@ func (m *HusSessionMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *HusSessionMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case hussession.EdgeConnectedSessions:
-		ids := make([]ent.Value, 0, len(m.removedconnected_sessions))
-		for id := range m.removedconnected_sessions {
+	case hussession.EdgeConnectedSession:
+		ids := make([]ent.Value, 0, len(m.removedconnected_session))
+		for id := range m.removedconnected_session {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1287,8 +1287,8 @@ func (m *HusSessionMutation) ClearedEdges() []string {
 	if m.cleareduser {
 		edges = append(edges, hussession.EdgeUser)
 	}
-	if m.clearedconnected_sessions {
-		edges = append(edges, hussession.EdgeConnectedSessions)
+	if m.clearedconnected_session {
+		edges = append(edges, hussession.EdgeConnectedSession)
 	}
 	return edges
 }
@@ -1299,8 +1299,8 @@ func (m *HusSessionMutation) EdgeCleared(name string) bool {
 	switch name {
 	case hussession.EdgeUser:
 		return m.cleareduser
-	case hussession.EdgeConnectedSessions:
-		return m.clearedconnected_sessions
+	case hussession.EdgeConnectedSession:
+		return m.clearedconnected_session
 	}
 	return false
 }
@@ -1323,8 +1323,8 @@ func (m *HusSessionMutation) ResetEdge(name string) error {
 	case hussession.EdgeUser:
 		m.ResetUser()
 		return nil
-	case hussession.EdgeConnectedSessions:
-		m.ResetConnectedSessions()
+	case hussession.EdgeConnectedSession:
+		m.ResetConnectedSession()
 		return nil
 	}
 	return fmt.Errorf("unknown HusSession edge %s", name)

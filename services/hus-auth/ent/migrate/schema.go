@@ -23,7 +23,7 @@ var (
 		PrimaryKey: []*schema.Column{ConnectedSessionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "connected_sessions_hus_sessions_connected_sessions",
+				Symbol:     "connected_sessions_hus_sessions_connected_session",
 				Columns:    []*schema.Column{ConnectedSessionsColumns[3]},
 				RefColumns: []*schema.Column{HusSessionsColumns[0]},
 				OnDelete:   schema.NoAction,

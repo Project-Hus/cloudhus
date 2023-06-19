@@ -323,24 +323,24 @@ func HasUserWith(preds ...predicate.User) predicate.HusSession {
 	})
 }
 
-// HasConnectedSessions applies the HasEdge predicate on the "connected_sessions" edge.
-func HasConnectedSessions() predicate.HusSession {
+// HasConnectedSession applies the HasEdge predicate on the "connected_session" edge.
+func HasConnectedSession() predicate.HusSession {
 	return predicate.HusSession(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ConnectedSessionsTable, ConnectedSessionsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, ConnectedSessionTable, ConnectedSessionColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasConnectedSessionsWith applies the HasEdge predicate on the "connected_sessions" edge with a given conditions (other predicates).
-func HasConnectedSessionsWith(preds ...predicate.ConnectedSessions) predicate.HusSession {
+// HasConnectedSessionWith applies the HasEdge predicate on the "connected_session" edge with a given conditions (other predicates).
+func HasConnectedSessionWith(preds ...predicate.ConnectedSession) predicate.HusSession {
 	return predicate.HusSession(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ConnectedSessionsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ConnectedSessionsTable, ConnectedSessionsColumn),
+			sqlgraph.To(ConnectedSessionInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ConnectedSessionTable, ConnectedSessionColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

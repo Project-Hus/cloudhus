@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hus-auth/ent/connectedsessions"
+	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -14,54 +14,54 @@ import (
 	"github.com/google/uuid"
 )
 
-// ConnectedSessionsCreate is the builder for creating a ConnectedSessions entity.
-type ConnectedSessionsCreate struct {
+// ConnectedSessionCreate is the builder for creating a ConnectedSession entity.
+type ConnectedSessionCreate struct {
 	config
-	mutation *ConnectedSessionsMutation
+	mutation *ConnectedSessionMutation
 	hooks    []Hook
 }
 
 // SetHsid sets the "hsid" field.
-func (csc *ConnectedSessionsCreate) SetHsid(u uuid.UUID) *ConnectedSessionsCreate {
+func (csc *ConnectedSessionCreate) SetHsid(u uuid.UUID) *ConnectedSessionCreate {
 	csc.mutation.SetHsid(u)
 	return csc
 }
 
 // SetService sets the "service" field.
-func (csc *ConnectedSessionsCreate) SetService(s string) *ConnectedSessionsCreate {
+func (csc *ConnectedSessionCreate) SetService(s string) *ConnectedSessionCreate {
 	csc.mutation.SetService(s)
 	return csc
 }
 
 // SetCsid sets the "csid" field.
-func (csc *ConnectedSessionsCreate) SetCsid(u uuid.UUID) *ConnectedSessionsCreate {
+func (csc *ConnectedSessionCreate) SetCsid(u uuid.UUID) *ConnectedSessionCreate {
 	csc.mutation.SetCsid(u)
 	return csc
 }
 
 // SetHusSessionID sets the "hus_session" edge to the HusSession entity by ID.
-func (csc *ConnectedSessionsCreate) SetHusSessionID(id uuid.UUID) *ConnectedSessionsCreate {
+func (csc *ConnectedSessionCreate) SetHusSessionID(id uuid.UUID) *ConnectedSessionCreate {
 	csc.mutation.SetHusSessionID(id)
 	return csc
 }
 
 // SetHusSession sets the "hus_session" edge to the HusSession entity.
-func (csc *ConnectedSessionsCreate) SetHusSession(h *HusSession) *ConnectedSessionsCreate {
+func (csc *ConnectedSessionCreate) SetHusSession(h *HusSession) *ConnectedSessionCreate {
 	return csc.SetHusSessionID(h.ID)
 }
 
-// Mutation returns the ConnectedSessionsMutation object of the builder.
-func (csc *ConnectedSessionsCreate) Mutation() *ConnectedSessionsMutation {
+// Mutation returns the ConnectedSessionMutation object of the builder.
+func (csc *ConnectedSessionCreate) Mutation() *ConnectedSessionMutation {
 	return csc.mutation
 }
 
-// Save creates the ConnectedSessions in the database.
-func (csc *ConnectedSessionsCreate) Save(ctx context.Context) (*ConnectedSessions, error) {
-	return withHooks[*ConnectedSessions, ConnectedSessionsMutation](ctx, csc.sqlSave, csc.mutation, csc.hooks)
+// Save creates the ConnectedSession in the database.
+func (csc *ConnectedSessionCreate) Save(ctx context.Context) (*ConnectedSession, error) {
+	return withHooks[*ConnectedSession, ConnectedSessionMutation](ctx, csc.sqlSave, csc.mutation, csc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (csc *ConnectedSessionsCreate) SaveX(ctx context.Context) *ConnectedSessions {
+func (csc *ConnectedSessionCreate) SaveX(ctx context.Context) *ConnectedSession {
 	v, err := csc.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -70,36 +70,36 @@ func (csc *ConnectedSessionsCreate) SaveX(ctx context.Context) *ConnectedSession
 }
 
 // Exec executes the query.
-func (csc *ConnectedSessionsCreate) Exec(ctx context.Context) error {
+func (csc *ConnectedSessionCreate) Exec(ctx context.Context) error {
 	_, err := csc.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (csc *ConnectedSessionsCreate) ExecX(ctx context.Context) {
+func (csc *ConnectedSessionCreate) ExecX(ctx context.Context) {
 	if err := csc.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (csc *ConnectedSessionsCreate) check() error {
+func (csc *ConnectedSessionCreate) check() error {
 	if _, ok := csc.mutation.Hsid(); !ok {
-		return &ValidationError{Name: "hsid", err: errors.New(`ent: missing required field "ConnectedSessions.hsid"`)}
+		return &ValidationError{Name: "hsid", err: errors.New(`ent: missing required field "ConnectedSession.hsid"`)}
 	}
 	if _, ok := csc.mutation.Service(); !ok {
-		return &ValidationError{Name: "service", err: errors.New(`ent: missing required field "ConnectedSessions.service"`)}
+		return &ValidationError{Name: "service", err: errors.New(`ent: missing required field "ConnectedSession.service"`)}
 	}
 	if _, ok := csc.mutation.Csid(); !ok {
-		return &ValidationError{Name: "csid", err: errors.New(`ent: missing required field "ConnectedSessions.csid"`)}
+		return &ValidationError{Name: "csid", err: errors.New(`ent: missing required field "ConnectedSession.csid"`)}
 	}
 	if _, ok := csc.mutation.HusSessionID(); !ok {
-		return &ValidationError{Name: "hus_session", err: errors.New(`ent: missing required edge "ConnectedSessions.hus_session"`)}
+		return &ValidationError{Name: "hus_session", err: errors.New(`ent: missing required edge "ConnectedSession.hus_session"`)}
 	}
 	return nil
 }
 
-func (csc *ConnectedSessionsCreate) sqlSave(ctx context.Context) (*ConnectedSessions, error) {
+func (csc *ConnectedSessionCreate) sqlSave(ctx context.Context) (*ConnectedSession, error) {
 	if err := csc.check(); err != nil {
 		return nil, err
 	}
@@ -117,25 +117,25 @@ func (csc *ConnectedSessionsCreate) sqlSave(ctx context.Context) (*ConnectedSess
 	return _node, nil
 }
 
-func (csc *ConnectedSessionsCreate) createSpec() (*ConnectedSessions, *sqlgraph.CreateSpec) {
+func (csc *ConnectedSessionCreate) createSpec() (*ConnectedSession, *sqlgraph.CreateSpec) {
 	var (
-		_node = &ConnectedSessions{config: csc.config}
-		_spec = sqlgraph.NewCreateSpec(connectedsessions.Table, sqlgraph.NewFieldSpec(connectedsessions.FieldID, field.TypeInt))
+		_node = &ConnectedSession{config: csc.config}
+		_spec = sqlgraph.NewCreateSpec(connectedsession.Table, sqlgraph.NewFieldSpec(connectedsession.FieldID, field.TypeInt))
 	)
 	if value, ok := csc.mutation.Service(); ok {
-		_spec.SetField(connectedsessions.FieldService, field.TypeString, value)
+		_spec.SetField(connectedsession.FieldService, field.TypeString, value)
 		_node.Service = value
 	}
 	if value, ok := csc.mutation.Csid(); ok {
-		_spec.SetField(connectedsessions.FieldCsid, field.TypeUUID, value)
+		_spec.SetField(connectedsession.FieldCsid, field.TypeUUID, value)
 		_node.Csid = value
 	}
 	if nodes := csc.mutation.HusSessionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   connectedsessions.HusSessionTable,
-			Columns: []string{connectedsessions.HusSessionColumn},
+			Table:   connectedsession.HusSessionTable,
+			Columns: []string{connectedsession.HusSessionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -153,22 +153,22 @@ func (csc *ConnectedSessionsCreate) createSpec() (*ConnectedSessions, *sqlgraph.
 	return _node, _spec
 }
 
-// ConnectedSessionsCreateBulk is the builder for creating many ConnectedSessions entities in bulk.
-type ConnectedSessionsCreateBulk struct {
+// ConnectedSessionCreateBulk is the builder for creating many ConnectedSession entities in bulk.
+type ConnectedSessionCreateBulk struct {
 	config
-	builders []*ConnectedSessionsCreate
+	builders []*ConnectedSessionCreate
 }
 
-// Save creates the ConnectedSessions entities in the database.
-func (cscb *ConnectedSessionsCreateBulk) Save(ctx context.Context) ([]*ConnectedSessions, error) {
+// Save creates the ConnectedSession entities in the database.
+func (cscb *ConnectedSessionCreateBulk) Save(ctx context.Context) ([]*ConnectedSession, error) {
 	specs := make([]*sqlgraph.CreateSpec, len(cscb.builders))
-	nodes := make([]*ConnectedSessions, len(cscb.builders))
+	nodes := make([]*ConnectedSession, len(cscb.builders))
 	mutators := make([]Mutator, len(cscb.builders))
 	for i := range cscb.builders {
 		func(i int, root context.Context) {
 			builder := cscb.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*ConnectedSessionsMutation)
+				mutation, ok := m.(*ConnectedSessionMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -215,7 +215,7 @@ func (cscb *ConnectedSessionsCreateBulk) Save(ctx context.Context) ([]*Connected
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (cscb *ConnectedSessionsCreateBulk) SaveX(ctx context.Context) []*ConnectedSessions {
+func (cscb *ConnectedSessionCreateBulk) SaveX(ctx context.Context) []*ConnectedSession {
 	v, err := cscb.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -224,13 +224,13 @@ func (cscb *ConnectedSessionsCreateBulk) SaveX(ctx context.Context) []*Connected
 }
 
 // Exec executes the query.
-func (cscb *ConnectedSessionsCreateBulk) Exec(ctx context.Context) error {
+func (cscb *ConnectedSessionCreateBulk) Exec(ctx context.Context) error {
 	_, err := cscb.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (cscb *ConnectedSessionsCreateBulk) ExecX(ctx context.Context) {
+func (cscb *ConnectedSessionCreateBulk) ExecX(ctx context.Context) {
 	if err := cscb.Exec(ctx); err != nil {
 		panic(err)
 	}

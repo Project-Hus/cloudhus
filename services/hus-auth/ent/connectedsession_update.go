@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hus-auth/ent/connectedsessions"
+	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
 	"hus-auth/ent/predicate"
 
@@ -16,66 +16,66 @@ import (
 	"github.com/google/uuid"
 )
 
-// ConnectedSessionsUpdate is the builder for updating ConnectedSessions entities.
-type ConnectedSessionsUpdate struct {
+// ConnectedSessionUpdate is the builder for updating ConnectedSession entities.
+type ConnectedSessionUpdate struct {
 	config
 	hooks    []Hook
-	mutation *ConnectedSessionsMutation
+	mutation *ConnectedSessionMutation
 }
 
-// Where appends a list predicates to the ConnectedSessionsUpdate builder.
-func (csu *ConnectedSessionsUpdate) Where(ps ...predicate.ConnectedSessions) *ConnectedSessionsUpdate {
+// Where appends a list predicates to the ConnectedSessionUpdate builder.
+func (csu *ConnectedSessionUpdate) Where(ps ...predicate.ConnectedSession) *ConnectedSessionUpdate {
 	csu.mutation.Where(ps...)
 	return csu
 }
 
 // SetHsid sets the "hsid" field.
-func (csu *ConnectedSessionsUpdate) SetHsid(u uuid.UUID) *ConnectedSessionsUpdate {
+func (csu *ConnectedSessionUpdate) SetHsid(u uuid.UUID) *ConnectedSessionUpdate {
 	csu.mutation.SetHsid(u)
 	return csu
 }
 
 // SetService sets the "service" field.
-func (csu *ConnectedSessionsUpdate) SetService(s string) *ConnectedSessionsUpdate {
+func (csu *ConnectedSessionUpdate) SetService(s string) *ConnectedSessionUpdate {
 	csu.mutation.SetService(s)
 	return csu
 }
 
 // SetCsid sets the "csid" field.
-func (csu *ConnectedSessionsUpdate) SetCsid(u uuid.UUID) *ConnectedSessionsUpdate {
+func (csu *ConnectedSessionUpdate) SetCsid(u uuid.UUID) *ConnectedSessionUpdate {
 	csu.mutation.SetCsid(u)
 	return csu
 }
 
 // SetHusSessionID sets the "hus_session" edge to the HusSession entity by ID.
-func (csu *ConnectedSessionsUpdate) SetHusSessionID(id uuid.UUID) *ConnectedSessionsUpdate {
+func (csu *ConnectedSessionUpdate) SetHusSessionID(id uuid.UUID) *ConnectedSessionUpdate {
 	csu.mutation.SetHusSessionID(id)
 	return csu
 }
 
 // SetHusSession sets the "hus_session" edge to the HusSession entity.
-func (csu *ConnectedSessionsUpdate) SetHusSession(h *HusSession) *ConnectedSessionsUpdate {
+func (csu *ConnectedSessionUpdate) SetHusSession(h *HusSession) *ConnectedSessionUpdate {
 	return csu.SetHusSessionID(h.ID)
 }
 
-// Mutation returns the ConnectedSessionsMutation object of the builder.
-func (csu *ConnectedSessionsUpdate) Mutation() *ConnectedSessionsMutation {
+// Mutation returns the ConnectedSessionMutation object of the builder.
+func (csu *ConnectedSessionUpdate) Mutation() *ConnectedSessionMutation {
 	return csu.mutation
 }
 
 // ClearHusSession clears the "hus_session" edge to the HusSession entity.
-func (csu *ConnectedSessionsUpdate) ClearHusSession() *ConnectedSessionsUpdate {
+func (csu *ConnectedSessionUpdate) ClearHusSession() *ConnectedSessionUpdate {
 	csu.mutation.ClearHusSession()
 	return csu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (csu *ConnectedSessionsUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks[int, ConnectedSessionsMutation](ctx, csu.sqlSave, csu.mutation, csu.hooks)
+func (csu *ConnectedSessionUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks[int, ConnectedSessionMutation](ctx, csu.sqlSave, csu.mutation, csu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (csu *ConnectedSessionsUpdate) SaveX(ctx context.Context) int {
+func (csu *ConnectedSessionUpdate) SaveX(ctx context.Context) int {
 	affected, err := csu.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -84,31 +84,31 @@ func (csu *ConnectedSessionsUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (csu *ConnectedSessionsUpdate) Exec(ctx context.Context) error {
+func (csu *ConnectedSessionUpdate) Exec(ctx context.Context) error {
 	_, err := csu.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (csu *ConnectedSessionsUpdate) ExecX(ctx context.Context) {
+func (csu *ConnectedSessionUpdate) ExecX(ctx context.Context) {
 	if err := csu.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (csu *ConnectedSessionsUpdate) check() error {
+func (csu *ConnectedSessionUpdate) check() error {
 	if _, ok := csu.mutation.HusSessionID(); csu.mutation.HusSessionCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "ConnectedSessions.hus_session"`)
+		return errors.New(`ent: clearing a required unique edge "ConnectedSession.hus_session"`)
 	}
 	return nil
 }
 
-func (csu *ConnectedSessionsUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (csu *ConnectedSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if err := csu.check(); err != nil {
 		return n, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(connectedsessions.Table, connectedsessions.Columns, sqlgraph.NewFieldSpec(connectedsessions.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(connectedsession.Table, connectedsession.Columns, sqlgraph.NewFieldSpec(connectedsession.FieldID, field.TypeInt))
 	if ps := csu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -117,17 +117,17 @@ func (csu *ConnectedSessionsUpdate) sqlSave(ctx context.Context) (n int, err err
 		}
 	}
 	if value, ok := csu.mutation.Service(); ok {
-		_spec.SetField(connectedsessions.FieldService, field.TypeString, value)
+		_spec.SetField(connectedsession.FieldService, field.TypeString, value)
 	}
 	if value, ok := csu.mutation.Csid(); ok {
-		_spec.SetField(connectedsessions.FieldCsid, field.TypeUUID, value)
+		_spec.SetField(connectedsession.FieldCsid, field.TypeUUID, value)
 	}
 	if csu.mutation.HusSessionCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   connectedsessions.HusSessionTable,
-			Columns: []string{connectedsessions.HusSessionColumn},
+			Table:   connectedsession.HusSessionTable,
+			Columns: []string{connectedsession.HusSessionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -142,8 +142,8 @@ func (csu *ConnectedSessionsUpdate) sqlSave(ctx context.Context) (n int, err err
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   connectedsessions.HusSessionTable,
-			Columns: []string{connectedsessions.HusSessionColumn},
+			Table:   connectedsession.HusSessionTable,
+			Columns: []string{connectedsession.HusSessionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -159,7 +159,7 @@ func (csu *ConnectedSessionsUpdate) sqlSave(ctx context.Context) (n int, err err
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, csu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{connectedsessions.Label}
+			err = &NotFoundError{connectedsession.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -169,74 +169,74 @@ func (csu *ConnectedSessionsUpdate) sqlSave(ctx context.Context) (n int, err err
 	return n, nil
 }
 
-// ConnectedSessionsUpdateOne is the builder for updating a single ConnectedSessions entity.
-type ConnectedSessionsUpdateOne struct {
+// ConnectedSessionUpdateOne is the builder for updating a single ConnectedSession entity.
+type ConnectedSessionUpdateOne struct {
 	config
 	fields   []string
 	hooks    []Hook
-	mutation *ConnectedSessionsMutation
+	mutation *ConnectedSessionMutation
 }
 
 // SetHsid sets the "hsid" field.
-func (csuo *ConnectedSessionsUpdateOne) SetHsid(u uuid.UUID) *ConnectedSessionsUpdateOne {
+func (csuo *ConnectedSessionUpdateOne) SetHsid(u uuid.UUID) *ConnectedSessionUpdateOne {
 	csuo.mutation.SetHsid(u)
 	return csuo
 }
 
 // SetService sets the "service" field.
-func (csuo *ConnectedSessionsUpdateOne) SetService(s string) *ConnectedSessionsUpdateOne {
+func (csuo *ConnectedSessionUpdateOne) SetService(s string) *ConnectedSessionUpdateOne {
 	csuo.mutation.SetService(s)
 	return csuo
 }
 
 // SetCsid sets the "csid" field.
-func (csuo *ConnectedSessionsUpdateOne) SetCsid(u uuid.UUID) *ConnectedSessionsUpdateOne {
+func (csuo *ConnectedSessionUpdateOne) SetCsid(u uuid.UUID) *ConnectedSessionUpdateOne {
 	csuo.mutation.SetCsid(u)
 	return csuo
 }
 
 // SetHusSessionID sets the "hus_session" edge to the HusSession entity by ID.
-func (csuo *ConnectedSessionsUpdateOne) SetHusSessionID(id uuid.UUID) *ConnectedSessionsUpdateOne {
+func (csuo *ConnectedSessionUpdateOne) SetHusSessionID(id uuid.UUID) *ConnectedSessionUpdateOne {
 	csuo.mutation.SetHusSessionID(id)
 	return csuo
 }
 
 // SetHusSession sets the "hus_session" edge to the HusSession entity.
-func (csuo *ConnectedSessionsUpdateOne) SetHusSession(h *HusSession) *ConnectedSessionsUpdateOne {
+func (csuo *ConnectedSessionUpdateOne) SetHusSession(h *HusSession) *ConnectedSessionUpdateOne {
 	return csuo.SetHusSessionID(h.ID)
 }
 
-// Mutation returns the ConnectedSessionsMutation object of the builder.
-func (csuo *ConnectedSessionsUpdateOne) Mutation() *ConnectedSessionsMutation {
+// Mutation returns the ConnectedSessionMutation object of the builder.
+func (csuo *ConnectedSessionUpdateOne) Mutation() *ConnectedSessionMutation {
 	return csuo.mutation
 }
 
 // ClearHusSession clears the "hus_session" edge to the HusSession entity.
-func (csuo *ConnectedSessionsUpdateOne) ClearHusSession() *ConnectedSessionsUpdateOne {
+func (csuo *ConnectedSessionUpdateOne) ClearHusSession() *ConnectedSessionUpdateOne {
 	csuo.mutation.ClearHusSession()
 	return csuo
 }
 
-// Where appends a list predicates to the ConnectedSessionsUpdate builder.
-func (csuo *ConnectedSessionsUpdateOne) Where(ps ...predicate.ConnectedSessions) *ConnectedSessionsUpdateOne {
+// Where appends a list predicates to the ConnectedSessionUpdate builder.
+func (csuo *ConnectedSessionUpdateOne) Where(ps ...predicate.ConnectedSession) *ConnectedSessionUpdateOne {
 	csuo.mutation.Where(ps...)
 	return csuo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (csuo *ConnectedSessionsUpdateOne) Select(field string, fields ...string) *ConnectedSessionsUpdateOne {
+func (csuo *ConnectedSessionUpdateOne) Select(field string, fields ...string) *ConnectedSessionUpdateOne {
 	csuo.fields = append([]string{field}, fields...)
 	return csuo
 }
 
-// Save executes the query and returns the updated ConnectedSessions entity.
-func (csuo *ConnectedSessionsUpdateOne) Save(ctx context.Context) (*ConnectedSessions, error) {
-	return withHooks[*ConnectedSessions, ConnectedSessionsMutation](ctx, csuo.sqlSave, csuo.mutation, csuo.hooks)
+// Save executes the query and returns the updated ConnectedSession entity.
+func (csuo *ConnectedSessionUpdateOne) Save(ctx context.Context) (*ConnectedSession, error) {
+	return withHooks[*ConnectedSession, ConnectedSessionMutation](ctx, csuo.sqlSave, csuo.mutation, csuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (csuo *ConnectedSessionsUpdateOne) SaveX(ctx context.Context) *ConnectedSessions {
+func (csuo *ConnectedSessionUpdateOne) SaveX(ctx context.Context) *ConnectedSession {
 	node, err := csuo.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -245,44 +245,44 @@ func (csuo *ConnectedSessionsUpdateOne) SaveX(ctx context.Context) *ConnectedSes
 }
 
 // Exec executes the query on the entity.
-func (csuo *ConnectedSessionsUpdateOne) Exec(ctx context.Context) error {
+func (csuo *ConnectedSessionUpdateOne) Exec(ctx context.Context) error {
 	_, err := csuo.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (csuo *ConnectedSessionsUpdateOne) ExecX(ctx context.Context) {
+func (csuo *ConnectedSessionUpdateOne) ExecX(ctx context.Context) {
 	if err := csuo.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (csuo *ConnectedSessionsUpdateOne) check() error {
+func (csuo *ConnectedSessionUpdateOne) check() error {
 	if _, ok := csuo.mutation.HusSessionID(); csuo.mutation.HusSessionCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "ConnectedSessions.hus_session"`)
+		return errors.New(`ent: clearing a required unique edge "ConnectedSession.hus_session"`)
 	}
 	return nil
 }
 
-func (csuo *ConnectedSessionsUpdateOne) sqlSave(ctx context.Context) (_node *ConnectedSessions, err error) {
+func (csuo *ConnectedSessionUpdateOne) sqlSave(ctx context.Context) (_node *ConnectedSession, err error) {
 	if err := csuo.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(connectedsessions.Table, connectedsessions.Columns, sqlgraph.NewFieldSpec(connectedsessions.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(connectedsession.Table, connectedsession.Columns, sqlgraph.NewFieldSpec(connectedsession.FieldID, field.TypeInt))
 	id, ok := csuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "ConnectedSessions.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "ConnectedSession.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := csuo.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, connectedsessions.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, connectedsession.FieldID)
 		for _, f := range fields {
-			if !connectedsessions.ValidColumn(f) {
+			if !connectedsession.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != connectedsessions.FieldID {
+			if f != connectedsession.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)
 			}
 		}
@@ -295,17 +295,17 @@ func (csuo *ConnectedSessionsUpdateOne) sqlSave(ctx context.Context) (_node *Con
 		}
 	}
 	if value, ok := csuo.mutation.Service(); ok {
-		_spec.SetField(connectedsessions.FieldService, field.TypeString, value)
+		_spec.SetField(connectedsession.FieldService, field.TypeString, value)
 	}
 	if value, ok := csuo.mutation.Csid(); ok {
-		_spec.SetField(connectedsessions.FieldCsid, field.TypeUUID, value)
+		_spec.SetField(connectedsession.FieldCsid, field.TypeUUID, value)
 	}
 	if csuo.mutation.HusSessionCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   connectedsessions.HusSessionTable,
-			Columns: []string{connectedsessions.HusSessionColumn},
+			Table:   connectedsession.HusSessionTable,
+			Columns: []string{connectedsession.HusSessionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -320,8 +320,8 @@ func (csuo *ConnectedSessionsUpdateOne) sqlSave(ctx context.Context) (_node *Con
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   connectedsessions.HusSessionTable,
-			Columns: []string{connectedsessions.HusSessionColumn},
+			Table:   connectedsession.HusSessionTable,
+			Columns: []string{connectedsession.HusSessionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -335,12 +335,12 @@ func (csuo *ConnectedSessionsUpdateOne) sqlSave(ctx context.Context) (_node *Con
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_node = &ConnectedSessions{config: csuo.config}
+	_node = &ConnectedSession{config: csuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, csuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{connectedsessions.Label}
+			err = &NotFoundError{connectedsession.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
