@@ -24,11 +24,6 @@ import (
 // @Param        jwt body string true "Google ID token"
 // @Response      301 "to /auth/{token_string} or to /error"
 func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
-	// origin := c.Request().Header.Get("Origin")
-	// if origin == "http://localhost:3000" {
-	// 	return ac.googleAuthHandler(c)
-	// }
-
 	// revoke all previous hus sessions.
 	stsToRevoke := []string{}
 	hus_pst, _ := c.Cookie("hus_pst")
@@ -145,4 +140,126 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 
 	// redirects to {serviceUrl}/hus/token/{hus-session-id}
 	return c.Redirect(http.StatusMovedPermanently, serviceUrl)
+}
+
+// GoogleAuthHandlerV2 godoc
+// @Router       /social/google [post]
+// @Summary      gets and processes Google ID token and redirects the user back to the subservice.
+// @Description  validates the google ID token and do some authentication stuff.
+// @Description  And redirects the user back to the subservice after the process.
+// @Tags         auth
+// @Accept       json
+// @Param redirect query string true "url to be redirected after authentication"
+// @Param fallback query string false "url to be redirected if the authentication fails"
+// @Param        credential body string true "Google ID token"
+// @Response      301 "to /auth/{token_string} or to /error"
+func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
+	// the session is already connected with subservice as the user accessed any page of the subservice.
+	// so all this endpoint should do is just to validate the Google ID token and propagate the result to the connected sessions.
+
+	redirectURL := c.QueryParam("redirect")
+	if redirectURL == "" {
+		// if there's no redirect url, just redirect to auth welcome page.
+		redirectURL = common.Subservice["cloudhus"].Subdomains["auth"].URL + "/auth"
+	}
+	fallbackURL := c.QueryParam("fallback")
+	if fallbackURL == "" {
+		fallbackURL = redirectURL
+	}
+
+	return nil
+
+	// husst, err := c.Cookie("hus_st")
+	// if err != nil {
+	// 	return c.Redirect(http.StatusMovedPermanently, fallbackURL)
+	// }
+
+	// // client ID that Google issued to Cloudhus.
+	// clientID := hus.GoogleClientID
+
+	// // credential sent from Google
+	// credential := c.FormValue("credential")
+
+	// // validate and parse the Google ID token
+	// payload, err := idtoken.Validate(c.Request().Context(), credential, clientID)
+	// if err != nil {
+	// 	log.Println("invalid id token:", err)
+	// 	log.Println("@credential:", credential)
+	// 	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
+	// }
+
+	// // Google's unique user ID
+	// sub := payload.Claims["sub"].(string)
+	// // check if the user is registered with Google
+	// u, err := db.QueryUserByGoogleSub(c.Request().Context(), ac.dbClient, sub)
+	// if err != nil {
+	// 	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
+	// }
+	// // create one if there is no Hus account with this Google account
+	// if u == nil {
+	// 	_, err := db.CreateUserFromGoogle(c.Request().Context(), ac.dbClient, *payload)
+	// 	if err != nil {
+	// 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
+	// 	}
+	// }
+
+	// // We checked or created if the Google user exists in Hus above,
+	// // Now get user query again to create new hus session.
+	// u, err = db.QueryUserByGoogleSub(c.Request().Context(), ac.dbClient, sub)
+	// if err != nil {
+	// 	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
+	// }
+
+	// _, HusSessionTokenSigned, err := session.CreateHusSession(c.Request().Context(), ac.dbClient, u.ID, false)
+	// if err != nil {
+	// 	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
+	// }
+
+	// cookie := &http.Cookie{
+	// 	Name:     "hus_st",
+	// 	Value:    HusSessionTokenSigned,
+	// 	Path:     "/",
+	// 	Secure:   hus.CookieSecure,
+	// 	HttpOnly: true,
+	// 	Domain:   hus.AuthCookieDomain,
+	// 	SameSite: hus.SameSiteMode,
+	// }
+	// c.SetCookie(cookie)
+
+	// cookie2 := &http.Cookie{
+	// 	Name:     "hus_pst",
+	// 	Value:    HusSessionTokenSigned,
+	// 	Path:     "/",
+	// 	Secure:   hus.CookieSecure,
+	// 	HttpOnly: true,
+	// 	Expires:  time.Now().AddDate(1, 0, 0),
+	// 	Domain:   hus.AuthCookieDomain,
+	// 	SameSite: hus.SameSiteMode,
+	// }
+	// c.SetCookie(cookie2)
+
+	// cookieTest := &http.Cookie{
+	// 	Name:     "hus_test",
+	// 	Value:    "TESTCOOKIEHAPPYCOOKIE",
+	// 	Path:     "/",
+	// 	Secure:   hus.CookieSecure,
+	// 	HttpOnly: true,
+	// 	Domain:   hus.AuthCookieDomain,
+	// 	SameSite: http.SameSiteLaxMode,
+	// }
+	// c.SetCookie(cookieTest)
+
+	// cookieTest2 := &http.Cookie{
+	// 	Name:     "hus_test2",
+	// 	Value:    "TESTCOOKIEHAPPYCOOKIE",
+	// 	Path:     "/",
+	// 	Secure:   hus.CookieSecure,
+	// 	HttpOnly: true,
+	// 	Domain:   hus.AuthCookieDomain,
+	// 	SameSite: http.SameSiteStrictMode,
+	// }
+	// c.SetCookie(cookieTest2)
+
+	// // redirects to {serviceUrl}/hus/token/{hus-session-id}
+	// return c.Redirect(http.StatusMovedPermanently, serviceUrl)
 }

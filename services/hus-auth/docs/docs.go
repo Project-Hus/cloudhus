@@ -89,6 +89,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/social/google": {
+            "post": {
+                "description": "validates the google ID token and do some authentication stuff.\nAnd redirects the user back to the subservice after the process.",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "gets and processes Google ID token and redirects the user back to the subservice.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "service name",
+                        "name": "service",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "url to be redirected after authentication",
+                        "name": "redirect",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Google ID token",
+                        "name": "credential",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "to /auth/{token_string} or to /error"
+                    }
+                }
+            }
+        },
         "/social/google/{subservice_name}": {
             "post": {
                 "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.\nthe refresh token will be expired in 7 days.",
