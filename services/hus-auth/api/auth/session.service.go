@@ -192,25 +192,38 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 // @Param redirect query string false "redirect url"
 // @Success      200 "Ok, the client already has a valid session"
 // @Success      201 "Created, the client has no valid session, so new session is created"
-// @Failure	  400 "Bad Request, the session ID is not valid"
-// @Failure 404 "Not Found, the service is not registered"
+// @Failure	  400 "Bad Request"
 // @Failure 500 "Internal Server Error"
 func (ac authApiController) HusSessionHandler(c echo.Context) error {
-	// get service name and sid from path
-	service := c.Param("service")
-	lifthus_sid := c.Param("sid")
 
-	subservice, ok := common.Subservice[service]
-	// if the service name is not registered, return 404
-	if !ok {
-		return c.String(http.StatusNotFound, "no such service")
+	service := c.QueryParam("service")
+	sessionID := c.QueryParam("sid")
+	redirectURL := c.QueryParam("redirect")
+
+	// if any of three above is given, all of them must be given.
+	if (service != "" || sessionID != "" || redirectURL != "") && (service == "" || sessionID == "" || redirectURL == "") {
+		return c.String(http.StatusBadRequest, "service, sid, redirect should be given all together or none")
+	}
+
+	var subservice common.ServiceDomain
+	var ok bool
+
+	// if service name is given, check if it is.
+	if service != "" {
+		subservice, ok = common.Subservice[service]
+		// if the service name is not registered, return error.
+		if !ok {
+			return c.String(http.StatusBadRequest, "no such service")
+		}
 	}
 
 	// get hus_st from cookie
 	hus_st, err := c.Cookie("hus_st")
-	// no valid session token, then return 401
-	if err != nil || hus_st.Value == "" {
-		return c.String(http.StatusUnauthorized, "not sigend in")
+	if err == http.ErrNoCookie || hus_st.Value == "" {
+		// so there's no hus session, issue new one and return.
+
+	} else if err != nil {
+		return c.String(http.StatusInternalServerError, "an error occured while getting cookie")
 	}
 
 	// first validate and parse the session token and get SID, User entity.

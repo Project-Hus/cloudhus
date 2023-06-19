@@ -38,7 +38,7 @@ var (
 		{Name: "preserved", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "uid", Type: field.TypeUint64},
+		{Name: "uid", Type: field.TypeUint64, Nullable: true},
 	}
 	// HusSessionsTable holds the schema information for the "hus_sessions" table.
 	HusSessionsTable = &schema.Table{
@@ -50,7 +50,7 @@ var (
 				Symbol:     "hus_sessions_users_hus_sessions",
 				Columns:    []*schema.Column{HusSessionsColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}

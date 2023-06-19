@@ -196,6 +196,16 @@ func UIDNotIn(vs ...uint64) predicate.HusSession {
 	return predicate.HusSession(sql.FieldNotIn(FieldUID, vs...))
 }
 
+// UIDIsNil applies the IsNil predicate on the "uid" field.
+func UIDIsNil() predicate.HusSession {
+	return predicate.HusSession(sql.FieldIsNull(FieldUID))
+}
+
+// UIDNotNil applies the NotNil predicate on the "uid" field.
+func UIDNotNil() predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotNull(FieldUID))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldCreatedAt, v))

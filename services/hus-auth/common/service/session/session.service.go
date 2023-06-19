@@ -16,6 +16,19 @@ import (
 	"github.com/google/uuid"
 )
 
+// CreateHusSessionV2 issues new Hus session and returns it.
+// and if subservice's session ID is provided, it will be connected to the Hus session.
+func CreateHusSessionV2(ctx context.Context, client *ent.Client, sid *string) (
+	newSession *ent.HusSession, newToken string, err error,
+) {
+	// create new Hus session
+	hs, err := client.HusSession.Create().Save(ctx)
+	if err != nil {
+		return nil, "", fmt.Errorf("!!creating new hus session failed:%w", err)
+	}
+	return nil, "", fmt.Errorf("!!creating new hus session failed:%w", err)
+}
+
 // CreateHusSession takes user's uuid and create new hus session and return it.
 func CreateHusSession(ctx context.Context, client *ent.Client, uid uint64, preserved bool) (
 	new_sid, new_token string, err error,

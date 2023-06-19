@@ -37,7 +37,7 @@ func (HusSession) Fields() []ent.Field {
 		// but tid is rotated each time.
 		field.Bool("preserved").Default(false), // preserved
 		// User ID for the case the user is signed in.
-		field.Uint64("uid").Nillable(),
+		field.Uint64("uid").Optional().Nillable(),
 
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
@@ -47,7 +47,7 @@ func (HusSession) Fields() []ent.Field {
 // Edges of the HusSession.
 func (HusSession) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("user", User.Type).Ref("hus_sessions").Unique().Field("uid").Required(),
+		edge.From("user", User.Type).Ref("hus_sessions").Unique().Field("uid"),
 
 		edge.To("connected_sessions", ConnectedSessions.Type),
 	}

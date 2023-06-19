@@ -15,8 +15,8 @@ import (
 
 	"hus-auth/ent"
 
+	"hus-auth/common/db"
 	"hus-auth/common/hus"
-	"hus-auth/db"
 
 	"hus-auth/api/auth"
 

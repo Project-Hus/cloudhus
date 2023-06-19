@@ -79,6 +79,20 @@ func (hsu *HusSessionUpdate) SetUID(u uint64) *HusSessionUpdate {
 	return hsu
 }
 
+// SetNillableUID sets the "uid" field if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableUID(u *uint64) *HusSessionUpdate {
+	if u != nil {
+		hsu.SetUID(*u)
+	}
+	return hsu
+}
+
+// ClearUID clears the value of the "uid" field.
+func (hsu *HusSessionUpdate) ClearUID() *HusSessionUpdate {
+	hsu.mutation.ClearUID()
+	return hsu
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (hsu *HusSessionUpdate) SetCreatedAt(t time.Time) *HusSessionUpdate {
 	hsu.mutation.SetCreatedAt(t)
@@ -102,6 +116,14 @@ func (hsu *HusSessionUpdate) SetUpdatedAt(t time.Time) *HusSessionUpdate {
 // SetUserID sets the "user" edge to the User entity by ID.
 func (hsu *HusSessionUpdate) SetUserID(id uint64) *HusSessionUpdate {
 	hsu.mutation.SetUserID(id)
+	return hsu
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableUserID(id *uint64) *HusSessionUpdate {
+	if id != nil {
+		hsu = hsu.SetUserID(*id)
+	}
 	return hsu
 }
 
@@ -193,18 +215,7 @@ func (hsu *HusSessionUpdate) defaults() {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (hsu *HusSessionUpdate) check() error {
-	if _, ok := hsu.mutation.UserID(); hsu.mutation.UserCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "HusSession.user"`)
-	}
-	return nil
-}
-
 func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := hsu.check(); err != nil {
-		return n, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(hussession.Table, hussession.Columns, sqlgraph.NewFieldSpec(hussession.FieldID, field.TypeUUID))
 	if ps := hsu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -385,6 +396,20 @@ func (hsuo *HusSessionUpdateOne) SetUID(u uint64) *HusSessionUpdateOne {
 	return hsuo
 }
 
+// SetNillableUID sets the "uid" field if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableUID(u *uint64) *HusSessionUpdateOne {
+	if u != nil {
+		hsuo.SetUID(*u)
+	}
+	return hsuo
+}
+
+// ClearUID clears the value of the "uid" field.
+func (hsuo *HusSessionUpdateOne) ClearUID() *HusSessionUpdateOne {
+	hsuo.mutation.ClearUID()
+	return hsuo
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (hsuo *HusSessionUpdateOne) SetCreatedAt(t time.Time) *HusSessionUpdateOne {
 	hsuo.mutation.SetCreatedAt(t)
@@ -408,6 +433,14 @@ func (hsuo *HusSessionUpdateOne) SetUpdatedAt(t time.Time) *HusSessionUpdateOne 
 // SetUserID sets the "user" edge to the User entity by ID.
 func (hsuo *HusSessionUpdateOne) SetUserID(id uint64) *HusSessionUpdateOne {
 	hsuo.mutation.SetUserID(id)
+	return hsuo
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableUserID(id *uint64) *HusSessionUpdateOne {
+	if id != nil {
+		hsuo = hsuo.SetUserID(*id)
+	}
 	return hsuo
 }
 
@@ -512,18 +545,7 @@ func (hsuo *HusSessionUpdateOne) defaults() {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (hsuo *HusSessionUpdateOne) check() error {
-	if _, ok := hsuo.mutation.UserID(); hsuo.mutation.UserCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "HusSession.user"`)
-	}
-	return nil
-}
-
 func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession, err error) {
-	if err := hsuo.check(); err != nil {
-		return _node, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(hussession.Table, hussession.Columns, sqlgraph.NewFieldSpec(hussession.FieldID, field.TypeUUID))
 	id, ok := hsuo.mutation.ID()
 	if !ok {

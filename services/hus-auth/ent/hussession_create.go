@@ -71,6 +71,14 @@ func (hsc *HusSessionCreate) SetUID(u uint64) *HusSessionCreate {
 	return hsc
 }
 
+// SetNillableUID sets the "uid" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableUID(u *uint64) *HusSessionCreate {
+	if u != nil {
+		hsc.SetUID(*u)
+	}
+	return hsc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (hsc *HusSessionCreate) SetCreatedAt(t time.Time) *HusSessionCreate {
 	hsc.mutation.SetCreatedAt(t)
@@ -116,6 +124,14 @@ func (hsc *HusSessionCreate) SetNillableID(u *uuid.UUID) *HusSessionCreate {
 // SetUserID sets the "user" edge to the User entity by ID.
 func (hsc *HusSessionCreate) SetUserID(id uint64) *HusSessionCreate {
 	hsc.mutation.SetUserID(id)
+	return hsc
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableUserID(id *uint64) *HusSessionCreate {
+	if id != nil {
+		hsc = hsc.SetUserID(*id)
+	}
 	return hsc
 }
 
@@ -211,17 +227,11 @@ func (hsc *HusSessionCreate) check() error {
 	if _, ok := hsc.mutation.Preserved(); !ok {
 		return &ValidationError{Name: "preserved", err: errors.New(`ent: missing required field "HusSession.preserved"`)}
 	}
-	if _, ok := hsc.mutation.UID(); !ok {
-		return &ValidationError{Name: "uid", err: errors.New(`ent: missing required field "HusSession.uid"`)}
-	}
 	if _, ok := hsc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "HusSession.created_at"`)}
 	}
 	if _, ok := hsc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "HusSession.updated_at"`)}
-	}
-	if _, ok := hsc.mutation.UserID(); !ok {
-		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "HusSession.user"`)}
 	}
 	return nil
 }

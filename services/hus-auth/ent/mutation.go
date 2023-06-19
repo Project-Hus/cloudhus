@@ -798,9 +798,22 @@ func (m *HusSessionMutation) OldUID(ctx context.Context) (v *uint64, err error) 
 	return oldValue.UID, nil
 }
 
+// ClearUID clears the value of the "uid" field.
+func (m *HusSessionMutation) ClearUID() {
+	m.user = nil
+	m.clearedFields[hussession.FieldUID] = struct{}{}
+}
+
+// UIDCleared returns if the "uid" field was cleared in this mutation.
+func (m *HusSessionMutation) UIDCleared() bool {
+	_, ok := m.clearedFields[hussession.FieldUID]
+	return ok
+}
+
 // ResetUID resets all changes to the "uid" field.
 func (m *HusSessionMutation) ResetUID() {
 	m.user = nil
+	delete(m.clearedFields, hussession.FieldUID)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -887,7 +900,7 @@ func (m *HusSessionMutation) ClearUser() {
 
 // UserCleared reports if the "user" edge to the User entity was cleared.
 func (m *HusSessionMutation) UserCleared() bool {
-	return m.cleareduser
+	return m.UIDCleared() || m.cleareduser
 }
 
 // UserID returns the "user" edge ID in the mutation.
@@ -1145,7 +1158,11 @@ func (m *HusSessionMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *HusSessionMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(hussession.FieldUID) {
+		fields = append(fields, hussession.FieldUID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1158,6 +1175,11 @@ func (m *HusSessionMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *HusSessionMutation) ClearField(name string) error {
+	switch name {
+	case hussession.FieldUID:
+		m.ClearUID()
+		return nil
+	}
 	return fmt.Errorf("unknown HusSession nullable field %s", name)
 }
 

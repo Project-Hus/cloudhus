@@ -2,9 +2,9 @@ package auth
 
 import (
 	"hus-auth/common"
+	"hus-auth/common/db"
 	"hus-auth/common/hus"
-	"hus-auth/db"
-	"hus-auth/service/session"
+	"hus-auth/common/service/session"
 	"log"
 	"net/http"
 	"time"
