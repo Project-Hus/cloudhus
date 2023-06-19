@@ -3,8 +3,8 @@ package session
 import (
 	"context"
 	"fmt"
+	"hus-auth/common/db"
 	"hus-auth/common/hus"
-	"hus-auth/db"
 	"hus-auth/ent"
 	"hus-auth/helper"
 	"strconv"
@@ -26,6 +26,7 @@ func CreateHusSessionV2(ctx context.Context, client *ent.Client, sid *string) (
 	if err != nil {
 		return nil, "", fmt.Errorf("!!creating new hus session failed:%w", err)
 	}
+
 	return nil, "", fmt.Errorf("!!creating new hus session failed:%w", err)
 }
 
