@@ -8,7 +8,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func ParseJWTwithHMAC(tokenString string) (claims jwt.MapClaims, expired bool, err error) {
+// ParseJWTWithHMAC parses any HS256 JWT token with HusSecretKey and returns claims.
+// it doesn't return error when the token is expired.
+// instead, it returns expired flag with other return values(claims, expired, error).
+func ParseJWTWithHMAC(tokenString string) (claims jwt.MapClaims, expired bool, err error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("invalid signing method")

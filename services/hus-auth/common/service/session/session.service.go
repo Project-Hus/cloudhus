@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"hus-auth/common"
 	"hus-auth/common/db"
+	"hus-auth/common/helper"
 	"hus-auth/common/hus"
 	"hus-auth/ent"
-	"hus-auth/helper"
 	"strconv"
 
 	"log"
@@ -20,40 +20,46 @@ import (
 type CreateHusSessionParams struct {
 	Ctx context.Context
 	// if the request is from Cloudhus, below fields are not required.
-	Dbc       *ent.Client
-	Service   *common.ServiceDomain
-	Propagate *string
-	Sid       *uuid.UUID
+	Dbc     *ent.Client
+	Service *common.ServiceDomain
+	Sid     *uuid.UUID
 }
 
 // CreateHusSessionV2 issues new Hus session and returns it.
 // and if subservice's session ID is provided, it will be connected to the Hus session.
 // after the connection is established, subservice must verify it by asking to Cloudhus.
 func CreateHusSessionV2(ps CreateHusSessionParams) (
-	newSession *ent.HusSession, newToken string, err error,
+	newSession *ent.HusSession, newSignedToken string, err error,
 ) {
 	tx, err := ps.Dbc.Tx(ps.Ctx)
 	if err != nil {
 		return nil, "", fmt.Errorf("starting transaction failed:%w", err)
 	}
-
 	// create new Hus session
 	hs, err := tx.HusSession.Create().Save(ps.Ctx)
 	if err != nil {
 		err = db.Rollback(tx, err)
-		return nil, "", fmt.Errorf("!!creating new hus session failed:%w", err)
+		return nil, "", fmt.Errorf("creating new hus session failed:%w", err)
 	}
-
+	// if there are service and sid, connect them to the Hus session created above.
+	if ps.Service != nil && ps.Sid != nil {
+		_, err := tx.ConnectedSession.Create().SetHsid(hs.ID).SetService(ps.Service.Domain.Name).SetCsid(*ps.Sid).Save(ps.Ctx)
+		if err != nil {
+			err = db.Rollback(tx, err)
+			return nil, "", fmt.Errorf("connecting sessions failed:%w", err)
+		}
+	}
 	// Hus Session Token
-	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	hst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"pps": "hus_session",
 		"sid": hs.ID,
 		"tid": hs.Tid,
 		"iss": hus.AuthURL,
 		"iat": hs.Iat.Unix(),
+		"exp": time.Now().Add(time.Hour * 48).Unix(),
 		"prv": hs.Preserved,
 	})
-	rts, err := rt.SignedString(hus.HusSecretKeyBytes)
+	hsts, err := hst.SignedString(hus.HusSecretKeyBytes)
 	if err != nil {
 		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("signing session token failed:%w", err)
@@ -65,27 +71,49 @@ func CreateHusSessionV2(ps CreateHusSessionParams) (
 		return nil, "", fmt.Errorf("committing transaction failed:%w", err)
 	}
 
-	// if there are service and sid, connect them to the Huse session created above.
-	if ps.Service != nil && ps.Sid != nil {
-		tx, err = ps.Dbc.Tx(ps.Ctx)
-		if err != nil {
-			return nil, "", fmt.Errorf("starting transaction failed:%w", err)
-		}
+	return hs, hsts, nil
+}
 
-		_, err := tx.ConnectedSession.Create().SetHsid(hs.ID).SetService(ps.Service.Domain.Name).SetCsid(*ps.Sid).Save(ps.Ctx)
-		if err != nil {
-			err = db.Rollback(tx, err)
-			return nil, "", fmt.Errorf("connecting sessions failed:%w", err)
-		}
-
-		if err != nil {
-			err = db.Rollback(tx, err)
-			return nil, "", fmt.Errorf("signing session token failed:%w", err)
-		}
+func ValidateHusSessionV2(ctx context.Context, client *ent.Client, hst string) (sid string, su *ent.User, err error) {
+	claims, exp, err := helper.ParseJWTWithHMAC(hst)
+	if err != nil {
+		return "", nil, fmt.Errorf("invalid token")
 	}
 
-	return hs, rts, nil
+	hus_sid := claims["sid"].(string)
+	hus_tid := claims["tid"].(string)
+	hus_uid := claims["uid"].(string)
+
+	if exp {
+		return hus_sid, nil, fmt.Errorf("expired sesison")
+	}
+	// if the purpose is not hus_session, then return 401.
+	if claims["purpose"].(string) != "hus_session" {
+		return hus_sid, nil, fmt.Errorf("wrong purpose")
+	}
+
+	// check if the hus session is not revoked by querying the database with hus_sid.
+	hs, err := db.QuerySessionBySID(ctx, client, hus_sid)
+	if err != nil || hs == nil {
+		return "", nil, fmt.Errorf("no such session")
+	}
+	/* for security if the token id is not matched, then revoke the session. */
+	if hus_tid != hs.Tid.String() {
+		return hus_sid, nil, fmt.Errorf("invalid token")
+	}
+	// check if the user exists by querying the database with hus_uid.
+	hus_uid_uint64, err := strconv.ParseUint(hus_uid, 10, 64)
+	if err != nil {
+		return hus_sid, nil, fmt.Errorf("invalid uid")
+	}
+	u, err := db.QueryUserByUID(ctx, client, hus_uid_uint64)
+	if err != nil || u == nil {
+		return hus_sid, nil, fmt.Errorf("no such user")
+	}
+	return hus_sid, u, nil
 }
+
+// ==========================================================================================
 
 // CreateHusSession takes user's uuid and create new hus session and return it.
 func CreateHusSession(ctx context.Context, client *ent.Client, uid uint64, preserved bool) (
@@ -134,7 +162,7 @@ func CreateHusSession(ctx context.Context, client *ent.Client, uid uint64, prese
 }
 
 func ValidateHusSession(ctx context.Context, client *ent.Client, hst string) (sid string, su *ent.User, err error) {
-	claims, exp, err := helper.ParseJWTwithHMAC(hst)
+	claims, exp, err := helper.ParseJWTWithHMAC(hst)
 	if err != nil {
 		return "", nil, fmt.Errorf("invalid token")
 	}

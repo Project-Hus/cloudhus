@@ -186,15 +186,14 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 // @Router /session [get]
 // @Summary checks and issues the Hus session token
 // @Description this endpoint can be used both for Cloudhus and subservices.
-// @Description if the subservice redirects the client to this endpoint with service name, session id and redirect url, the session will be connected with Cloudhus sessoin.
-// @Description but if redirect url is not given, it will just respond rather than redirecting.
+// @Description if the subservice redirects the client to this endpoint with service name, session id and redirect url, the session will be connected with Cloudhus session.
+// @Description but if they are given, it will just respond rather than redirecting.
 // @Description and if fallback url is given, it will redirect to fallback url if it fails.
-// @Description note that all urls must be url-encoded.
+// @Description note that all urls must be url-encoded using QueryEscape in url package.
 // @Param service query string false "subservice name"
 // @Param sid query string false "subservice session id"
 // @Param redirect query string false "redirect url"
 // @Param fallback query string false "fallback url"
-// @Param propagate query string false "propagate url"
 // @Success      200 "Ok, the client already has a valid session"
 // @Success      201 "Created, the client has no valid session, so new session is created"
 // @Success      303 "See Other, if redirect url is given, it redirects whether success or not"
@@ -205,15 +204,12 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	sessionID := c.QueryParam("sid")
 	redirectURL := c.QueryParam("redirect")
 	fallbackURL := c.QueryParam("fallback")
-	// propagateURL is the subservice endpoint to propagate the session state with connection.
-	// and it's only for POST method.
-	propagateURL := c.QueryParam("propagate")
 	if fallbackURL == "" {
 		fallbackURL = redirectURL
 	}
 
-	if (service != "" || sessionID != "" || redirectURL != "" || propagateURL != "") && (service == "" || sessionID == "" || redirectURL == "" || propagateURL == "") {
-		return c.String(http.StatusBadRequest, "service, sid, redirect, propagate should be given all together or none")
+	if (service != "" || sessionID != "" || redirectURL != "") && (service == "" || sessionID == "" || redirectURL == "") {
+		return c.String(http.StatusBadRequest, "service, sid, redirect should be given all together or none")
 	}
 
 	var subservice common.ServiceDomain
@@ -238,23 +234,36 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	// url decode
 	redirectURL, err1 := url.QueryUnescape(redirectURL)
 	fallbackURL, err2 := url.QueryUnescape(fallbackURL)
-	propagateURL, err3 := url.QueryUnescape(propagateURL)
-	if err1 != nil || err2 != nil || err3 != nil {
+	if err1 != nil || err2 != nil {
 		return c.String(http.StatusBadRequest, "url is not valid")
 	}
+
+	// when there's no valid Hus session, create new one depending on this flag.
+	var createFlag bool
 
 	// get hus_st from cookie
 	hus_st, err := c.Cookie("hus_st")
 	if err == http.ErrNoCookie || hus_st.Value == "" {
+		// create new Hus session
+		createFlag = true
+	} else if err != nil {
+		// there's an error while getting cookie, return error.
+		if fallbackURL != "" {
+			return c.Redirect(http.StatusSeeOther, fallbackURL)
+		}
+		return c.String(http.StatusInternalServerError, "an error occured while getting cookie")
+	}
+	// HUS SESSION EXSISTS, NOW VALIDATE IT
+
+	// when there's no valid Hus session
+	if createFlag {
 		/* NEW HUS SESSION CREATION */
 		CreateHusSessionParams := session.CreateHusSessionParams{
-			Ctx:       c.Request().Context(),
-			Dbc:       ac.dbClient,
-			Service:   &subservice,
-			Propagate: &propagateURL,
-			Sid:       &sessionUUID,
+			Ctx:     c.Request().Context(),
+			Dbc:     ac.dbClient,
+			Service: &subservice,
+			Sid:     &sessionUUID,
 		}
-		// there's no Hus session, issue new one and return.
 		_, nhst, err := session.CreateHusSessionV2(CreateHusSessionParams)
 		if err != nil {
 			if fallbackURL != "" {
@@ -277,15 +286,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 			return c.Redirect(http.StatusSeeOther, redirectURL)
 		}
 		return c.String(http.StatusCreated, "new Hus session created")
-		/* ========== */
-	} else if err != nil {
-		// there's an error while getting cookie, return error.
-		if fallbackURL != "" {
-			return c.Redirect(http.StatusSeeOther, fallbackURL)
-		}
-		return c.String(http.StatusInternalServerError, "an error occured while getting cookie")
 	}
-	// there exists Hus session, now validate it.
 
 	// first validate and parse the session token and get SID, User entity.
 	hus_sid, u, err := session.ValidateHusSession(c.Request().Context(), ac.dbClient, hus_st.Value)
