@@ -27,7 +27,7 @@ func (HusSession) Annotations() []schema.Annotation {
 // Fields of the HusSession.
 func (HusSession) Fields() []ent.Field {
 	return []ent.Field{
-		// ID of the cloudhus session
+		// ID of the Hus session
 		field.UUID("id", uuid.UUID{}).StructTag(`json:"sid,omitempty"`).Default(uuid.New).Unique(),
 		// Session's temporary ID for rotation
 		field.UUID("tid", uuid.UUID{}).Default(uuid.New),

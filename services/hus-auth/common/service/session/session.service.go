@@ -3,6 +3,7 @@ package session
 import (
 	"context"
 	"fmt"
+	"hus-auth/common"
 	"hus-auth/common/db"
 	"hus-auth/common/hus"
 	"hus-auth/ent"
@@ -16,30 +17,31 @@ import (
 	"github.com/google/uuid"
 )
 
+type CreateHusSessionParams struct {
+	Ctx context.Context
+	// if the request is from Cloudhus, below fields are not required.
+	Dbc       *ent.Client
+	Service   *common.ServiceDomain
+	Propagate *string
+	Sid       *uuid.UUID
+}
+
 // CreateHusSessionV2 issues new Hus session and returns it.
 // and if subservice's session ID is provided, it will be connected to the Hus session.
-func CreateHusSessionV2(ctx context.Context, client *ent.Client, service *string, sid *uuid.UUID) (
+// after the connection is established, subservice must verify it by asking to Cloudhus.
+func CreateHusSessionV2(ps CreateHusSessionParams) (
 	newSession *ent.HusSession, newToken string, err error,
 ) {
-	tx, err := client.Tx(ctx)
+	tx, err := ps.Dbc.Tx(ps.Ctx)
 	if err != nil {
 		return nil, "", fmt.Errorf("starting transaction failed:%w", err)
 	}
 
 	// create new Hus session
-	hs, err := tx.HusSession.Create().Save(ctx)
+	hs, err := tx.HusSession.Create().Save(ps.Ctx)
 	if err != nil {
 		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("!!creating new hus session failed:%w", err)
-	}
-
-	// if there are service and sid, connect them to the Huse session created above.
-	if service != nil && sid != nil {
-		_, err := tx.ConnectedSession.Create().SetHsid(hs.ID).SetService(*service).SetCsid(*sid).Save(ctx)
-		if err != nil {
-			err = db.Rollback(tx, err)
-			return nil, "", fmt.Errorf("connecting sessions failed:%w", err)
-		}
 	}
 
 	// Hus Session Token
@@ -49,10 +51,9 @@ func CreateHusSessionV2(ctx context.Context, client *ent.Client, service *string
 		"tid": hs.Tid,
 		"iss": hus.AuthURL,
 		"iat": hs.Iat.Unix(),
-		"exp": time.Now().Add(time.Hour).Unix(),
+		"prv": hs.Preserved,
 	})
-	hsk := hus.HusSecretKeyBytes
-	rts, err := rt.SignedString(hsk)
+	rts, err := rt.SignedString(hus.HusSecretKeyBytes)
 	if err != nil {
 		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("signing session token failed:%w", err)
@@ -62,6 +63,25 @@ func CreateHusSessionV2(ctx context.Context, client *ent.Client, service *string
 	if err != nil {
 		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("committing transaction failed:%w", err)
+	}
+
+	// if there are service and sid, connect them to the Huse session created above.
+	if ps.Service != nil && ps.Sid != nil {
+		tx, err = ps.Dbc.Tx(ps.Ctx)
+		if err != nil {
+			return nil, "", fmt.Errorf("starting transaction failed:%w", err)
+		}
+
+		_, err := tx.ConnectedSession.Create().SetHsid(hs.ID).SetService(ps.Service.Domain.Name).SetCsid(*ps.Sid).Save(ps.Ctx)
+		if err != nil {
+			err = db.Rollback(tx, err)
+			return nil, "", fmt.Errorf("connecting sessions failed:%w", err)
+		}
+
+		if err != nil {
+			err = db.Rollback(tx, err)
+			return nil, "", fmt.Errorf("signing session token failed:%w", err)
+		}
 	}
 
 	return hs, rts, nil

@@ -29,6 +29,13 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "connectedsession_csid",
+				Unique:  true,
+				Columns: []*schema.Column{ConnectedSessionsColumns[2]},
+			},
+		},
 	}
 	// HusSessionsColumns holds the columns for the "hus_sessions" table.
 	HusSessionsColumns = []*schema.Column{
