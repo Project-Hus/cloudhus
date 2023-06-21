@@ -8,6 +8,7 @@ import (
 	"hus-auth/common/helper"
 	"hus-auth/common/hus"
 	"hus-auth/ent"
+	"hus-auth/ent/hussession"
 	"strconv"
 
 	"log"
@@ -52,8 +53,8 @@ func CreateHusSessionV2(ps CreateHusSessionParams) (
 	// Hus Session Token
 	hst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"pps": "hus_session",
-		"sid": hs.ID,
-		"tid": hs.Tid,
+		"sid": hs.ID.String(),
+		"tid": hs.Tid.String(),
 		"iss": hus.AuthURL,
 		"iat": hs.Iat.Unix(),
 		"exp": time.Now().Add(time.Hour * 48).Unix(),
@@ -74,43 +75,70 @@ func CreateHusSessionV2(ps CreateHusSessionParams) (
 	return hs, hsts, nil
 }
 
-func ValidateHusSessionV2(ctx context.Context, client *ent.Client, hst string) (sid string, su *ent.User, err error) {
+func ValidateHusSessionV2(ctx context.Context, client *ent.Client, hst string) (sid *uuid.UUID, su *ent.User, err error) {
+	// parse the Hus session token.
 	claims, exp, err := helper.ParseJWTWithHMAC(hst)
-	if err != nil {
-		return "", nil, fmt.Errorf("invalid token")
+	if err != nil || claims["pps"].(string) != "hus_session" {
+		return nil, nil, fmt.Errorf("invalid session")
 	}
-
-	hus_sid := claims["sid"].(string)
-	hus_tid := claims["tid"].(string)
-	hus_uid := claims["uid"].(string)
-
+	// get and parse the Hus session ID and TID.
+	husSidStr := claims["sid"].(string)
+	husTidStr := claims["tid"].(string)
+	husSid, err1 := uuid.Parse(husSidStr)
+	husTid, err2 := uuid.Parse(husTidStr)
+	if err1 != nil || err2 != nil {
+		return nil, nil, fmt.Errorf("invalid session")
+	}
 	if exp {
-		return hus_sid, nil, fmt.Errorf("expired sesison")
-	}
-	// if the purpose is not hus_session, then return 401.
-	if claims["purpose"].(string) != "hus_session" {
-		return hus_sid, nil, fmt.Errorf("wrong purpose")
+		_ = client.HusSession.DeleteOneID(husSid).Exec(ctx)
+		return nil, nil, fmt.Errorf("expired sesison")
 	}
 
 	// check if the hus session is not revoked by querying the database with hus_sid.
-	hs, err := db.QuerySessionBySID(ctx, client, hus_sid)
-	if err != nil || hs == nil {
-		return "", nil, fmt.Errorf("no such session")
-	}
-	/* for security if the token id is not matched, then revoke the session. */
-	if hus_tid != hs.Tid.String() {
-		return hus_sid, nil, fmt.Errorf("invalid token")
-	}
-	// check if the user exists by querying the database with hus_uid.
-	hus_uid_uint64, err := strconv.ParseUint(hus_uid, 10, 64)
+	// and get the user entity too.
+	hs, err := client.HusSession.Query().Where(hussession.ID(husSid)).WithUser().Only(ctx)
 	if err != nil {
-		return hus_sid, nil, fmt.Errorf("invalid uid")
+		return nil, nil, fmt.Errorf("invalid session")
 	}
-	u, err := db.QueryUserByUID(ctx, client, hus_uid_uint64)
-	if err != nil || u == nil {
-		return hus_sid, nil, fmt.Errorf("no such user")
+
+	// UUID type is a byte array with a length of 16.
+	// so it can be compared directly.
+	if hs.Tid != husTid {
+		// revoke all user's session (not implemented yet)
+		return nil, nil, fmt.Errorf("forged session")
 	}
-	return hus_sid, u, nil
+
+	return &husSid, hs.Edges.User, nil
+}
+
+func RefreshHusSessionV2(ctx context.Context, client *ent.Client, sid string) (nstSigned string, err error) {
+	sid_uuid, err := uuid.Parse(sid)
+	if err != nil {
+		return "", fmt.Errorf("invalid sid")
+	}
+
+	new_tid := uuid.New()
+	hs, err := client.HusSession.UpdateOneID(sid_uuid).SetTid(new_tid).Save(ctx)
+	if err != nil {
+		return "", fmt.Errorf("updating session failed")
+	}
+
+	nst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sid":     hs.ID.String(),                       // session token's uuid
+		"tid":     hs.Tid.String(),                      // token id
+		"purpose": "hus_session",                        // purpose
+		"iss":     hus.AuthURL,                          // issuer
+		"uid":     strconv.FormatUint(*hs.UID, 10),      // user's uuid
+		"iat":     hs.Iat.Unix(),                        // issued at
+		"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
+	})
+
+	nstSigned, err = nst.SignedString([]byte(hus.HusSecretKey))
+	if err != nil {
+		return "", fmt.Errorf("signing hus_st failed")
+	}
+
+	return nstSigned, nil
 }
 
 // ==========================================================================================
