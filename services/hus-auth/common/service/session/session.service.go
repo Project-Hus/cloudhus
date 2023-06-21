@@ -245,7 +245,7 @@ func RevokeHusSession(ctx context.Context, client *ent.Client, sid string) error
 
 // RevokeHusSessionToken takes session token and revokes them.
 func RevokeHusSessionToken(ctx context.Context, client *ent.Client, st string) error {
-	stClaims, _, err := helper.ParseJWTwithHMAC(st)
+	stClaims, _, err := helper.ParseJWTWithHMAC(st)
 
 	sid_uuid, err := uuid.Parse(stClaims["sid"].(string))
 	if err != nil {
