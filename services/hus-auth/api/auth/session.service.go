@@ -8,6 +8,7 @@ import (
 	"hus-auth/common"
 	"hus-auth/common/hus"
 	"hus-auth/common/service/session"
+	"hus-auth/ent"
 
 	"log"
 	"net/http"
@@ -200,7 +201,7 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 // @Failure	  400 "Bad Request"
 // @Failure 500 "Internal Server Error"
 func (ac authApiController) HusSessionHandler(c echo.Context) error {
-	service := c.QueryParam("service")
+	serviceName := c.QueryParam("service")
 	sessionID := c.QueryParam("sid")
 	redirectURL := c.QueryParam("redirect")
 	fallbackURL := c.QueryParam("fallback")
@@ -208,17 +209,14 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		fallbackURL = redirectURL
 	}
 
-	if (service != "" || sessionID != "" || redirectURL != "") && (service == "" || sessionID == "" || redirectURL == "") {
+	if (serviceName != "" || sessionID != "" || redirectURL != "") && (serviceName == "" || sessionID == "" || redirectURL == "") {
 		return c.String(http.StatusBadRequest, "service, sid, redirect should be given all together or none")
 	}
 
-	var subservice common.ServiceDomain
-	var ok bool
-
 	// if service name is given, check if it is.
 	// if not, return error.
-	if service != "" {
-		subservice, ok = common.Subservice[service]
+	if serviceName != "" {
+		_, ok := common.Subservice[serviceName]
 		// if the service name is not registered, return error.
 		if !ok {
 			return c.String(http.StatusBadRequest, "no such service")
@@ -239,8 +237,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 
 	// when there's no valid Hus session, create new one depending on this flag.
-	var createFlag bool
-
+	createFlag := false
 	// get hus_st from cookie
 	hus_st, err := c.Cookie("hus_st")
 	if err == http.ErrNoCookie || hus_st.Value == "" {
@@ -255,13 +252,18 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 	// HUS SESSION EXSISTS, NOW VALIDATE IT
 
-	// when there's no valid Hus session
-	if createFlag {
+	// first validate and parse the session token and get SID, User entity.
+	var hs *ent.HusSession
+	var preserved bool
+	if !createFlag {
+		hs, _, preserved, err = session.ValidateHusSessionV2(c.Request().Context(), ac.dbClient, hus_st.Value)
+	}
+	if err != nil || createFlag {
 		/* NEW HUS SESSION CREATION */
 		CreateHusSessionParams := session.CreateHusSessionParams{
 			Ctx:     c.Request().Context(),
 			Dbc:     ac.dbClient,
-			Service: &subservice,
+			Service: &serviceName,
 			Sid:     &sessionUUID,
 		}
 		_, nhst, err := session.CreateHusSessionV2(CreateHusSessionParams)
@@ -287,78 +289,37 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		}
 		return c.String(http.StatusCreated, "new Hus session created")
 	}
+	// NOW HANDLE THE VALID SESSION
 
-	// first validate and parse the session token and get SID, User entity.
-	hus_sid, u, err := session.ValidateHusSession(c.Request().Context(), ac.dbClient, hus_st.Value)
+	err = session.ConnectSessions(c.Request().Context(), ac.dbClient, hs, serviceName, sessionUUID)
 	if err != nil {
-		sidUUID, _ := uuid.Parse(hus_sid)
-		_ = ac.dbClient.HusSession.DeleteOneID(sidUUID).Exec(c.Request().Context())
-		return c.String(http.StatusUnauthorized, "not signed in")
+		if fallbackURL != "" {
+			return c.Redirect(http.StatusSeeOther, fallbackURL)
+		}
+		return c.String(http.StatusInternalServerError, "connecting sessions failed")
 	}
 
-	// if session token is valid, rotate the session token in cookie.
-	nhstSigned, err := session.RefreshHusSession(c.Request().Context(), ac.dbClient, hus_sid)
+	// sessions are connected, now rotate the Hus session token.
+	nhst, err := session.RotateHusSessionV2(c.Request().Context(), ac.dbClient, hs)
 	if err != nil {
-		err = fmt.Errorf("refreshing hus session failed:%w", err)
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.String(http.StatusInternalServerError, "rotating hus session failed")
 	}
 	nhstCookie := &http.Cookie{
 		Name:     "hus_st",
-		Value:    nhstSigned,
+		Value:    nhst,
 		Path:     "/",
 		Domain:   hus.AuthCookieDomain,
-		Expires:  time.Now().Add(time.Hour * 1),
 		HttpOnly: true,
 		Secure:   hus.CookieSecure,
-		SameSite: hus.SameSiteMode,
+		SameSite: http.SameSiteLaxMode,
+	}
+	if preserved {
+		nhstCookie.Expires = time.Now().Add(7 * 24 * time.Hour)
 	}
 	c.SetCookie(nhstCookie)
 
-	var bd string
-	if u.Birthdate != nil {
-		bd = u.Birthdate.Format(time.RFC3339)
+	if redirectURL != "" {
+		return c.Redirect(http.StatusSeeOther, redirectURL)
 	}
-
-	hscbJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sid":               lifthus_sid,
-		"uid":               strconv.FormatUint(u.ID, 10),
-		"profile_image_url": u.ProfilePictureURL,
-		"email":             u.Email,
-		"email_verified":    u.EmailVerified,
-		"name":              u.Name,
-		"given_name":        u.GivenName,
-		"family_name":       u.FamilyName,
-		"birthdate":         bd,
-		"exp":               time.Now().Add(time.Second * 10).Unix(),
-	})
-
-	hscbSigned, err := hscbJWT.SignedString([]byte(hus.HusSecretKey))
-	if err != nil {
-		err = fmt.Errorf("signing jwt for %s failed:%w", service, err)
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-
-	// with ac.httpClient, transfer the validation result to subservice auth server.
-	req, err := http.NewRequest("PATCH", subservice.Subdomains["auth"].URL+"/auth/hus/session/sign", strings.NewReader(hscbSigned))
-	if err != nil {
-		err = fmt.Errorf("session injection to "+subservice.Domain.Name+" failed:", err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-	req.Header.Set("Content-Type", "application/json")
-	// send the request
-	resp, err := ac.httpClient.Do(req)
-	if err != nil {
-		err = fmt.Errorf("session injection to "+subservice.Domain.Name+" failed:", err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		return c.String(http.StatusOK, "session injection to "+subservice.Domain.Name+" success")
-	} else {
-		log.Println("an error occured from " + subservice.Domain.Name + ":" + resp.Status)
-		return c.NoContent(http.StatusInternalServerError)
-	}
+	return c.String(http.StatusOK, "valid Hus session")
 }

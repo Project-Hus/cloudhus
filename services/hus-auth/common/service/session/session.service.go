@@ -3,7 +3,6 @@ package session
 import (
 	"context"
 	"fmt"
-	"hus-auth/common"
 	"hus-auth/common/db"
 	"hus-auth/common/helper"
 	"hus-auth/common/hus"
@@ -22,7 +21,7 @@ type CreateHusSessionParams struct {
 	Ctx context.Context
 	// if the request is from Cloudhus, below fields are not required.
 	Dbc     *ent.Client
-	Service *common.ServiceDomain
+	Service *string
 	Sid     *uuid.UUID
 }
 
@@ -44,7 +43,7 @@ func CreateHusSessionV2(ps CreateHusSessionParams) (
 	}
 	// if there are service and sid, connect them to the Hus session created above.
 	if ps.Service != nil && ps.Sid != nil {
-		_, err := tx.ConnectedSession.Create().SetHsid(hs.ID).SetService(ps.Service.Domain.Name).SetCsid(*ps.Sid).Save(ps.Ctx)
+		_, err := tx.ConnectedSession.Create().SetHsid(hs.ID).SetService(*ps.Service).SetCsid(*ps.Sid).Save(ps.Ctx)
 		if err != nil {
 			err = db.Rollback(tx, err)
 			return nil, "", fmt.Errorf("connecting sessions failed:%w", err)
@@ -75,11 +74,24 @@ func CreateHusSessionV2(ps CreateHusSessionParams) (
 	return hs, hsts, nil
 }
 
-func ValidateHusSessionV2(ctx context.Context, client *ent.Client, hst string) (sid *uuid.UUID, su *ent.User, err error) {
+func ConnectSessions(ctx context.Context, client *ent.Client, hs *ent.HusSession, service string, csid uuid.UUID) error {
+	_, err := client.ConnectedSession.Create().SetHsid(hs.ID).SetService(service).SetCsid(csid).Save(ctx)
+	if err != nil {
+		return fmt.Errorf("connecting sessions failed:%w", err)
+	}
+	return nil
+}
+
+// ValidateHusSession gets Hus session token in string and validates it.
+// if token is invalid, it returns "invalid session" error.
+// if token is expired, it returns "expired session" error.
+// if token's TID is not matched, it returns "illegal session" error.
+// and if it is valid, it returns Hus session and User entities with nil error.
+func ValidateHusSessionV2(ctx context.Context, client *ent.Client, hst string) (hs *ent.HusSession, su *ent.User, preserved bool, err error) {
 	// parse the Hus session token.
 	claims, exp, err := helper.ParseJWTWithHMAC(hst)
 	if err != nil || claims["pps"].(string) != "hus_session" {
-		return nil, nil, fmt.Errorf("invalid session")
+		return nil, nil, false, fmt.Errorf("invalid session")
 	}
 	// get and parse the Hus session ID and TID.
 	husSidStr := claims["sid"].(string)
@@ -87,55 +99,50 @@ func ValidateHusSessionV2(ctx context.Context, client *ent.Client, hst string) (
 	husSid, err1 := uuid.Parse(husSidStr)
 	husTid, err2 := uuid.Parse(husTidStr)
 	if err1 != nil || err2 != nil {
-		return nil, nil, fmt.Errorf("invalid session")
+		return nil, nil, false, fmt.Errorf("invalid session")
 	}
 	if exp {
 		_ = client.HusSession.DeleteOneID(husSid).Exec(ctx)
-		return nil, nil, fmt.Errorf("expired sesison")
+		return nil, nil, false, fmt.Errorf("expired sesison")
 	}
 
 	// check if the hus session is not revoked by querying the database with hus_sid.
 	// and get the user entity too.
-	hs, err := client.HusSession.Query().Where(hussession.ID(husSid)).WithUser().Only(ctx)
+	hs, err = client.HusSession.Query().Where(hussession.ID(husSid)).WithUser().Only(ctx)
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid session")
+		return nil, nil, false, fmt.Errorf("invalid session")
 	}
 
 	// UUID type is a byte array with a length of 16.
 	// so it can be compared directly.
 	if hs.Tid != husTid {
 		// revoke all user's session (not implemented yet)
-		return nil, nil, fmt.Errorf("forged session")
+		return nil, nil, false, fmt.Errorf("illegal session")
 	}
 
-	return &husSid, hs.Edges.User, nil
+	return hs, hs.Edges.User, hs.Preserved, nil
 }
 
-func RefreshHusSessionV2(ctx context.Context, client *ent.Client, sid string) (nstSigned string, err error) {
-	sid_uuid, err := uuid.Parse(sid)
-	if err != nil {
-		return "", fmt.Errorf("invalid sid")
-	}
-
-	new_tid := uuid.New()
-	hs, err := client.HusSession.UpdateOneID(sid_uuid).SetTid(new_tid).Save(ctx)
+func RotateHusSessionV2(ctx context.Context, client *ent.Client, hs *ent.HusSession) (nstSigned string, err error) {
+	hs, err = hs.Update().SetTid(uuid.New()).Save(ctx)
 	if err != nil {
 		return "", fmt.Errorf("updating session failed")
 	}
 
 	nst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sid":     hs.ID.String(),                       // session token's uuid
-		"tid":     hs.Tid.String(),                      // token id
-		"purpose": "hus_session",                        // purpose
-		"iss":     hus.AuthURL,                          // issuer
-		"uid":     strconv.FormatUint(*hs.UID, 10),      // user's uuid
-		"iat":     hs.Iat.Unix(),                        // issued at
-		"exp":     time.Now().Add(time.Hour * 1).Unix(), // expiration : an hour
+		"pps": "hus_session",   // purpose
+		"sid": hs.ID.String(),  // session token's uuid
+		"tid": hs.Tid.String(), // token id
+		"iss": hus.AuthURL,     // issuer
+		"iat": hs.Iat.Unix(),   // issued at
+		"exp": time.Now().Add(time.Hour * 48).Unix(),
+		"prv": hs.Preserved, // preserved
+		"uid": hs.UID,       // user id
 	})
 
-	nstSigned, err = nst.SignedString([]byte(hus.HusSecretKey))
+	nstSigned, err = nst.SignedString(hus.HusSecretKeyBytes)
 	if err != nil {
-		return "", fmt.Errorf("signing hus_st failed")
+		return "", fmt.Errorf("signing Hus session failed")
 	}
 
 	return nstSigned, nil
