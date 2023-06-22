@@ -7,6 +7,7 @@ import (
 	"hus-auth/common/service/session"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -152,56 +153,53 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 // @Param redirect query string true "url to be redirected after authentication"
 // @Param fallback query string false "url to be redirected if the authentication fails"
 // @Param        credential body string true "Google ID token"
-// @Response      301 "to /auth/{token_string} or to /error"
+// @Response      303 "See Other"
 func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
 	// the session is already connected with subservice as the user accessed any page of the subservice.
 	// so all this endpoint should do is just to validate the Google ID token and propagate the result to the connected sessions.
 
 	redirectURL := c.QueryParam("redirect")
-	if redirectURL == "" {
-		// if there's no redirect url, just redirect to auth welcome page.
-		redirectURL = common.Subservice["cloudhus"].Subdomains["auth"].URL + "/auth"
-	}
 	fallbackURL := c.QueryParam("fallback")
 	if fallbackURL == "" {
 		fallbackURL = redirectURL
 	}
 
-	return nil
+	redirectURL, err1 := url.QueryUnescape(redirectURL)
+	fallbackURL, err2 := url.QueryUnescape(fallbackURL)
+	if err1 != nil || err2 != nil {
+		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Subdomains["auth"].URL+"/auth")
+	}
 
-	// husst, err := c.Cookie("hus_st")
-	// if err != nil {
-	// 	return c.Redirect(http.StatusMovedPermanently, fallbackURL)
-	// }
+	if redirectURL == "" {
+		redirectURL = common.Subservice["cloudhus"].Subdomains["auth"].URL + "/auth"
+		fallbackURL = redirectURL
+	}
 
-	// // client ID that Google issued to Cloudhus.
-	// clientID := hus.GoogleClientID
+	hst, err := c.Cookie("hus_st")
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
 
-	// // credential sent from Google
-	// credential := c.FormValue("credential")
+	// validate and parse the Google ID token
+	payload, err := idtoken.Validate(c.Request().Context(), c.FormValue("credential"), hus.GoogleClientID)
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
 
-	// // validate and parse the Google ID token
-	// payload, err := idtoken.Validate(c.Request().Context(), credential, clientID)
-	// if err != nil {
-	// 	log.Println("invalid id token:", err)
-	// 	log.Println("@credential:", credential)
-	// 	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
-	// }
-
-	// // Google's unique user ID
-	// sub := payload.Claims["sub"].(string)
-	// // check if the user is registered with Google
-	// u, err := db.QueryUserByGoogleSub(c.Request().Context(), ac.dbClient, sub)
-	// if err != nil {
-	// 	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
-	// }
-	// // create one if there is no Hus account with this Google account
-	// if u == nil {
-	// 	_, err := db.CreateUserFromGoogle(c.Request().Context(), ac.dbClient, *payload)
-	// 	if err != nil {
-	// 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
-	// 	}
-	// }
+	// Google's unique user ID
+	sub := payload.Claims["sub"].(string)
+	// check if the user is registered with Google
+	u, err := db.QueryUserByGoogleSub(c.Request().Context(), ac.dbClient, sub)
+	if err != nil {
+		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
+	}
+	// create one if there is no Hus account with this Google account
+	if u == nil {
+		_, err := db.CreateUserFromGoogle(c.Request().Context(), ac.dbClient, *payload)
+		if err != nil {
+			return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
+		}
+	}
 
 	// // We checked or created if the Google user exists in Hus above,
 	// // Now get user query again to create new hus session.
