@@ -13,7 +13,7 @@ var (
 	ConnectedSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "service", Type: field.TypeString},
-		{Name: "csid", Type: field.TypeUUID},
+		{Name: "csid", Type: field.TypeUUID, Unique: true},
 		{Name: "hsid", Type: field.TypeUUID},
 	}
 	// ConnectedSessionsTable holds the schema information for the "connected_sessions" table.
@@ -31,9 +31,9 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "connectedsession_csid",
+				Name:    "connectedsession_service_csid",
 				Unique:  true,
-				Columns: []*schema.Column{ConnectedSessionsColumns[2]},
+				Columns: []*schema.Column{ConnectedSessionsColumns[1], ConnectedSessionsColumns[2]},
 			},
 		},
 	}

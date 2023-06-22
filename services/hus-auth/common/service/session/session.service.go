@@ -74,6 +74,8 @@ func CreateHusSessionV2(ps CreateHusSessionParams) (
 	return hs, hsts, nil
 }
 
+// ConnectSessions gets Hus session entity, subservice name and subservice's session ID.
+// then makes connection between them and returns error if it occurs.
 func ConnectSessions(ctx context.Context, client *ent.Client, hs *ent.HusSession, service string, csid uuid.UUID) error {
 	_, err := client.ConnectedSession.Create().SetHsid(hs.ID).SetService(service).SetCsid(csid).Save(ctx)
 	if err != nil {
@@ -137,7 +139,6 @@ func RotateHusSessionV2(ctx context.Context, client *ent.Client, hs *ent.HusSess
 		"iat": hs.Iat.Unix(),   // issued at
 		"exp": time.Now().Add(time.Hour * 48).Unix(),
 		"prv": hs.Preserved, // preserved
-		"uid": hs.UID,       // user id
 	})
 
 	nstSigned, err = nst.SignedString(hus.HusSecretKeyBytes)

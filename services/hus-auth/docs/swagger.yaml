@@ -13,6 +13,67 @@ info:
   title: Cloudhus auth server
   version: 0.0.0
 paths:
+  /hussession:
+    get:
+      description: |-
+        this endpoint can be used both for Cloudhus and subservices.
+        if the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.
+        and if fallback url is given, it will redirect to fallback url if it fails.
+        but if they are not given, it will just respond rather than redirecting.
+        note that all urls must be url-encoded using QueryEscape in net/url package.
+      parameters:
+      - description: subservice name
+        in: query
+        name: service
+        type: string
+      - description: subservice session id
+        in: query
+        name: sid
+        type: string
+      - description: redirect url
+        in: query
+        name: redirect
+        type: string
+      - description: fallback url
+        in: query
+        name: fallback
+        type: string
+      responses:
+        "200":
+          description: Ok, validated and connected
+        "201":
+          description: Created, new Hus session connected
+        "303":
+          description: See Other, redirection
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: checks and issues the Hus session token
+      tags:
+      - auth
+  /hussession/{token}:
+    get:
+      parameters:
+      - description: service name, session ID in signed token which expires only in
+          10 seconds
+        in: path
+        name: token
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Ok, session has been connected
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found, no such connected session
+        "500":
+          description: Internal Server Error
+      summary: gets connection token from subservice and returns Hus session ID and
+        user info
+      tags:
+      - auth
   /session/check/{service}/{sid}:
     post:
       description: |-
@@ -67,15 +128,14 @@ paths:
         validates the google ID token and do some authentication stuff.
         And redirects the user back to the subservice after the process.
       parameters:
-      - description: service name
-        in: query
-        name: service
-        required: true
-        type: string
       - description: url to be redirected after authentication
         in: query
         name: redirect
         required: true
+        type: string
+      - description: url to be redirected if the authentication fails
+        in: query
+        name: fallback
         type: string
       - description: Google ID token
         in: body

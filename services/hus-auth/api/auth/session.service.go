@@ -6,9 +6,11 @@ import (
 
 	"fmt"
 	"hus-auth/common"
+	"hus-auth/common/helper"
 	"hus-auth/common/hus"
 	"hus-auth/common/service/session"
 	"hus-auth/ent"
+	"hus-auth/ent/connectedsession"
 
 	"log"
 	"net/http"
@@ -182,9 +184,11 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
+// V2
+
 // HusSessionHandler godoc
 // @Tags         auth
-// @Router /session [get]
+// @Router /hussession [get]
 // @Summary checks and issues the Hus session token
 // @Description this endpoint can be used both for Cloudhus and subservices.
 // @Description if the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.
@@ -335,4 +339,51 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		return c.Redirect(http.StatusSeeOther, redirectURL)
 	}
 	return c.String(http.StatusOK, "valid Hus session")
+}
+
+// SessionConnectionHandler godoc
+// @Tags         auth
+// @Router /hussession/{token} [get]
+// @Summary gets connection token from subservice and returns Hus session ID and user info
+// @Param token path string true "service name, session ID in signed token which expires only in 10 seconds"
+// @Success      200 "Ok, session has been connected"
+// @Failure      400 "Bad Request"
+// @Failure      404 "Not Found, no such connected session"
+// @Failure 500 "Internal Server Error"
+func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
+	token := c.Param("token")
+	claims, exp, err := helper.ParseJWTWithHMAC(token)
+	if err != nil || exp {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	pps := claims["pps"].(string)
+	if pps != "session_connection" {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	service := claims["service"].(string)
+	sid := claims["sid"].(string)
+	suuid, err := uuid.Parse(sid)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	cs, err := ac.dbClient.ConnectedSession.Query().Where(connectedsession.And(
+		connectedsession.Service(service),
+		connectedsession.Csid(suuid),
+	)).WithHusSession(func(hsq *ent.HusSessionQuery) {
+		hsq.WithUser()
+	}).Only(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusNotFound, "no such session")
+	}
+
+	return c.JSON(http.StatusOK, struct {
+		Hsid string    `json:"hsid"`
+		User *ent.User `json:"user,omitempty"`
+	}{
+		Hsid: cs.Hsid.String(),
+		User: cs.Edges.HusSession.Edges.User,
+	})
 }

@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -19,6 +20,13 @@ func (ConnectedSession) Annotations() []schema.Annotation {
 		entsql.Annotation{
 			Options: "ENGINE=MEMORY",
 		},
+	}
+}
+
+func (ConnectedSession) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("service", "csid").
+			Unique(),
 	}
 }
 
