@@ -345,11 +345,11 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 // @Tags         auth
 // @Router /hussession/{token} [get]
 // @Summary gets connection token from subservice and returns Hus session ID and user info
-// @Param token path string true "service name, session ID in signed token which expires only in 10 seconds"
+// @Description the token has properties pps, service and sid.
+// @Param token path string true "pps, service name, session ID in signed token which expires only in 10 seconds"
 // @Success      200 "Ok, session has been connected"
 // @Failure      400 "Bad Request"
 // @Failure      404 "Not Found, no such connected session"
-// @Failure 500 "Internal Server Error"
 func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 	token := c.Param("token")
 	claims, exp, err := helper.ParseJWTWithHMAC(token)

@@ -54,9 +54,10 @@ paths:
       - auth
   /hussession/{token}:
     get:
+      description: the token has properties pps, service and sid.
       parameters:
-      - description: service name, session ID in signed token which expires only in
-          10 seconds
+      - description: pps, service name, session ID in signed token which expires only
+          in 10 seconds
         in: path
         name: token
         required: true
@@ -68,8 +69,6 @@ paths:
           description: Bad Request
         "404":
           description: Not Found, no such connected session
-        "500":
-          description: Internal Server Error
       summary: gets connection token from subservice and returns Hus session ID and
         user info
       tags:

@@ -79,6 +79,7 @@ const docTemplate = `{
         },
         "/hussession/{token}": {
             "get": {
+                "description": "the token has properties pps, service and sid.",
                 "tags": [
                     "auth"
                 ],
@@ -86,7 +87,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "service name, session ID in signed token which expires only in 10 seconds",
+                        "description": "pps, service name, session ID in signed token which expires only in 10 seconds",
                         "name": "token",
                         "in": "path",
                         "required": true
@@ -101,9 +102,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found, no such connected session"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
                     }
                 }
             }
