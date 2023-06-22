@@ -187,46 +187,50 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 // @Router /session [get]
 // @Summary checks and issues the Hus session token
 // @Description this endpoint can be used both for Cloudhus and subservices.
-// @Description if the subservice redirects the client to this endpoint with service name, session id and redirect url, the session will be connected with Cloudhus session.
-// @Description but if they are given, it will just respond rather than redirecting.
+// @Description if the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.
 // @Description and if fallback url is given, it will redirect to fallback url if it fails.
-// @Description note that all urls must be url-encoded using QueryEscape in url package.
+// @Description but if they are not given, it will just respond rather than redirecting.
+// @Description note that all urls must be url-encoded using QueryEscape in net/url package.
 // @Param service query string false "subservice name"
 // @Param sid query string false "subservice session id"
 // @Param redirect query string false "redirect url"
 // @Param fallback query string false "fallback url"
-// @Success      200 "Ok, the client already has a valid session"
-// @Success      201 "Created, the client has no valid session, so new session is created"
-// @Success      303 "See Other, if redirect url is given, it redirects whether success or not"
+// @Success      200 "Ok, validated and connected"
+// @Success      201 "Created, new Hus session connected"
+// @Success      303 "See Other, redirection"
 // @Failure	  400 "Bad Request"
 // @Failure 500 "Internal Server Error"
 func (ac authApiController) HusSessionHandler(c echo.Context) error {
-	serviceName := c.QueryParam("service")
-	sessionID := c.QueryParam("sid")
-	redirectURL := c.QueryParam("redirect")
-	fallbackURL := c.QueryParam("fallback")
+	var err error
+
+	// Query Parameters
+	serviceName := c.QueryParam("service")  // name of the subservice that is requesting
+	sessionID := c.QueryParam("sid")        // session ID of the subservice that is requesting
+	redirectURL := c.QueryParam("redirect") // URL to be redirected after the request is processed
+	fallbackURL := c.QueryParam("fallback") // URL to be redirected if the request fails
 	if fallbackURL == "" {
+		// if fallback URL is not given, it redirects to redirect URL
 		fallbackURL = redirectURL
 	}
 
+	// if any of three parameters are given, either all or none of them must be given.
 	if (serviceName != "" || sessionID != "" || redirectURL != "") && (serviceName == "" || sessionID == "" || redirectURL == "") {
 		return c.String(http.StatusBadRequest, "service, sid, redirect should be given all together or none")
 	}
 
-	// if service name is given, check if it is.
-	// if not, return error.
+	// if the request comes from subservice, handle the query parameters.
+	var sessionUUID uuid.UUID
 	if serviceName != "" {
 		_, ok := common.Subservice[serviceName]
 		// if the service name is not registered, return error.
 		if !ok {
 			return c.String(http.StatusBadRequest, "no such service")
 		}
-	}
-
-	// sessionID to UUID
-	sessionUUID, err := uuid.Parse(sessionID)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "sid is not valid")
+		// sessionID to UUID
+		sessionUUID, err = uuid.Parse(sessionID)
+		if err != nil {
+			return c.String(http.StatusBadRequest, "sid is not valid")
+		}
 	}
 
 	// url decode
@@ -238,6 +242,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 
 	// when there's no valid Hus session, create new one depending on this flag.
 	createFlag := false
+
 	// get hus_st from cookie
 	hus_st, err := c.Cookie("hus_st")
 	if err == http.ErrNoCookie || hus_st.Value == "" {
@@ -250,11 +255,13 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		}
 		return c.String(http.StatusInternalServerError, "an error occured while getting cookie")
 	}
+
 	// HUS SESSION EXSISTS, NOW VALIDATE IT
 
-	// first validate and parse the session token and get SID, User entity.
+	// first validate and parse the session token
 	var hs *ent.HusSession
 	var preserved bool
+	err = nil
 	if !createFlag {
 		hs, _, preserved, err = session.ValidateHusSessionV2(c.Request().Context(), ac.dbClient, hus_st.Value)
 	}
@@ -289,21 +296,26 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		}
 		return c.String(http.StatusCreated, "new Hus session created")
 	}
-	// NOW HANDLE THE VALID SESSION
 
-	err = session.ConnectSessions(c.Request().Context(), ac.dbClient, hs, serviceName, sessionUUID)
-	if err != nil {
-		if fallbackURL != "" {
-			return c.Redirect(http.StatusSeeOther, fallbackURL)
+	// HANDLE THE VALID SESSION
+
+	// if the request comes from subservice, connect the sessions.
+	if serviceName != "" {
+		err = session.ConnectSessions(c.Request().Context(), ac.dbClient, hs, serviceName, sessionUUID)
+		if err != nil {
+			if fallbackURL != "" {
+				return c.Redirect(http.StatusSeeOther, fallbackURL)
+			}
+			return c.String(http.StatusInternalServerError, "connecting sessions failed")
 		}
-		return c.String(http.StatusInternalServerError, "connecting sessions failed")
 	}
 
-	// sessions are connected, now rotate the Hus session token.
+	// finally, rotate the Hus session
 	nhst, err := session.RotateHusSessionV2(c.Request().Context(), ac.dbClient, hs)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "rotating hus session failed")
 	}
+
 	nhstCookie := &http.Cookie{
 		Name:     "hus_st",
 		Value:    nhst,
@@ -316,6 +328,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	if preserved {
 		nhstCookie.Expires = time.Now().Add(7 * 24 * time.Hour)
 	}
+
 	c.SetCookie(nhstCookie)
 
 	if redirectURL != "" {
