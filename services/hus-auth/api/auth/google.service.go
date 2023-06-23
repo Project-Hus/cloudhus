@@ -145,9 +145,10 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 
 // GoogleAuthHandlerV2 godoc
 // @Router       /social/google [post]
-// @Summary      gets and processes Google ID token and redirects the user back to the subservice.
+// @Summary      gets and processes Google ID token and redirects the user back to the given redirect url.
 // @Description  validates the google ID token and do some authentication stuff.
-// @Description  And redirects the user back to the subservice after the process.
+// @Description  and redirects the user back to the given  after the process.
+// @Description  note that all urls must be url-encoded.
 // @Tags         auth
 // @Accept       json
 // @Param redirect query string true "url to be redirected after authentication"
@@ -175,16 +176,18 @@ func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
 		fallbackURL = redirectURL
 	}
 
-	hst, err := c.Cookie("hus_st")
-	if err != nil {
-		return c.Redirect(http.StatusSeeOther, fallbackURL)
-	}
-
 	// validate and parse the Google ID token
 	payload, err := idtoken.Validate(c.Request().Context(), c.FormValue("credential"), hus.GoogleClientID)
 	if err != nil {
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
+
+	hst, err := c.Cookie("hus_st")
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
+
+	hs, _, preserved, err = session.ValidateHusSessionV2(c.Request().Context(), ac.dbClient, hst.Value)
 
 	// Google's unique user ID
 	sub := payload.Claims["sub"].(string)

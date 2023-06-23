@@ -194,7 +194,7 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 // @Description if the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.
 // @Description and if fallback url is given, it will redirect to fallback url if it fails.
 // @Description but if they are not given, it will just respond rather than redirecting.
-// @Description note that all urls must be url-encoded using QueryEscape in net/url package.
+// @Description note that all urls must be url-encoded.
 // @Param service query string false "subservice name"
 // @Param sid query string false "subservice session id"
 // @Param redirect query string false "redirect url"
