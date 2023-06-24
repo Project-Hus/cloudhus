@@ -3,17 +3,18 @@ package session
 import (
 	"context"
 	"fmt"
+	"hus-auth/common"
 	"hus-auth/common/db"
 	"hus-auth/common/helper"
 	"hus-auth/common/hus"
 	"hus-auth/ent"
 	"hus-auth/ent/hussession"
+	"net/http"
 	"strconv"
+	"sync"
 
 	"log"
 	"time"
-
-	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -158,9 +159,23 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) (newTo
 	if err != nil && !ent.IsNotFound(err) {
 		return "", fmt.Errorf("querying connected sessions failed:%w", err)
 	}
+	// wait length of connected sessions
+	wg := sync.WaitGroup{}
+	wg.Add(len(connectedSessions))
 	for _, cs := range connectedSessions {
 		go func() {
-			_, err := http.Put()
+			service, ok := common.Subservice[cs.Service]
+			if !ok {
+				return
+			}
+			husSignURL := service.Subdomains["auth"].URL + "/auth/hus/sign"
+
+			req, err := http.NewRequest(http.MethodPut, husSignURL, nil)
+			if err != nil {
+				wg.Done()
+				return
+			}
+			req.Header.Set("Content-Type", "application/json")
 		}()
 	}
 }

@@ -9,6 +9,8 @@ import (
 	"hus-auth/ent"
 )
 
+var Client *ent.Client
+
 // ConncectToHusAuth returns hus_auth_db's ent client.
 // you've got to close it with Close() in defer out of this function.
 func ConnectToHusAuth() (*ent.Client, error) {
@@ -36,6 +38,8 @@ func ConnectToHusAuth() (*ent.Client, error) {
 		log.Print(" creating schema resources failed: %w", err)
 		return nil, err
 	}
+
+	Client = client
 
 	return client, nil
 }

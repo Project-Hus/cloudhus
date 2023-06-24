@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 var GoogleClientID = ""
@@ -22,7 +23,11 @@ var SameSiteMode = http.SameSiteNoneMode
 
 var LifthusURL = "http://localhost:3000"
 
+var Http *http.Client
+
 func InitHusVars(husenv string, _ *ent.Client) {
+	Http = &http.Client{Timeout: 5 * time.Second}
+
 	ok1, ok2 := false, false
 	GoogleClientID, ok1 = os.LookupEnv("GOOGLE_CLIENT_ID")
 	HusSecretKey, ok2 = os.LookupEnv("HUS_SECRET_KEY")
