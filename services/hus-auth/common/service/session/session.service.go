@@ -13,6 +13,8 @@ import (
 	"log"
 	"time"
 
+	"net/http"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
@@ -147,6 +149,20 @@ func RotateHusSessionV2(ctx context.Context, client *ent.Client, hs *ent.HusSess
 	}
 
 	return nstSigned, nil
+}
+
+// SignHusSession takes Hus session entity and user entity and signs the Hus session.
+// it also propagates to subservices that the session is signed.
+func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) (newToken string, err error) {
+	connectedSessions, err := hs.QueryConnectedSession().All(ctx)
+	if err != nil && !ent.IsNotFound(err) {
+		return "", fmt.Errorf("querying connected sessions failed:%w", err)
+	}
+	for _, cs := range connectedSessions {
+		go func() {
+			_, err := http.Put()
+		}()
+	}
 }
 
 // ==========================================================================================

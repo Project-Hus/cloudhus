@@ -176,31 +176,34 @@ func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
 		fallbackURL = redirectURL
 	}
 
+	// validate the Hus session
+	hst, err := c.Cookie("hus_st")
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
+	hs, _, preserved, err := session.ValidateHusSessionV2(c.Request().Context(), ac.dbClient, hst.Value)
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
+
 	// validate and parse the Google ID token
 	payload, err := idtoken.Validate(c.Request().Context(), c.FormValue("credential"), hus.GoogleClientID)
 	if err != nil {
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
-	hst, err := c.Cookie("hus_st")
-	if err != nil {
-		return c.Redirect(http.StatusSeeOther, fallbackURL)
-	}
-
-	hs, _, preserved, err = session.ValidateHusSessionV2(c.Request().Context(), ac.dbClient, hst.Value)
-
 	// Google's unique user ID
 	sub := payload.Claims["sub"].(string)
-	// check if the user is registered with Google
+	// check if the user is registered with Google)
 	u, err := db.QueryUserByGoogleSub(c.Request().Context(), ac.dbClient, sub)
 	if err != nil {
-		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 	// create one if there is no Hus account with this Google account
 	if u == nil {
 		_, err := db.CreateUserFromGoogle(c.Request().Context(), ac.dbClient, *payload)
 		if err != nil {
-			return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
+			return c.Redirect(http.StatusSeeOther, fallbackURL)
 		}
 	}
 
