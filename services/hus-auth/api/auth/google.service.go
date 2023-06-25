@@ -201,69 +201,33 @@ func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
 	}
 	// create one if there is no Hus account with this Google account
 	if u == nil {
-		_, err := db.CreateUserFromGoogle(c.Request().Context(), ac.dbClient, *payload)
+		u, err = db.CreateUserFromGoogle(c.Request().Context(), ac.dbClient, *payload)
 		if err != nil {
 			return c.Redirect(http.StatusSeeOther, fallbackURL)
 		}
 	}
 
-	// // We checked or created if the Google user exists in Hus above,
-	// // Now get user query again to create new hus session.
-	// u, err = db.QueryUserByGoogleSub(c.Request().Context(), ac.dbClient, sub)
-	// if err != nil {
-	// 	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
-	// }
+	err = session.SignHusSession(c.Request().Context(), hs, u)
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
 
-	// _, HusSessionTokenSigned, err := session.CreateHusSession(c.Request().Context(), ac.dbClient, u.ID, false)
-	// if err != nil {
-	// 	return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
-	// }
+	newToken, err := session.RotateHusSessionV2(c.Request().Context(), ac.dbClient, hs)
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
 
-	// cookie := &http.Cookie{
-	// 	Name:     "hus_st",
-	// 	Value:    HusSessionTokenSigned,
-	// 	Path:     "/",
-	// 	Secure:   hus.CookieSecure,
-	// 	HttpOnly: true,
-	// 	Domain:   hus.AuthCookieDomain,
-	// 	SameSite: hus.SameSiteMode,
-	// }
-	// c.SetCookie(cookie)
+	cookie := &http.Cookie{
+		Name:     "hus_st",
+		Value:    newToken,
+		Path:     "/",
+		Secure:   hus.CookieSecure,
+		HttpOnly: true,
+		Domain:   hus.AuthCookieDomain,
+		SameSite: hus.SameSiteMode,
+	}
+	c.SetCookie(cookie)
 
-	// cookie2 := &http.Cookie{
-	// 	Name:     "hus_pst",
-	// 	Value:    HusSessionTokenSigned,
-	// 	Path:     "/",
-	// 	Secure:   hus.CookieSecure,
-	// 	HttpOnly: true,
-	// 	Expires:  time.Now().AddDate(1, 0, 0),
-	// 	Domain:   hus.AuthCookieDomain,
-	// 	SameSite: hus.SameSiteMode,
-	// }
-	// c.SetCookie(cookie2)
-
-	// cookieTest := &http.Cookie{
-	// 	Name:     "hus_test",
-	// 	Value:    "TESTCOOKIEHAPPYCOOKIE",
-	// 	Path:     "/",
-	// 	Secure:   hus.CookieSecure,
-	// 	HttpOnly: true,
-	// 	Domain:   hus.AuthCookieDomain,
-	// 	SameSite: http.SameSiteLaxMode,
-	// }
-	// c.SetCookie(cookieTest)
-
-	// cookieTest2 := &http.Cookie{
-	// 	Name:     "hus_test2",
-	// 	Value:    "TESTCOOKIEHAPPYCOOKIE",
-	// 	Path:     "/",
-	// 	Secure:   hus.CookieSecure,
-	// 	HttpOnly: true,
-	// 	Domain:   hus.AuthCookieDomain,
-	// 	SameSite: http.SameSiteStrictMode,
-	// }
-	// c.SetCookie(cookieTest2)
-
-	// // redirects to {serviceUrl}/hus/token/{hus-session-id}
-	// return c.Redirect(http.StatusMovedPermanently, serviceUrl)
+	// redirects to {serviceUrl}/hus/token/{hus-session-id}
+	return c.Redirect(http.StatusSeeOther, redirectURL)
 }

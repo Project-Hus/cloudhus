@@ -153,31 +153,43 @@ func RotateHusSessionV2(ctx context.Context, client *ent.Client, hs *ent.HusSess
 }
 
 // SignHusSession takes Hus session entity and user entity and signs the Hus session.
-// it also propagates to subservices that the session is signed.
-func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) (newToken string, err error) {
+// it also propagates to subservices which have connected session that the session is signed.
+func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error {
 	connectedSessions, err := hs.QueryConnectedSession().All(ctx)
 	if err != nil && !ent.IsNotFound(err) {
-		return "", fmt.Errorf("querying connected sessions failed:%w", err)
+		return fmt.Errorf("querying connected sessions failed:%w", err)
 	}
-	// wait length of connected sessions
+
 	wg := sync.WaitGroup{}
 	wg.Add(len(connectedSessions))
+
 	for _, cs := range connectedSessions {
-		go func() {
+		go func(cs *ent.ConnectedSession) {
 			service, ok := common.Subservice[cs.Service]
 			if !ok {
 				return
 			}
-			husSignURL := service.Subdomains["auth"].URL + "/auth/hus/sign"
+			husSignURL := service.Subdomains["auth"].URL + "/auth/hus/session/connect"
 
+			// transfer token
 			req, err := http.NewRequest(http.MethodPut, husSignURL, nil)
 			if err != nil {
 				wg.Done()
-				return
 			}
 			req.Header.Set("Content-Type", "application/json")
-		}()
+			resp, err := hus.Http.Do(req)
+			if err != nil {
+				wg.Done()
+			}
+			defer resp.Body.Close()
+
+			wg.Done()
+		}(cs)
 	}
+
+	wg.Wait()
+
+	return nil
 }
 
 // ==========================================================================================
