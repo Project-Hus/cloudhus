@@ -154,7 +154,7 @@ func RotateHusSessionV2(ctx context.Context, client *ent.Client, hs *ent.HusSess
 }
 
 // SignHusSession takes Hus session entity and user entity and signs the Hus session.
-// it also propagates to subservices which have connected session that the session is signed.
+// it also propagates to subservices which have connected session.
 func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error {
 	connectedSessions, err := hs.QueryConnectedSession().All(ctx)
 	if err != nil && !ent.IsNotFound(err) {
@@ -173,7 +173,7 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 			husConnectURL := service.Subdomains["auth"].URL + "/auth/hussession/connect"
 
 			hscJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-				"pps":               "hus_connection",
+				"pps":               "hus_sign",
 				"hsid":              cs.Hsid.String(),
 				"sid":               cs.Csid.String(),
 				"uid":               strconv.FormatUint(u.ID, 10),

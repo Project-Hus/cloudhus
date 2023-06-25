@@ -230,7 +230,5 @@ func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
 		cookie.Expires = time.Now().AddDate(0, 0, 7)
 	}
 	c.SetCookie(cookie)
-
-	// redirects to {serviceUrl}/hus/token/{hus-session-id}
 	return c.Redirect(http.StatusSeeOther, redirectURL)
 }
