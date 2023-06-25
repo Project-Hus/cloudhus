@@ -11,6 +11,7 @@ import (
 	"hus-auth/ent/hussession"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 
 	"log"
@@ -169,10 +170,31 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 			if !ok {
 				return
 			}
-			husSignURL := service.Subdomains["auth"].URL + "/auth/hus/session/connect"
+			husConnectURL := service.Subdomains["auth"].URL + "/auth/hussession/connect"
 
-			// transfer token
-			req, err := http.NewRequest(http.MethodPut, husSignURL, nil)
+			hscJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+				"pps":               "hus_connection",
+				"hsid":              cs.Hsid.String(),
+				"sid":               cs.Csid.String(),
+				"uid":               strconv.FormatUint(u.ID, 10),
+				"profile_image_url": u.ProfilePictureURL,
+				"email":             u.Email,
+				"email_verified":    u.EmailVerified,
+				"name":              u.Name,
+				"given_name":        u.GivenName,
+				"family_name":       u.FamilyName,
+				"birthdate":         nil,
+				"exp":               time.Now().Add(time.Second * 10).Unix(),
+			})
+
+			hscSigned, err := hscJWT.SignedString(hus.HusSecretKeyBytes)
+			if err != nil {
+				err = fmt.Errorf("signing jwt for %s failed:%w", service, err)
+				log.Println(err)
+				return
+			}
+
+			req, err := http.NewRequest(http.MethodPatch, husConnectURL, strings.NewReader(hscSigned))
 			if err != nil {
 				wg.Done()
 			}

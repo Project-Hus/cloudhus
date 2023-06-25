@@ -184,7 +184,7 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-// V2
+// V2 ===================================================================================
 
 // HusSessionHandler godoc
 // @Tags         auth
