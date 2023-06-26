@@ -93,7 +93,7 @@ func ConnectSessions(ctx context.Context, client *ent.Client, hs *ent.HusSession
 // if token is expired, it returns "expired session" error.
 // if token's TID is not matched, it returns "illegal session" error.
 // and if it is valid, it returns Hus session and User entities with nil error.
-func ValidateHusSessionV2(ctx context.Context, client *ent.Client, hst string) (hs *ent.HusSession, su *ent.User, preserved bool, err error) {
+func ValidateHusSessionV2(ctx context.Context, hst string) (hs *ent.HusSession, su *ent.User, preserved bool, err error) {
 	// parse the Hus session token.
 	claims, exp, err := helper.ParseJWTWithHMAC(hst)
 	if err != nil || claims["pps"].(string) != "hus_session" {
@@ -108,25 +108,30 @@ func ValidateHusSessionV2(ctx context.Context, client *ent.Client, hst string) (
 		return nil, nil, false, fmt.Errorf("invalid session")
 	}
 	if exp {
-		_ = client.HusSession.DeleteOneID(husSid).Exec(ctx)
+		_ = db.Client.HusSession.DeleteOneID(husSid).Exec(ctx)
 		return nil, nil, false, fmt.Errorf("expired sesison")
 	}
 
 	// check if the hus session is not revoked by querying the database with hus_sid.
 	// and get the user entity too.
-	hs, err = client.HusSession.Query().Where(hussession.ID(husSid)).WithUser().Only(ctx)
+	hs, err = db.Client.HusSession.Query().Where(hussession.ID(husSid)).WithUser().Only(ctx)
 	if err != nil {
 		return nil, nil, false, fmt.Errorf("invalid session")
 	}
 
+	u := hs.Edges.User
+
 	// UUID type is a byte array with a length of 16.
 	// so it can be compared directly.
 	if hs.Tid != husTid {
-		// revoke all user's session (not implemented yet)
+		// revoke all user's session (not implemented yet) ------------------------------------------------------------------------
+		if u != nil {
+			_, _ = db.Client.HusSession.Delete().Where(hussession.UID(u.ID)).Exec(ctx)
+		}
 		return nil, nil, false, fmt.Errorf("illegal session")
 	}
 
-	return hs, hs.Edges.User, hs.Preserved, nil
+	return hs, u, hs.Preserved, nil
 }
 
 func RotateHusSessionV2(ctx context.Context, client *ent.Client, hs *ent.HusSession) (nstSigned string, err error) {

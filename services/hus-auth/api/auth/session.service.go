@@ -193,17 +193,13 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 // @Description this endpoint can be used both for Cloudhus and subservices.
 // @Description if the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.
 // @Description and if fallback url is given, it will redirect to fallback url if it fails.
-// @Description but if they are not given, it will just respond rather than redirecting.
 // @Description note that all urls must be url-encoded.
-// @Param service query string false "subservice name"
-// @Param sid query string false "subservice session id"
-// @Param redirect query string false "redirect url"
+// @Param service query string true "subservice name"
+// @Param redirect query string true "redirect url"
 // @Param fallback query string false "fallback url"
-// @Success      200 "Ok, validated and connected"
-// @Success      201 "Created, new Hus session connected"
+// @Param sid query string true "subservice session id"
 // @Success      303 "See Other, redirection"
-// @Failure	  400 "Bad Request"
-// @Failure 500 "Internal Server Error"
+// @Failure      303 "See Other, redirection"
 func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	var err error
 
@@ -217,31 +213,28 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		fallbackURL = redirectURL
 	}
 
-	// if any of three parameters are given, either all or none of them must be given.
-	if (serviceName != "" || sessionID != "" || redirectURL != "") && (serviceName == "" || sessionID == "" || redirectURL == "") {
-		return c.String(http.StatusBadRequest, "service, sid, redirect should be given all together or none")
-	}
-
-	// if the request comes from subservice, handle the query parameters.
-	var sessionUUID uuid.UUID
-	if serviceName != "" {
-		_, ok := common.Subservice[serviceName]
-		// if the service name is not registered, return error.
-		if !ok {
-			return c.String(http.StatusBadRequest, "no such service")
-		}
-		// sessionID to UUID
-		sessionUUID, err = uuid.Parse(sessionID)
-		if err != nil {
-			return c.String(http.StatusBadRequest, "sid is not valid")
-		}
+	// if any of three parameters are not given, this request can't be handled.
+	if serviceName == "" || sessionID == "" || redirectURL == "" {
+		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 
 	// url decode
 	redirectURL, err1 := url.QueryUnescape(redirectURL)
 	fallbackURL, err2 := url.QueryUnescape(fallbackURL)
 	if err1 != nil || err2 != nil {
-		return c.String(http.StatusBadRequest, "url is not valid")
+		// invalid url
+		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
+	}
+
+	// service not registered, then halt.
+	_, ok := common.Subservice[serviceName]
+	if !ok {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
+	// sessionID to UUID
+	sessionUUID, err := uuid.Parse(sessionID)
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
 	// when there's no valid Hus session, create new one depending on this flag.
@@ -250,14 +243,11 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	// get hus_st from cookie
 	hus_st, err := c.Cookie("hus_st")
 	if err == http.ErrNoCookie || hus_st.Value == "" {
-		// create new Hus session
+		// no session, create new one
 		createFlag = true
 	} else if err != nil {
 		// there's an error while getting cookie, return error.
-		if fallbackURL != "" {
-			return c.Redirect(http.StatusSeeOther, fallbackURL)
-		}
-		return c.String(http.StatusInternalServerError, "an error occured while getting cookie")
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
 	// HUS SESSION EXSISTS, NOW VALIDATE IT
@@ -267,7 +257,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	var preserved bool
 	err = nil
 	if !createFlag {
-		hs, _, preserved, err = session.ValidateHusSessionV2(c.Request().Context(), ac.dbClient, hus_st.Value)
+		hs, _, preserved, err = session.ValidateHusSessionV2(c.Request().Context(), hus_st.Value)
 	}
 	if err != nil || createFlag {
 		/* NEW HUS SESSION CREATION */
@@ -386,4 +376,8 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 		Hsid: cs.Hsid.String(),
 		User: cs.Edges.HusSession.Edges.User,
 	})
+}
+
+func (ac authApiController) SignOutHandler(c echo.Context) error {
+	return nil
 }

@@ -27,7 +27,7 @@ const docTemplate = `{
     "paths": {
         "/hussession": {
             "get": {
-                "description": "this endpoint can be used both for Cloudhus and subservices.\nif the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.\nand if fallback url is given, it will redirect to fallback url if it fails.\nbut if they are not given, it will just respond rather than redirecting.\nnote that all urls must be url-encoded using QueryEscape in net/url package.",
+                "description": "this endpoint can be used both for Cloudhus and subservices.\nif the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.\nand if fallback url is given, it will redirect to fallback url if it fails.\nnote that all urls must be url-encoded.",
                 "tags": [
                     "auth"
                 ],
@@ -59,20 +59,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Ok, validated and connected"
-                    },
-                    "201": {
-                        "description": "Created, new Hus session connected"
-                    },
                     "303": {
                         "description": "See Other, redirection"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
                     }
                 }
             }
@@ -172,14 +160,14 @@ const docTemplate = `{
         },
         "/social/google": {
             "post": {
-                "description": "validates the google ID token and do some authentication stuff.\nAnd redirects the user back to the subservice after the process.",
+                "description": "validates the google ID token and do some authentication stuff.\nand redirects the user back to the given  after the process.\nnote that all urls must be url-encoded.",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "auth"
                 ],
-                "summary": "gets and processes Google ID token and redirects the user back to the subservice.",
+                "summary": "gets and processes Google ID token and redirects the user back to the given redirect url.",
                 "parameters": [
                     {
                         "type": "string",
@@ -205,8 +193,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "301": {
-                        "description": "to /auth/{token_string} or to /error"
+                    "303": {
+                        "description": "See Other"
                     }
                 }
             }

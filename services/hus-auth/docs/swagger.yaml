@@ -19,8 +19,7 @@ paths:
         this endpoint can be used both for Cloudhus and subservices.
         if the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.
         and if fallback url is given, it will redirect to fallback url if it fails.
-        but if they are not given, it will just respond rather than redirecting.
-        note that all urls must be url-encoded using QueryEscape in net/url package.
+        note that all urls must be url-encoded.
       parameters:
       - description: subservice name
         in: query
@@ -39,16 +38,8 @@ paths:
         name: fallback
         type: string
       responses:
-        "200":
-          description: Ok, validated and connected
-        "201":
-          description: Created, new Hus session connected
         "303":
           description: See Other, redirection
-        "400":
-          description: Bad Request
-        "500":
-          description: Internal Server Error
       summary: checks and issues the Hus session token
       tags:
       - auth
@@ -125,7 +116,8 @@ paths:
       - application/json
       description: |-
         validates the google ID token and do some authentication stuff.
-        And redirects the user back to the subservice after the process.
+        and redirects the user back to the given  after the process.
+        note that all urls must be url-encoded.
       parameters:
       - description: url to be redirected after authentication
         in: query
@@ -143,10 +135,10 @@ paths:
         schema:
           type: string
       responses:
-        "301":
-          description: to /auth/{token_string} or to /error
+        "303":
+          description: See Other
       summary: gets and processes Google ID token and redirects the user back to the
-        subservice.
+        given redirect url.
       tags:
       - auth
   /social/google/{subservice_name}:
