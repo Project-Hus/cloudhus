@@ -257,32 +257,50 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 
 	// if no valid Hus session found, establish new Hus session.
+	// after redirection to this same endpoint, it will handle newly established Hus session.
 	if createFlag {
 		/* NEW HUS SESSION CREATION */
-		ns, nhst, err := session.CreateHusSessionV2(c.Request().Context())
+		_, nhst, err := session.CreateHusSessionV2(c.Request().Context())
 		if err != nil {
 			return c.Redirect(http.StatusSeeOther, fallbackURL)
 		}
+
+		nhstCookie := &http.Cookie{
+			Name:     "hus_st",
+			Value:    nhst,
+			Path:     "/",
+			Domain:   hus.AuthCookieDomain,
+			HttpOnly: true,
+			Secure:   hus.CookieSecure,
+			SameSite: http.SameSiteLaxMode,
+		}
+		c.SetCookie(nhstCookie)
+
+		// redirect to same endpoint here with same path and queries
+		// this is to guarantee that the session is established between Cloudhus and the client
+		tmpRedirect := common.Subservice["cloudhus"].Subdomains["auth"].URL +
+			"/auth/hussession?service=" + serviceName +
+			"&redirect=" + redirectURL +
+			"&fallback=" + fallbackURL +
+			"&sid=" + sessionID
+		c.Redirect(http.StatusSeeOther, tmpRedirect)
 	}
 
-	// HANDLE THE VALID SESSION
-
-	// if the request comes from subservice, connect the sessions.
-	if serviceName != "" {
-		err = session.ConnectSessions(c.Request().Context(), ac.dbClient, hs, serviceName, sessionUUID)
-		if err != nil {
-			if fallbackURL != "" {
-				return c.Redirect(http.StatusSeeOther, fallbackURL)
-			}
-			return c.String(http.StatusInternalServerError, "connecting sessions failed")
-		}
+	// now handle the valid session
+	err = session.ConnectSessions(c.Request().Context(), hs, serviceName, sessionUUID)
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
 	// finally, rotate the Hus session
 	nhst, err := session.RotateHusSessionV2(c.Request().Context(), ac.dbClient, hs)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "rotating hus session failed")
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
+
+	// any kind of error(mostly Lambda timeout) may occur here after rotation before the user gets new tid.
+	// this could be handled by user doing double check with another request.
+	// or allowing the tid rotated only one step before. in this case new tid must be revoked.
 
 	nhstCookie := &http.Cookie{
 		Name:     "hus_st",
@@ -296,13 +314,9 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	if hs.Preserved {
 		nhstCookie.Expires = time.Now().Add(7 * 24 * time.Hour)
 	}
-
 	c.SetCookie(nhstCookie)
 
-	if redirectURL != "" {
-		return c.Redirect(http.StatusSeeOther, redirectURL)
-	}
-	return c.String(http.StatusOK, "valid Hus session")
+	return c.Redirect(http.StatusSeeOther, redirectURL)
 }
 
 // SessionConnectionHandler godoc

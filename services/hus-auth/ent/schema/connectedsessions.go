@@ -38,7 +38,7 @@ func (ConnectedSession) Fields() []ent.Field {
 		// subservice name
 		field.String("service"),
 		// connected session id from subservice
-		field.UUID("csid", uuid.UUID{}).Unique(),
+		field.UUID("csid", uuid.UUID{}),
 	}
 }
 

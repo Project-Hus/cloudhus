@@ -13,7 +13,7 @@ var (
 	ConnectedSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "service", Type: field.TypeString},
-		{Name: "csid", Type: field.TypeUUID, Unique: true},
+		{Name: "csid", Type: field.TypeUUID},
 		{Name: "hsid", Type: field.TypeUUID},
 	}
 	// ConnectedSessionsTable holds the schema information for the "connected_sessions" table.

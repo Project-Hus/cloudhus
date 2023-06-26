@@ -59,8 +59,8 @@ func CreateHusSessionV2(ctx context.Context) (newSession *ent.HusSession, newSig
 
 // ConnectSessions gets Hus session entity, subservice name and subservice's session ID.
 // then makes connection between them and returns error if it occurs.
-func ConnectSessions(ctx context.Context, client *ent.Client, hs *ent.HusSession, service string, csid uuid.UUID) error {
-	_, err := client.ConnectedSession.Create().SetHsid(hs.ID).SetService(service).SetCsid(csid).Save(ctx)
+func ConnectSessions(ctx context.Context, hs *ent.HusSession, service string, csid uuid.UUID) error {
+	_, err := db.Client.ConnectedSession.Create().SetHsid(hs.ID).SetService(service).SetCsid(csid).Save(ctx)
 	if err != nil {
 		return fmt.Errorf("connecting sessions failed:%w", err)
 	}
