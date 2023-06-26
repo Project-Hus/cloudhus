@@ -344,7 +344,7 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 	sid := claims["sid"].(string)
 	suuid, err := uuid.Parse(sid)
 	if err != nil {
-		return c.String(http.StatusBadRequest, "invalid token")
+		return c.String(http.StatusBadRequest, "invalid sid")
 	}
 
 	cs, err := ac.dbClient.ConnectedSession.Query().Where(connectedsession.And(
@@ -366,6 +366,6 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 	})
 }
 
-func (ac authApiController) SignOutHandler(c echo.Context) error {
+func (ac authApiController) TotalSignOutHandler(c echo.Context) error {
 	return nil
 }
