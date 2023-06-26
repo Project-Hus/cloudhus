@@ -238,6 +238,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 
 	// when there's no valid Hus session, create new one depending on this flag.
+	var hs *ent.HusSession
 	createFlag := false
 
 	// get hus_st from cookie
@@ -248,47 +249,20 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	} else if err != nil {
 		// there's an error while getting cookie, return error.
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
-	}
-
-	// HUS SESSION EXSISTS, NOW VALIDATE IT
-
-	// first validate and parse the session token
-	var hs *ent.HusSession
-	var preserved bool
-	err = nil
-	if !createFlag {
-		hs, _, preserved, err = session.ValidateHusSessionV2(c.Request().Context(), hus_st.Value)
-	}
-	if err != nil || createFlag {
-		/* NEW HUS SESSION CREATION */
-		CreateHusSessionParams := session.CreateHusSessionParams{
-			Ctx:     c.Request().Context(),
-			Dbc:     ac.dbClient,
-			Service: &serviceName,
-			Sid:     &sessionUUID,
-		}
-		_, nhst, err := session.CreateHusSessionV2(CreateHusSessionParams)
+	} else {
+		hs, _, err = session.ValidateHusSessionV2(c.Request().Context(), hus_st.Value)
 		if err != nil {
-			if fallbackURL != "" {
-				return c.Redirect(http.StatusSeeOther, fallbackURL)
-			}
-			return c.String(http.StatusInternalServerError, "an error occured while creating hus session")
+			createFlag = true
 		}
-		nhstCookie := &http.Cookie{
-			Name:     "hus_st",
-			Value:    nhst,
-			Path:     "/",
-			Domain:   hus.AuthCookieDomain,
-			HttpOnly: true,
-			Secure:   true,
-			SameSite: http.SameSiteLaxMode,
-		}
-		c.SetCookie(nhstCookie)
+	}
 
-		if redirectURL != "" {
-			return c.Redirect(http.StatusSeeOther, redirectURL)
+	// if no valid Hus session found, establish new Hus session.
+	if createFlag {
+		/* NEW HUS SESSION CREATION */
+		ns, nhst, err := session.CreateHusSessionV2(c.Request().Context())
+		if err != nil {
+			return c.Redirect(http.StatusSeeOther, fallbackURL)
 		}
-		return c.String(http.StatusCreated, "new Hus session created")
 	}
 
 	// HANDLE THE VALID SESSION
@@ -319,7 +293,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		Secure:   hus.CookieSecure,
 		SameSite: http.SameSiteLaxMode,
 	}
-	if preserved {
+	if hs.Preserved {
 		nhstCookie.Expires = time.Now().Add(7 * 24 * time.Hour)
 	}
 

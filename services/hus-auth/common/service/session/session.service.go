@@ -21,37 +21,17 @@ import (
 	"github.com/google/uuid"
 )
 
-type CreateHusSessionParams struct {
-	Ctx context.Context
-	// if the request is from Cloudhus, below fields are not required.
-	Dbc     *ent.Client
-	Service *string
-	Sid     *uuid.UUID
-}
-
 // CreateHusSessionV2 issues new Hus session and returns it.
-// and if subservice's session ID is provided, it will be connected to the Hus session.
-// after the connection is established, subservice must verify it by asking to Cloudhus.
-func CreateHusSessionV2(ps CreateHusSessionParams) (
-	newSession *ent.HusSession, newSignedToken string, err error,
-) {
-	tx, err := ps.Dbc.Tx(ps.Ctx)
+func CreateHusSessionV2(ctx context.Context) (newSession *ent.HusSession, newSignedToken string, err error) {
+	tx, err := db.Client.Tx(ctx)
 	if err != nil {
 		return nil, "", fmt.Errorf("starting transaction failed:%w", err)
 	}
 	// create new Hus session
-	hs, err := tx.HusSession.Create().Save(ps.Ctx)
+	hs, err := tx.HusSession.Create().Save(ctx)
 	if err != nil {
 		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("creating new hus session failed:%w", err)
-	}
-	// if there are service and sid, connect them to the Hus session created above.
-	if ps.Service != nil && ps.Sid != nil {
-		_, err := tx.ConnectedSession.Create().SetHsid(hs.ID).SetService(*ps.Service).SetCsid(*ps.Sid).Save(ps.Ctx)
-		if err != nil {
-			err = db.Rollback(tx, err)
-			return nil, "", fmt.Errorf("connecting sessions failed:%w", err)
-		}
 	}
 	// Hus Session Token
 	hst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -74,7 +54,6 @@ func CreateHusSessionV2(ps CreateHusSessionParams) (
 		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("committing transaction failed:%w", err)
 	}
-
 	return hs, hsts, nil
 }
 
