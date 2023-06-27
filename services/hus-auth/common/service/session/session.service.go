@@ -208,6 +208,10 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 	return nil
 }
 
+func SignOutTotal(ctx context.Context, hsid uuid.UUID) error {
+	return nil
+}
+
 // ==========================================================================================
 
 // CreateHusSession takes user's uuid and create new hus session and return it.

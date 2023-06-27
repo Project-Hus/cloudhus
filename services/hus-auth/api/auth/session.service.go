@@ -317,7 +317,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 
 // SessionConnectionHandler godoc
 // @Tags         auth
-// @Router /hussession/{token} [get]
+// @Router /hussession/connect/{token} [get]
 // @Summary gets connection token from subservice and returns Hus session ID and user info
 // @Description the token has properties pps, service and sid.
 // @Param token path string true "pps, service name, session ID in signed token which expires only in 10 seconds"
@@ -362,6 +362,48 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 	})
 }
 
-func (ac authApiController) TotalSignOutHandler(c echo.Context) error {
-	return nil
+// SignOutHandler godoc
+// @Tags         auth
+// @Router /hussession/signout/{token} [delete]
+// @Summary gets signout token from subservice and does signout process.
+// @Description there are two types of signout process.
+// @Description 1) sign out sessions related only to given hus session.
+// @Description 2) sign out all related sessions to the user.
+// @Param token path string true "sign out token"
+// @Success      200 "Ok, session has been connected"
+// @Failure      400 "Bad Request"
+// @Failure      500 "Internal Server Error"
+func (ac authApiController) SignOutHandler(c echo.Context) error {
+	token := c.Param("token")
+
+	claims, exp, err := helper.ParseJWTWithHMAC(token)
+	if err != nil || exp {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	pps := claims["pps"].(string)
+	if pps != "session_signout" {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	hsid := claims["hsid"].(string)
+	hsuuid, err := uuid.Parse(hsid)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "parsing uuid failed")
+	}
+
+	soType := claims["type"].(string)
+	switch soType {
+	case "single":
+		log.Println("not yet")
+	case "total":
+		err = session.SignOutTotal(c.Request().Context(), hsuuid)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "signout failed")
+		}
+	default:
+		return c.String(http.StatusBadRequest, "invalid signout type")
+	}
+
+	return c.String(http.StatusOK, "signed out")
 }
