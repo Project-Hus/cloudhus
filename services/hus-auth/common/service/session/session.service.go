@@ -113,7 +113,12 @@ func ValidateHusSessionV2(ctx context.Context, hst string) (hs *ent.HusSession, 
 	return hs, u, nil
 }
 
-func RotateHusSessionV2(ctx context.Context, client *ent.Client, hs *ent.HusSession) (nstSigned string, err error) {
+// RotateHusSession gets Hus session entity and rotates it's TID.
+//
+// any kind of error(mostly Lambda timeout) may occur after rotation before the user gets new tid.
+// this could be handled by user doing double check with another request.
+// or allowing the tid rotated only one step before. in this case new tid must be revoked.
+func RotateHusSessionV2(ctx context.Context, hs *ent.HusSession) (nstSigned string, err error) {
 	hs, err = hs.Update().SetTid(uuid.New()).Save(ctx)
 	if err != nil {
 		return "", fmt.Errorf("updating session failed")
@@ -140,16 +145,25 @@ func RotateHusSessionV2(ctx context.Context, client *ent.Client, hs *ent.HusSess
 // SignHusSession takes Hus session entity and user entity and signs the Hus session.
 // it also propagates to subservices which have connected session.
 func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error {
+	// sign the Hus session.
+	hs, err := hs.Update().SetUID(u.ID).SetSignedAt(time.Now()).Save(ctx)
+	if err != nil {
+		return fmt.Errorf("signing Hus session failed:%w", err)
+	}
+
+	// get connected sessions.
 	connectedSessions, err := hs.QueryConnectedSession().All(ctx)
 	if err != nil && !ent.IsNotFound(err) {
 		return fmt.Errorf("querying connected sessions failed:%w", err)
 	}
 
+	// propagate to connected sessions.
+	// some of them may fail. in this case subservice checks the session at next refresh and etc.
 	wg := sync.WaitGroup{}
 	wg.Add(len(connectedSessions))
-
 	for _, cs := range connectedSessions {
 		go func(cs *ent.ConnectedSession) {
+			defer wg.Done()
 			service, ok := common.Subservice[cs.Service]
 			if !ok {
 				return
@@ -157,11 +171,11 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 			husConnectURL := service.Subdomains["auth"].URL + "/auth/hussession/connect"
 
 			hscJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-				"pps":               "hus_sign",
+				"pps":               "session_sign",
 				"hsid":              cs.Hsid.String(),
 				"sid":               cs.Csid.String(),
 				"uid":               strconv.FormatUint(u.ID, 10),
-				"profile_image_url": u.ProfilePictureURL,
+				"profile_image_url": u.ProfileImageURL,
 				"email":             u.Email,
 				"email_verified":    u.EmailVerified,
 				"name":              u.Name,
@@ -173,23 +187,19 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 
 			hscSigned, err := hscJWT.SignedString(hus.HusSecretKeyBytes)
 			if err != nil {
-				err = fmt.Errorf("signing jwt for %s failed:%w", service, err)
-				log.Println(err)
 				return
 			}
 
 			req, err := http.NewRequest(http.MethodPatch, husConnectURL, strings.NewReader(hscSigned))
 			if err != nil {
-				wg.Done()
+				return
 			}
-			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Content-Type", "text/plain")
 			resp, err := hus.Http.Do(req)
 			if err != nil {
-				wg.Done()
+				return
 			}
 			defer resp.Body.Close()
-
-			wg.Done()
 		}(cs)
 	}
 
@@ -278,7 +288,7 @@ func ValidateHusSession(ctx context.Context, client *ent.Client, hst string) (si
 	if err != nil {
 		return hus_sid, nil, fmt.Errorf("invalid uid")
 	}
-	u, err := db.QueryUserByUID(ctx, client, hus_uid_uint64)
+	u, err := db.QueryUserByUID(ctx, hus_uid_uint64)
 	if err != nil || u == nil {
 		return hus_sid, nil, fmt.Errorf("no such user")
 	}

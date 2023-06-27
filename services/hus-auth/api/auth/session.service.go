@@ -88,7 +88,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	hscbJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid":               lifthus_sid,
 		"uid":               strconv.FormatUint(u.ID, 10),
-		"profile_image_url": u.ProfilePictureURL,
+		"profile_image_url": u.ProfileImageURL,
 		"email":             u.Email,
 		"email_verified":    u.EmailVerified,
 		"name":              u.Name,
@@ -293,14 +293,10 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 
 	// finally, rotate the Hus session
-	nhst, err := session.RotateHusSessionV2(c.Request().Context(), ac.dbClient, hs)
+	nhst, err := session.RotateHusSessionV2(c.Request().Context(), hs)
 	if err != nil {
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
-
-	// any kind of error(mostly Lambda timeout) may occur here after rotation before the user gets new tid.
-	// this could be handled by user doing double check with another request.
-	// or allowing the tid rotated only one step before. in this case new tid must be revoked.
 
 	nhstCookie := &http.Cookie{
 		Name:     "hus_st",

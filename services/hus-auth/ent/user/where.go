@@ -90,9 +90,9 @@ func Birthdate(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldBirthdate, v))
 }
 
-// ProfilePictureURL applies equality check predicate on the "profile_picture_url" field. It's identical to ProfilePictureURLEQ.
-func ProfilePictureURL(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldProfilePictureURL, v))
+// ProfileImageURL applies equality check predicate on the "profile_image_url" field. It's identical to ProfileImageURLEQ.
+func ProfileImageURL(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldProfileImageURL, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -510,79 +510,79 @@ func BirthdateNotNil() predicate.User {
 	return predicate.User(sql.FieldNotNull(FieldBirthdate))
 }
 
-// ProfilePictureURLEQ applies the EQ predicate on the "profile_picture_url" field.
-func ProfilePictureURLEQ(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldProfilePictureURL, v))
+// ProfileImageURLEQ applies the EQ predicate on the "profile_image_url" field.
+func ProfileImageURLEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLNEQ applies the NEQ predicate on the "profile_picture_url" field.
-func ProfilePictureURLNEQ(v string) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldProfilePictureURL, v))
+// ProfileImageURLNEQ applies the NEQ predicate on the "profile_image_url" field.
+func ProfileImageURLNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLIn applies the In predicate on the "profile_picture_url" field.
-func ProfilePictureURLIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldIn(FieldProfilePictureURL, vs...))
+// ProfileImageURLIn applies the In predicate on the "profile_image_url" field.
+func ProfileImageURLIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldProfileImageURL, vs...))
 }
 
-// ProfilePictureURLNotIn applies the NotIn predicate on the "profile_picture_url" field.
-func ProfilePictureURLNotIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldProfilePictureURL, vs...))
+// ProfileImageURLNotIn applies the NotIn predicate on the "profile_image_url" field.
+func ProfileImageURLNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldProfileImageURL, vs...))
 }
 
-// ProfilePictureURLGT applies the GT predicate on the "profile_picture_url" field.
-func ProfilePictureURLGT(v string) predicate.User {
-	return predicate.User(sql.FieldGT(FieldProfilePictureURL, v))
+// ProfileImageURLGT applies the GT predicate on the "profile_image_url" field.
+func ProfileImageURLGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLGTE applies the GTE predicate on the "profile_picture_url" field.
-func ProfilePictureURLGTE(v string) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldProfilePictureURL, v))
+// ProfileImageURLGTE applies the GTE predicate on the "profile_image_url" field.
+func ProfileImageURLGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLLT applies the LT predicate on the "profile_picture_url" field.
-func ProfilePictureURLLT(v string) predicate.User {
-	return predicate.User(sql.FieldLT(FieldProfilePictureURL, v))
+// ProfileImageURLLT applies the LT predicate on the "profile_image_url" field.
+func ProfileImageURLLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLLTE applies the LTE predicate on the "profile_picture_url" field.
-func ProfilePictureURLLTE(v string) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldProfilePictureURL, v))
+// ProfileImageURLLTE applies the LTE predicate on the "profile_image_url" field.
+func ProfileImageURLLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLContains applies the Contains predicate on the "profile_picture_url" field.
-func ProfilePictureURLContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldProfilePictureURL, v))
+// ProfileImageURLContains applies the Contains predicate on the "profile_image_url" field.
+func ProfileImageURLContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLHasPrefix applies the HasPrefix predicate on the "profile_picture_url" field.
-func ProfilePictureURLHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldProfilePictureURL, v))
+// ProfileImageURLHasPrefix applies the HasPrefix predicate on the "profile_image_url" field.
+func ProfileImageURLHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLHasSuffix applies the HasSuffix predicate on the "profile_picture_url" field.
-func ProfilePictureURLHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldProfilePictureURL, v))
+// ProfileImageURLHasSuffix applies the HasSuffix predicate on the "profile_image_url" field.
+func ProfileImageURLHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLIsNil applies the IsNil predicate on the "profile_picture_url" field.
-func ProfilePictureURLIsNil() predicate.User {
-	return predicate.User(sql.FieldIsNull(FieldProfilePictureURL))
+// ProfileImageURLIsNil applies the IsNil predicate on the "profile_image_url" field.
+func ProfileImageURLIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldProfileImageURL))
 }
 
-// ProfilePictureURLNotNil applies the NotNil predicate on the "profile_picture_url" field.
-func ProfilePictureURLNotNil() predicate.User {
-	return predicate.User(sql.FieldNotNull(FieldProfilePictureURL))
+// ProfileImageURLNotNil applies the NotNil predicate on the "profile_image_url" field.
+func ProfileImageURLNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldProfileImageURL))
 }
 
-// ProfilePictureURLEqualFold applies the EqualFold predicate on the "profile_picture_url" field.
-func ProfilePictureURLEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldProfilePictureURL, v))
+// ProfileImageURLEqualFold applies the EqualFold predicate on the "profile_image_url" field.
+func ProfileImageURLEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLContainsFold applies the ContainsFold predicate on the "profile_picture_url" field.
-func ProfilePictureURLContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldProfilePictureURL, v))
+// ProfileImageURLContainsFold applies the ContainsFold predicate on the "profile_image_url" field.
+func ProfileImageURLContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldProfileImageURL, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

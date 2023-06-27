@@ -92,23 +92,23 @@ func (uu *UserUpdate) ClearBirthdate() *UserUpdate {
 	return uu
 }
 
-// SetProfilePictureURL sets the "profile_picture_url" field.
-func (uu *UserUpdate) SetProfilePictureURL(s string) *UserUpdate {
-	uu.mutation.SetProfilePictureURL(s)
+// SetProfileImageURL sets the "profile_image_url" field.
+func (uu *UserUpdate) SetProfileImageURL(s string) *UserUpdate {
+	uu.mutation.SetProfileImageURL(s)
 	return uu
 }
 
-// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableProfilePictureURL(s *string) *UserUpdate {
+// SetNillableProfileImageURL sets the "profile_image_url" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableProfileImageURL(s *string) *UserUpdate {
 	if s != nil {
-		uu.SetProfilePictureURL(*s)
+		uu.SetProfileImageURL(*s)
 	}
 	return uu
 }
 
-// ClearProfilePictureURL clears the value of the "profile_picture_url" field.
-func (uu *UserUpdate) ClearProfilePictureURL() *UserUpdate {
-	uu.mutation.ClearProfilePictureURL()
+// ClearProfileImageURL clears the value of the "profile_image_url" field.
+func (uu *UserUpdate) ClearProfileImageURL() *UserUpdate {
+	uu.mutation.ClearProfileImageURL()
 	return uu
 }
 
@@ -258,11 +258,11 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if uu.mutation.BirthdateCleared() {
 		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
 	}
-	if value, ok := uu.mutation.ProfilePictureURL(); ok {
-		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
+	if value, ok := uu.mutation.ProfileImageURL(); ok {
+		_spec.SetField(user.FieldProfileImageURL, field.TypeString, value)
 	}
-	if uu.mutation.ProfilePictureURLCleared() {
-		_spec.ClearField(user.FieldProfilePictureURL, field.TypeString)
+	if uu.mutation.ProfileImageURLCleared() {
+		_spec.ClearField(user.FieldProfileImageURL, field.TypeString)
 	}
 	if value, ok := uu.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
@@ -406,23 +406,23 @@ func (uuo *UserUpdateOne) ClearBirthdate() *UserUpdateOne {
 	return uuo
 }
 
-// SetProfilePictureURL sets the "profile_picture_url" field.
-func (uuo *UserUpdateOne) SetProfilePictureURL(s string) *UserUpdateOne {
-	uuo.mutation.SetProfilePictureURL(s)
+// SetProfileImageURL sets the "profile_image_url" field.
+func (uuo *UserUpdateOne) SetProfileImageURL(s string) *UserUpdateOne {
+	uuo.mutation.SetProfileImageURL(s)
 	return uuo
 }
 
-// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableProfilePictureURL(s *string) *UserUpdateOne {
+// SetNillableProfileImageURL sets the "profile_image_url" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableProfileImageURL(s *string) *UserUpdateOne {
 	if s != nil {
-		uuo.SetProfilePictureURL(*s)
+		uuo.SetProfileImageURL(*s)
 	}
 	return uuo
 }
 
-// ClearProfilePictureURL clears the value of the "profile_picture_url" field.
-func (uuo *UserUpdateOne) ClearProfilePictureURL() *UserUpdateOne {
-	uuo.mutation.ClearProfilePictureURL()
+// ClearProfileImageURL clears the value of the "profile_image_url" field.
+func (uuo *UserUpdateOne) ClearProfileImageURL() *UserUpdateOne {
+	uuo.mutation.ClearProfileImageURL()
 	return uuo
 }
 
@@ -602,11 +602,11 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if uuo.mutation.BirthdateCleared() {
 		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
 	}
-	if value, ok := uuo.mutation.ProfilePictureURL(); ok {
-		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
+	if value, ok := uuo.mutation.ProfileImageURL(); ok {
+		_spec.SetField(user.FieldProfileImageURL, field.TypeString, value)
 	}
-	if uuo.mutation.ProfilePictureURLCleared() {
-		_spec.ClearField(user.FieldProfilePictureURL, field.TypeString)
+	if uuo.mutation.ProfileImageURLCleared() {
+		_spec.ClearField(user.FieldProfileImageURL, field.TypeString)
 	}
 	if value, ok := uuo.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

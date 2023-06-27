@@ -78,16 +78,16 @@ func (uc *UserCreate) SetNillableBirthdate(t *time.Time) *UserCreate {
 	return uc
 }
 
-// SetProfilePictureURL sets the "profile_picture_url" field.
-func (uc *UserCreate) SetProfilePictureURL(s string) *UserCreate {
-	uc.mutation.SetProfilePictureURL(s)
+// SetProfileImageURL sets the "profile_image_url" field.
+func (uc *UserCreate) SetProfileImageURL(s string) *UserCreate {
+	uc.mutation.SetProfileImageURL(s)
 	return uc
 }
 
-// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
-func (uc *UserCreate) SetNillableProfilePictureURL(s *string) *UserCreate {
+// SetNillableProfileImageURL sets the "profile_image_url" field if the given value is not nil.
+func (uc *UserCreate) SetNillableProfileImageURL(s *string) *UserCreate {
 	if s != nil {
-		uc.SetProfilePictureURL(*s)
+		uc.SetProfileImageURL(*s)
 	}
 	return uc
 }
@@ -284,9 +284,9 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
 		_node.Birthdate = &value
 	}
-	if value, ok := uc.mutation.ProfilePictureURL(); ok {
-		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
-		_node.ProfilePictureURL = &value
+	if value, ok := uc.mutation.ProfileImageURL(); ok {
+		_spec.SetField(user.FieldProfileImageURL, field.TypeString, value)
+		_node.ProfileImageURL = &value
 	}
 	if value, ok := uc.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

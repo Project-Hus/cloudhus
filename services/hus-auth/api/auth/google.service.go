@@ -70,13 +70,13 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// Google's unique user ID
 	sub := payload.Claims["sub"].(string)
 	// check if the user is registered with Google
-	u, err := db.QueryUserByGoogleSub(c.Request().Context(), ac.dbClient, sub)
+	u, err := db.QueryUserByGoogleSub(c.Request().Context(), sub)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
 	// create one if there is no Hus account with this Google account
 	if u == nil {
-		_, err := db.CreateUserFromGoogle(c.Request().Context(), ac.dbClient, *payload)
+		_, err := db.CreateUserFromGoogle(c.Request().Context(), *payload)
 		if err != nil {
 			return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 		}
@@ -84,7 +84,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 
 	// We checked or created if the Google user exists in Hus above,
 	// Now get user query again to create new hus session.
-	u, err = db.QueryUserByGoogleSub(c.Request().Context(), ac.dbClient, sub)
+	u, err = db.QueryUserByGoogleSub(c.Request().Context(), sub)
 	if err != nil {
 		return c.Redirect(http.StatusMovedPermanently, serviceUrl+"/error")
 	}
@@ -147,7 +147,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 // @Router       /social/google [post]
 // @Summary      gets and processes Google ID token and redirects the user back to the given redirect url.
 // @Description  validates the google ID token and do some authentication stuff.
-// @Description  and redirects the user back to the given  after the process.
+// @Description  and redirects the user back to the given redirect url after the process is done.
 // @Description  note that all urls must be url-encoded.
 // @Tags         auth
 // @Accept       json
@@ -160,6 +160,9 @@ func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
 	// so all this endpoint should do is just to validate the Google ID token and propagate the result to the connected sessions.
 
 	redirectURL := c.QueryParam("redirect")
+	if redirectURL == "" {
+		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
+	}
 	fallbackURL := c.QueryParam("fallback")
 	if fallbackURL == "" {
 		fallbackURL = redirectURL
@@ -168,12 +171,7 @@ func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
 	redirectURL, err1 := url.QueryUnescape(redirectURL)
 	fallbackURL, err2 := url.QueryUnescape(fallbackURL)
 	if err1 != nil || err2 != nil {
-		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Subdomains["auth"].URL+"/auth")
-	}
-
-	if redirectURL == "" {
-		redirectURL = common.Subservice["cloudhus"].Subdomains["auth"].URL + "/auth"
-		fallbackURL = redirectURL
+		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 
 	// validate the Hus session
@@ -181,7 +179,7 @@ func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
 	if err != nil {
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
-	hs, _, preserved, err := session.ValidateHusSessionV2(c.Request().Context(), ac.dbClient, hst.Value)
+	hs, _, err := session.ValidateHusSessionV2(c.Request().Context(), hst.Value)
 	if err != nil {
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
@@ -195,13 +193,13 @@ func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
 	// Google's unique user ID
 	sub := payload.Claims["sub"].(string)
 	// check if the user is registered with Google)
-	u, err := db.QueryUserByGoogleSub(c.Request().Context(), ac.dbClient, sub)
+	u, err := db.QueryUserByGoogleSub(c.Request().Context(), sub)
 	if err != nil {
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 	// create one if there is no Hus account with this Google account
 	if u == nil {
-		u, err = db.CreateUserFromGoogle(c.Request().Context(), ac.dbClient, *payload)
+		u, err = db.CreateUserFromGoogle(c.Request().Context(), *payload)
 		if err != nil {
 			return c.Redirect(http.StatusSeeOther, fallbackURL)
 		}
@@ -212,7 +210,7 @@ func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
-	newToken, err := session.RotateHusSessionV2(c.Request().Context(), ac.dbClient, hs)
+	newToken, err := session.RotateHusSessionV2(c.Request().Context(), hs)
 	if err != nil {
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
@@ -226,7 +224,7 @@ func (ac authApiController) GoogleAuthHandlerV2(c echo.Context) error {
 		Domain:   hus.AuthCookieDomain,
 		SameSite: hus.SameSiteMode,
 	}
-	if preserved {
+	if hs.Preserved {
 		cookie.Expires = time.Now().AddDate(0, 0, 7)
 	}
 	c.SetCookie(cookie)
