@@ -208,7 +208,59 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 	return nil
 }
 
+// SignOutHusSession takes Hus session entity and signs out all user's Hus sessions.
 func SignOutTotal(ctx context.Context, hsid uuid.UUID) error {
+	hs, err := db.Client.HusSession.Query().Where(hussession.ID(hsid)).WithConnectedSession().Only(ctx)
+	if err != nil {
+		return fmt.Errorf("querying Hus session failed:%w", err)
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(len(hs.Edges.ConnectedSession))
+	for _, cs := range hs.Edges.ConnectedSession {
+		go func(cs *ent.ConnectedSession) {
+			defer wg.Done()
+			service, ok := common.Subservice[cs.Service]
+			if !ok {
+				return
+			}
+			husConnectURL := service.Subdomains["auth"].URL + "/auth/hussession/connect"
+
+			hscJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+				"pps":               "session_signout",
+				"hsid":              cs.Hsid.String(),
+				"sid":               cs.Csid.String(),
+				"uid":               strconv.FormatUint(u.ID, 10),
+				"profile_image_url": u.ProfileImageURL,
+				"email":             u.Email,
+				"email_verified":    u.EmailVerified,
+				"name":              u.Name,
+				"given_name":        u.GivenName,
+				"family_name":       u.FamilyName,
+				"birthdate":         nil,
+				"exp":               time.Now().Add(time.Second * 10).Unix(),
+			})
+
+			hscSigned, err := hscJWT.SignedString(hus.HusSecretKeyBytes)
+			if err != nil {
+				return
+			}
+
+			req, err := http.NewRequest(http.MethodPatch, husConnectURL, strings.NewReader(hscSigned))
+			if err != nil {
+				return
+			}
+			req.Header.Set("Content-Type", "text/plain")
+			resp, err := hus.Http.Do(req)
+			if err != nil {
+				return
+			}
+			defer resp.Body.Close()
+		}(cs)
+	}
+
+	wg.Wait()
+
 	return nil
 }
 
