@@ -5,10 +5,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 var GoogleClientID = ""
 var HusSecretKey = ""
+var HusSecretKeyBytes []byte
 
 var Host = ""
 var URL = ""
@@ -21,10 +23,15 @@ var SameSiteMode = http.SameSiteNoneMode
 
 var LifthusURL = "http://localhost:3000"
 
+var Http *http.Client
+
 func InitHusVars(husenv string, _ *ent.Client) {
+	Http = &http.Client{Timeout: 5 * time.Second}
+
 	ok1, ok2 := false, false
 	GoogleClientID, ok1 = os.LookupEnv("GOOGLE_CLIENT_ID")
 	HusSecretKey, ok2 = os.LookupEnv("HUS_SECRET_KEY")
+	HusSecretKeyBytes = []byte(HusSecretKey)
 	if !ok1 || !ok2 {
 		log.Fatal("GOOGLE_CLIENT_ID or HUS_SECRET_KEY is not set")
 	}

@@ -25,6 +25,75 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/hussession": {
+            "get": {
+                "description": "this endpoint can be used both for Cloudhus and subservices.\nif the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.\nand if fallback url is given, it will redirect to fallback url if it fails.\nnote that all urls must be url-encoded.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "checks and issues the Hus session token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "subservice name",
+                        "name": "service",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "subservice session id",
+                        "name": "sid",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "redirect url",
+                        "name": "redirect",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "fallback url",
+                        "name": "fallback",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "303": {
+                        "description": "See Other, redirection"
+                    }
+                }
+            }
+        },
+        "/hussession/{token}": {
+            "get": {
+                "description": "the token has properties pps, service and sid.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "gets connection token from subservice and returns Hus session ID and user info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "pps, service name, session ID in signed token which expires only in 10 seconds",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok, session has been connected"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found, no such connected session"
+                    }
+                }
+            }
+        },
         "/session/check/{service}/{sid}": {
             "post": {
                 "description": "checks the service and sid and tells the subservice server that the client is signed in.\nafter the subservice server updates the session and responds with 200,\nHus auth server also reponds with 200 to the client.",
@@ -85,6 +154,47 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "doesn't have to be handled"
+                    }
+                }
+            }
+        },
+        "/social/google": {
+            "post": {
+                "description": "validates the google ID token and do some authentication stuff.\nand redirects the user back to the given  after the process.\nnote that all urls must be url-encoded.",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "gets and processes Google ID token and redirects the user back to the given redirect url.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "url to be redirected after authentication",
+                        "name": "redirect",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "url to be redirected if the authentication fails",
+                        "name": "fallback",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Google ID token",
+                        "name": "credential",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "303": {
+                        "description": "See Other"
                     }
                 }
             }

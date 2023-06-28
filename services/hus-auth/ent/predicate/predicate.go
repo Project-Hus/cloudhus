@@ -6,14 +6,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// ConnectedSession is the predicate function for connectedsession builders.
+type ConnectedSession func(*sql.Selector)
+
 // HusSession is the predicate function for hussession builders.
 type HusSession func(*sql.Selector)
-
-// Service is the predicate function for service builders.
-type Service func(*sql.Selector)
-
-// Subdomain is the predicate function for subdomain builders.
-type Subdomain func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

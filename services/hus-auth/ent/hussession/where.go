@@ -76,6 +76,16 @@ func UID(v uint64) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldUID, v))
 }
 
+// SignedAt applies equality check predicate on the "signed_at" field. It's identical to SignedAtEQ.
+func SignedAt(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldSignedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
 // TidEQ applies the EQ predicate on the "tid" field.
 func TidEQ(v uuid.UUID) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldTid, v))
@@ -186,6 +196,106 @@ func UIDNotIn(vs ...uint64) predicate.HusSession {
 	return predicate.HusSession(sql.FieldNotIn(FieldUID, vs...))
 }
 
+// UIDIsNil applies the IsNil predicate on the "uid" field.
+func UIDIsNil() predicate.HusSession {
+	return predicate.HusSession(sql.FieldIsNull(FieldUID))
+}
+
+// UIDNotNil applies the NotNil predicate on the "uid" field.
+func UIDNotNil() predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotNull(FieldUID))
+}
+
+// SignedAtEQ applies the EQ predicate on the "signed_at" field.
+func SignedAtEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldSignedAt, v))
+}
+
+// SignedAtNEQ applies the NEQ predicate on the "signed_at" field.
+func SignedAtNEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldSignedAt, v))
+}
+
+// SignedAtIn applies the In predicate on the "signed_at" field.
+func SignedAtIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldIn(FieldSignedAt, vs...))
+}
+
+// SignedAtNotIn applies the NotIn predicate on the "signed_at" field.
+func SignedAtNotIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotIn(FieldSignedAt, vs...))
+}
+
+// SignedAtGT applies the GT predicate on the "signed_at" field.
+func SignedAtGT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGT(FieldSignedAt, v))
+}
+
+// SignedAtGTE applies the GTE predicate on the "signed_at" field.
+func SignedAtGTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGTE(FieldSignedAt, v))
+}
+
+// SignedAtLT applies the LT predicate on the "signed_at" field.
+func SignedAtLT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLT(FieldSignedAt, v))
+}
+
+// SignedAtLTE applies the LTE predicate on the "signed_at" field.
+func SignedAtLTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLTE(FieldSignedAt, v))
+}
+
+// SignedAtIsNil applies the IsNil predicate on the "signed_at" field.
+func SignedAtIsNil() predicate.HusSession {
+	return predicate.HusSession(sql.FieldIsNull(FieldSignedAt))
+}
+
+// SignedAtNotNil applies the NotNil predicate on the "signed_at" field.
+func SignedAtNotNil() predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotNull(FieldSignedAt))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
 // HasUser applies the HasEdge predicate on the "user" edge.
 func HasUser() predicate.HusSession {
 	return predicate.HusSession(func(s *sql.Selector) {
@@ -204,6 +314,33 @@ func HasUserWith(preds ...predicate.User) predicate.HusSession {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(UserInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasConnectedSession applies the HasEdge predicate on the "connected_session" edge.
+func HasConnectedSession() predicate.HusSession {
+	return predicate.HusSession(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ConnectedSessionTable, ConnectedSessionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasConnectedSessionWith applies the HasEdge predicate on the "connected_session" edge with a given conditions (other predicates).
+func HasConnectedSessionWith(preds ...predicate.ConnectedSession) predicate.HusSession {
+	return predicate.HusSession(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ConnectedSessionInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ConnectedSessionTable, ConnectedSessionColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

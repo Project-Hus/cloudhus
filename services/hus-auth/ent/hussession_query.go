@@ -4,7 +4,9 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
+	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
 	"hus-auth/ent/predicate"
 	"hus-auth/ent/user"
@@ -19,11 +21,12 @@ import (
 // HusSessionQuery is the builder for querying HusSession entities.
 type HusSessionQuery struct {
 	config
-	ctx        *QueryContext
-	order      []OrderFunc
-	inters     []Interceptor
-	predicates []predicate.HusSession
-	withUser   *UserQuery
+	ctx                  *QueryContext
+	order                []OrderFunc
+	inters               []Interceptor
+	predicates           []predicate.HusSession
+	withUser             *UserQuery
+	withConnectedSession *ConnectedSessionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -75,6 +78,28 @@ func (hsq *HusSessionQuery) QueryUser() *UserQuery {
 			sqlgraph.From(hussession.Table, hussession.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, hussession.UserTable, hussession.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(hsq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryConnectedSession chains the current query on the "connected_session" edge.
+func (hsq *HusSessionQuery) QueryConnectedSession() *ConnectedSessionQuery {
+	query := (&ConnectedSessionClient{config: hsq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := hsq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := hsq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hussession.Table, hussession.FieldID, selector),
+			sqlgraph.To(connectedsession.Table, connectedsession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, hussession.ConnectedSessionTable, hussession.ConnectedSessionColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(hsq.driver.Dialect(), step)
 		return fromU, nil
@@ -269,12 +294,13 @@ func (hsq *HusSessionQuery) Clone() *HusSessionQuery {
 		return nil
 	}
 	return &HusSessionQuery{
-		config:     hsq.config,
-		ctx:        hsq.ctx.Clone(),
-		order:      append([]OrderFunc{}, hsq.order...),
-		inters:     append([]Interceptor{}, hsq.inters...),
-		predicates: append([]predicate.HusSession{}, hsq.predicates...),
-		withUser:   hsq.withUser.Clone(),
+		config:               hsq.config,
+		ctx:                  hsq.ctx.Clone(),
+		order:                append([]OrderFunc{}, hsq.order...),
+		inters:               append([]Interceptor{}, hsq.inters...),
+		predicates:           append([]predicate.HusSession{}, hsq.predicates...),
+		withUser:             hsq.withUser.Clone(),
+		withConnectedSession: hsq.withConnectedSession.Clone(),
 		// clone intermediate query.
 		sql:  hsq.sql.Clone(),
 		path: hsq.path,
@@ -289,6 +315,17 @@ func (hsq *HusSessionQuery) WithUser(opts ...func(*UserQuery)) *HusSessionQuery 
 		opt(query)
 	}
 	hsq.withUser = query
+	return hsq
+}
+
+// WithConnectedSession tells the query-builder to eager-load the nodes that are connected to
+// the "connected_session" edge. The optional arguments are used to configure the query builder of the edge.
+func (hsq *HusSessionQuery) WithConnectedSession(opts ...func(*ConnectedSessionQuery)) *HusSessionQuery {
+	query := (&ConnectedSessionClient{config: hsq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	hsq.withConnectedSession = query
 	return hsq
 }
 
@@ -370,8 +407,9 @@ func (hsq *HusSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	var (
 		nodes       = []*HusSession{}
 		_spec       = hsq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			hsq.withUser != nil,
+			hsq.withConnectedSession != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -398,6 +436,15 @@ func (hsq *HusSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 			return nil, err
 		}
 	}
+	if query := hsq.withConnectedSession; query != nil {
+		if err := hsq.loadConnectedSession(ctx, query, nodes,
+			func(n *HusSession) { n.Edges.ConnectedSession = []*ConnectedSession{} },
+			func(n *HusSession, e *ConnectedSession) {
+				n.Edges.ConnectedSession = append(n.Edges.ConnectedSession, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -405,7 +452,10 @@ func (hsq *HusSessionQuery) loadUser(ctx context.Context, query *UserQuery, node
 	ids := make([]uint64, 0, len(nodes))
 	nodeids := make(map[uint64][]*HusSession)
 	for i := range nodes {
-		fk := nodes[i].UID
+		if nodes[i].UID == nil {
+			continue
+		}
+		fk := *nodes[i].UID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -427,6 +477,33 @@ func (hsq *HusSessionQuery) loadUser(ctx context.Context, query *UserQuery, node
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (hsq *HusSessionQuery) loadConnectedSession(ctx context.Context, query *ConnectedSessionQuery, nodes []*HusSession, init func(*HusSession), assign func(*HusSession, *ConnectedSession)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*HusSession)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.Where(predicate.ConnectedSession(func(s *sql.Selector) {
+		s.Where(sql.InValues(hussession.ConnectedSessionColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.Hsid
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "hsid" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

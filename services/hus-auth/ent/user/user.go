@@ -28,8 +28,8 @@ const (
 	FieldFamilyName = "family_name"
 	// FieldBirthdate holds the string denoting the birthdate field in the database.
 	FieldBirthdate = "birthdate"
-	// FieldProfilePictureURL holds the string denoting the profile_picture_url field in the database.
-	FieldProfilePictureURL = "profile_picture_url"
+	// FieldProfileImageURL holds the string denoting the profile_image_url field in the database.
+	FieldProfileImageURL = "profile_image_url"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -58,7 +58,7 @@ var Columns = []string{
 	FieldGivenName,
 	FieldFamilyName,
 	FieldBirthdate,
-	FieldProfilePictureURL,
+	FieldProfileImageURL,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }

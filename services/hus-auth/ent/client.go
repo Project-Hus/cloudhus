@@ -10,9 +10,8 @@ import (
 
 	"hus-auth/ent/migrate"
 
+	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
-	"hus-auth/ent/service"
-	"hus-auth/ent/subdomain"
 	"hus-auth/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -26,12 +25,10 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// ConnectedSession is the client for interacting with the ConnectedSession builders.
+	ConnectedSession *ConnectedSessionClient
 	// HusSession is the client for interacting with the HusSession builders.
 	HusSession *HusSessionClient
-	// Service is the client for interacting with the Service builders.
-	Service *ServiceClient
-	// Subdomain is the client for interacting with the Subdomain builders.
-	Subdomain *SubdomainClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -47,9 +44,8 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.ConnectedSession = NewConnectedSessionClient(c.config)
 	c.HusSession = NewHusSessionClient(c.config)
-	c.Service = NewServiceClient(c.config)
-	c.Subdomain = NewSubdomainClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -82,12 +78,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		HusSession: NewHusSessionClient(cfg),
-		Service:    NewServiceClient(cfg),
-		Subdomain:  NewSubdomainClient(cfg),
-		User:       NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		ConnectedSession: NewConnectedSessionClient(cfg),
+		HusSession:       NewHusSessionClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
@@ -105,19 +100,18 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		HusSession: NewHusSessionClient(cfg),
-		Service:    NewServiceClient(cfg),
-		Subdomain:  NewSubdomainClient(cfg),
-		User:       NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		ConnectedSession: NewConnectedSessionClient(cfg),
+		HusSession:       NewHusSessionClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		HusSession.
+//		ConnectedSession.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -139,34 +133,164 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.ConnectedSession.Use(hooks...)
 	c.HusSession.Use(hooks...)
-	c.Service.Use(hooks...)
-	c.Subdomain.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.ConnectedSession.Intercept(interceptors...)
 	c.HusSession.Intercept(interceptors...)
-	c.Service.Intercept(interceptors...)
-	c.Subdomain.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *ConnectedSessionMutation:
+		return c.ConnectedSession.mutate(ctx, m)
 	case *HusSessionMutation:
 		return c.HusSession.mutate(ctx, m)
-	case *ServiceMutation:
-		return c.Service.mutate(ctx, m)
-	case *SubdomainMutation:
-		return c.Subdomain.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// ConnectedSessionClient is a client for the ConnectedSession schema.
+type ConnectedSessionClient struct {
+	config
+}
+
+// NewConnectedSessionClient returns a client for the ConnectedSession from the given config.
+func NewConnectedSessionClient(c config) *ConnectedSessionClient {
+	return &ConnectedSessionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `connectedsession.Hooks(f(g(h())))`.
+func (c *ConnectedSessionClient) Use(hooks ...Hook) {
+	c.hooks.ConnectedSession = append(c.hooks.ConnectedSession, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `connectedsession.Intercept(f(g(h())))`.
+func (c *ConnectedSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ConnectedSession = append(c.inters.ConnectedSession, interceptors...)
+}
+
+// Create returns a builder for creating a ConnectedSession entity.
+func (c *ConnectedSessionClient) Create() *ConnectedSessionCreate {
+	mutation := newConnectedSessionMutation(c.config, OpCreate)
+	return &ConnectedSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ConnectedSession entities.
+func (c *ConnectedSessionClient) CreateBulk(builders ...*ConnectedSessionCreate) *ConnectedSessionCreateBulk {
+	return &ConnectedSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ConnectedSession.
+func (c *ConnectedSessionClient) Update() *ConnectedSessionUpdate {
+	mutation := newConnectedSessionMutation(c.config, OpUpdate)
+	return &ConnectedSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ConnectedSessionClient) UpdateOne(cs *ConnectedSession) *ConnectedSessionUpdateOne {
+	mutation := newConnectedSessionMutation(c.config, OpUpdateOne, withConnectedSession(cs))
+	return &ConnectedSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ConnectedSessionClient) UpdateOneID(id int) *ConnectedSessionUpdateOne {
+	mutation := newConnectedSessionMutation(c.config, OpUpdateOne, withConnectedSessionID(id))
+	return &ConnectedSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ConnectedSession.
+func (c *ConnectedSessionClient) Delete() *ConnectedSessionDelete {
+	mutation := newConnectedSessionMutation(c.config, OpDelete)
+	return &ConnectedSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ConnectedSessionClient) DeleteOne(cs *ConnectedSession) *ConnectedSessionDeleteOne {
+	return c.DeleteOneID(cs.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ConnectedSessionClient) DeleteOneID(id int) *ConnectedSessionDeleteOne {
+	builder := c.Delete().Where(connectedsession.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ConnectedSessionDeleteOne{builder}
+}
+
+// Query returns a query builder for ConnectedSession.
+func (c *ConnectedSessionClient) Query() *ConnectedSessionQuery {
+	return &ConnectedSessionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeConnectedSession},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ConnectedSession entity by its id.
+func (c *ConnectedSessionClient) Get(ctx context.Context, id int) (*ConnectedSession, error) {
+	return c.Query().Where(connectedsession.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ConnectedSessionClient) GetX(ctx context.Context, id int) *ConnectedSession {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryHusSession queries the hus_session edge of a ConnectedSession.
+func (c *ConnectedSessionClient) QueryHusSession(cs *ConnectedSession) *HusSessionQuery {
+	query := (&HusSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(connectedsession.Table, connectedsession.FieldID, id),
+			sqlgraph.To(hussession.Table, hussession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, connectedsession.HusSessionTable, connectedsession.HusSessionColumn),
+		)
+		fromV = sqlgraph.Neighbors(cs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ConnectedSessionClient) Hooks() []Hook {
+	return c.hooks.ConnectedSession
+}
+
+// Interceptors returns the client interceptors.
+func (c *ConnectedSessionClient) Interceptors() []Interceptor {
+	return c.inters.ConnectedSession
+}
+
+func (c *ConnectedSessionClient) mutate(ctx context.Context, m *ConnectedSessionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ConnectedSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ConnectedSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ConnectedSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ConnectedSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ConnectedSession mutation op: %q", m.Op())
 	}
 }
 
@@ -279,6 +403,22 @@ func (c *HusSessionClient) QueryUser(hs *HusSession) *UserQuery {
 	return query
 }
 
+// QueryConnectedSession queries the connected_session edge of a HusSession.
+func (c *HusSessionClient) QueryConnectedSession(hs *HusSession) *ConnectedSessionQuery {
+	query := (&ConnectedSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := hs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hussession.Table, hussession.FieldID, id),
+			sqlgraph.To(connectedsession.Table, connectedsession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, hussession.ConnectedSessionTable, hussession.ConnectedSessionColumn),
+		)
+		fromV = sqlgraph.Neighbors(hs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *HusSessionClient) Hooks() []Hook {
 	return c.hooks.HusSession
@@ -301,274 +441,6 @@ func (c *HusSessionClient) mutate(ctx context.Context, m *HusSessionMutation) (V
 		return (&HusSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown HusSession mutation op: %q", m.Op())
-	}
-}
-
-// ServiceClient is a client for the Service schema.
-type ServiceClient struct {
-	config
-}
-
-// NewServiceClient returns a client for the Service from the given config.
-func NewServiceClient(c config) *ServiceClient {
-	return &ServiceClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `service.Hooks(f(g(h())))`.
-func (c *ServiceClient) Use(hooks ...Hook) {
-	c.hooks.Service = append(c.hooks.Service, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `service.Intercept(f(g(h())))`.
-func (c *ServiceClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Service = append(c.inters.Service, interceptors...)
-}
-
-// Create returns a builder for creating a Service entity.
-func (c *ServiceClient) Create() *ServiceCreate {
-	mutation := newServiceMutation(c.config, OpCreate)
-	return &ServiceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Service entities.
-func (c *ServiceClient) CreateBulk(builders ...*ServiceCreate) *ServiceCreateBulk {
-	return &ServiceCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Service.
-func (c *ServiceClient) Update() *ServiceUpdate {
-	mutation := newServiceMutation(c.config, OpUpdate)
-	return &ServiceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ServiceClient) UpdateOne(s *Service) *ServiceUpdateOne {
-	mutation := newServiceMutation(c.config, OpUpdateOne, withService(s))
-	return &ServiceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ServiceClient) UpdateOneID(id int) *ServiceUpdateOne {
-	mutation := newServiceMutation(c.config, OpUpdateOne, withServiceID(id))
-	return &ServiceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Service.
-func (c *ServiceClient) Delete() *ServiceDelete {
-	mutation := newServiceMutation(c.config, OpDelete)
-	return &ServiceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ServiceClient) DeleteOne(s *Service) *ServiceDeleteOne {
-	return c.DeleteOneID(s.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ServiceClient) DeleteOneID(id int) *ServiceDeleteOne {
-	builder := c.Delete().Where(service.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ServiceDeleteOne{builder}
-}
-
-// Query returns a query builder for Service.
-func (c *ServiceClient) Query() *ServiceQuery {
-	return &ServiceQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeService},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Service entity by its id.
-func (c *ServiceClient) Get(ctx context.Context, id int) (*Service, error) {
-	return c.Query().Where(service.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ServiceClient) GetX(ctx context.Context, id int) *Service {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QuerySubdomains queries the subdomains edge of a Service.
-func (c *ServiceClient) QuerySubdomains(s *Service) *SubdomainQuery {
-	query := (&SubdomainClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(service.Table, service.FieldID, id),
-			sqlgraph.To(subdomain.Table, subdomain.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, service.SubdomainsTable, service.SubdomainsColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ServiceClient) Hooks() []Hook {
-	return c.hooks.Service
-}
-
-// Interceptors returns the client interceptors.
-func (c *ServiceClient) Interceptors() []Interceptor {
-	return c.inters.Service
-}
-
-func (c *ServiceClient) mutate(ctx context.Context, m *ServiceMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ServiceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ServiceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ServiceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ServiceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Service mutation op: %q", m.Op())
-	}
-}
-
-// SubdomainClient is a client for the Subdomain schema.
-type SubdomainClient struct {
-	config
-}
-
-// NewSubdomainClient returns a client for the Subdomain from the given config.
-func NewSubdomainClient(c config) *SubdomainClient {
-	return &SubdomainClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `subdomain.Hooks(f(g(h())))`.
-func (c *SubdomainClient) Use(hooks ...Hook) {
-	c.hooks.Subdomain = append(c.hooks.Subdomain, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `subdomain.Intercept(f(g(h())))`.
-func (c *SubdomainClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Subdomain = append(c.inters.Subdomain, interceptors...)
-}
-
-// Create returns a builder for creating a Subdomain entity.
-func (c *SubdomainClient) Create() *SubdomainCreate {
-	mutation := newSubdomainMutation(c.config, OpCreate)
-	return &SubdomainCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Subdomain entities.
-func (c *SubdomainClient) CreateBulk(builders ...*SubdomainCreate) *SubdomainCreateBulk {
-	return &SubdomainCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Subdomain.
-func (c *SubdomainClient) Update() *SubdomainUpdate {
-	mutation := newSubdomainMutation(c.config, OpUpdate)
-	return &SubdomainUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SubdomainClient) UpdateOne(s *Subdomain) *SubdomainUpdateOne {
-	mutation := newSubdomainMutation(c.config, OpUpdateOne, withSubdomain(s))
-	return &SubdomainUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SubdomainClient) UpdateOneID(id int) *SubdomainUpdateOne {
-	mutation := newSubdomainMutation(c.config, OpUpdateOne, withSubdomainID(id))
-	return &SubdomainUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Subdomain.
-func (c *SubdomainClient) Delete() *SubdomainDelete {
-	mutation := newSubdomainMutation(c.config, OpDelete)
-	return &SubdomainDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SubdomainClient) DeleteOne(s *Subdomain) *SubdomainDeleteOne {
-	return c.DeleteOneID(s.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SubdomainClient) DeleteOneID(id int) *SubdomainDeleteOne {
-	builder := c.Delete().Where(subdomain.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SubdomainDeleteOne{builder}
-}
-
-// Query returns a query builder for Subdomain.
-func (c *SubdomainClient) Query() *SubdomainQuery {
-	return &SubdomainQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSubdomain},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Subdomain entity by its id.
-func (c *SubdomainClient) Get(ctx context.Context, id int) (*Subdomain, error) {
-	return c.Query().Where(subdomain.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SubdomainClient) GetX(ctx context.Context, id int) *Subdomain {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryService queries the service edge of a Subdomain.
-func (c *SubdomainClient) QueryService(s *Subdomain) *ServiceQuery {
-	query := (&ServiceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(subdomain.Table, subdomain.FieldID, id),
-			sqlgraph.To(service.Table, service.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, subdomain.ServiceTable, subdomain.ServiceColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SubdomainClient) Hooks() []Hook {
-	return c.hooks.Subdomain
-}
-
-// Interceptors returns the client interceptors.
-func (c *SubdomainClient) Interceptors() []Interceptor {
-	return c.inters.Subdomain
-}
-
-func (c *SubdomainClient) mutate(ctx context.Context, m *SubdomainMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SubdomainCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SubdomainUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SubdomainUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SubdomainDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Subdomain mutation op: %q", m.Op())
 	}
 }
 

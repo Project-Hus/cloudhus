@@ -6,11 +6,15 @@ import (
 
 	"fmt"
 	"hus-auth/common"
+	"hus-auth/common/helper"
 	"hus-auth/common/hus"
+	"hus-auth/common/service/session"
+	"hus-auth/ent"
+	"hus-auth/ent/connectedsession"
 
-	"hus-auth/service/session"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -84,7 +88,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	hscbJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid":               lifthus_sid,
 		"uid":               strconv.FormatUint(u.ID, 10),
-		"profile_image_url": u.ProfilePictureURL,
+		"profile_image_url": u.ProfileImageURL,
 		"email":             u.Email,
 		"email_verified":    u.EmailVerified,
 		"name":              u.Name,
@@ -178,4 +182,228 @@ func (ac authApiController) SessionRevocationHandler(c echo.Context) error {
 	c.SetCookie(cookie2)
 
 	return c.NoContent(http.StatusOK)
+}
+
+// V2 ===================================================================================
+
+// HusSessionHandler godoc
+// @Tags         auth
+// @Router /hussession [get]
+// @Summary checks and issues the Hus session token
+// @Description this endpoint can be used both for Cloudhus and subservices.
+// @Description if the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.
+// @Description and if fallback url is given, it will redirect to fallback url if it fails.
+// @Description note that all urls must be url-encoded.
+// @Param service query string true "subservice name"
+// @Param redirect query string true "redirect url"
+// @Param fallback query string false "fallback url"
+// @Param sid query string true "subservice session id"
+// @Success      303 "See Other, redirection"
+// @Failure      303 "See Other, redirection"
+func (ac authApiController) HusSessionHandler(c echo.Context) error {
+	var err error
+
+	// Query Parameters
+	serviceName := c.QueryParam("service")  // name of the subservice that is requesting
+	sessionID := c.QueryParam("sid")        // session ID of the subservice that is requesting
+	redirectURL := c.QueryParam("redirect") // URL to be redirected after the request is processed
+	fallbackURL := c.QueryParam("fallback") // URL to be redirected if the request fails
+	if fallbackURL == "" {
+		// if fallback URL is not given, it redirects to redirect URL
+		fallbackURL = redirectURL
+	}
+
+	// if any of three parameters are not given, this request can't be handled.
+	if serviceName == "" || sessionID == "" || redirectURL == "" {
+		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
+	}
+
+	// url decode
+	redirectURL, err1 := url.QueryUnescape(redirectURL)
+	fallbackURL, err2 := url.QueryUnescape(fallbackURL)
+	if err1 != nil || err2 != nil {
+		// invalid url
+		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
+	}
+
+	// service not registered, then halt.
+	_, ok := common.Subservice[serviceName]
+	if !ok {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
+	// sessionID to UUID
+	sessionUUID, err := uuid.Parse(sessionID)
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
+
+	// when there's no valid Hus session, create new one depending on this flag.
+	var hs *ent.HusSession
+	createFlag := false
+
+	// get hus_st from cookie
+	hus_st, err := c.Cookie("hus_st")
+	if err == http.ErrNoCookie || hus_st.Value == "" {
+		// no session, create new one
+		createFlag = true
+	} else if err != nil {
+		// there's an error while getting cookie, return error.
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	} else {
+		hs, _, err = session.ValidateHusSessionV2(c.Request().Context(), hus_st.Value)
+		if err != nil {
+			createFlag = true
+		}
+	}
+
+	// if no valid Hus session found, establish new Hus session.
+	// after redirection to this same endpoint, it will handle newly established Hus session.
+	if createFlag {
+		/* NEW HUS SESSION CREATION */
+		_, nhst, err := session.CreateHusSessionV2(c.Request().Context())
+		if err != nil {
+			return c.Redirect(http.StatusSeeOther, fallbackURL)
+		}
+
+		nhstCookie := &http.Cookie{
+			Name:     "hus_st",
+			Value:    nhst,
+			Path:     "/",
+			Domain:   hus.AuthCookieDomain,
+			HttpOnly: true,
+			Secure:   hus.CookieSecure,
+			SameSite: http.SameSiteLaxMode,
+		}
+		c.SetCookie(nhstCookie)
+
+		// redirect to same endpoint here with same path and queries
+		// this is to guarantee that the session is established between Cloudhus and the client
+		tmpRedirect := common.Subservice["cloudhus"].Subdomains["auth"].URL +
+			"/auth/hussession?service=" + serviceName +
+			"&redirect=" + redirectURL +
+			"&fallback=" + fallbackURL +
+			"&sid=" + sessionID
+		c.Redirect(http.StatusSeeOther, tmpRedirect)
+	}
+
+	// now handle the valid session
+	err = session.ConnectSessions(c.Request().Context(), hs, serviceName, sessionUUID)
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
+
+	// finally, rotate the Hus session
+	nhst, err := session.RotateHusSessionV2(c.Request().Context(), hs)
+	if err != nil {
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
+	}
+
+	nhstCookie := &http.Cookie{
+		Name:     "hus_st",
+		Value:    nhst,
+		Path:     "/",
+		Domain:   hus.AuthCookieDomain,
+		HttpOnly: true,
+		Secure:   hus.CookieSecure,
+		SameSite: http.SameSiteLaxMode,
+	}
+	if hs.Preserved {
+		nhstCookie.Expires = time.Now().Add(7 * 24 * time.Hour)
+	}
+	c.SetCookie(nhstCookie)
+
+	return c.Redirect(http.StatusSeeOther, redirectURL)
+}
+
+// SessionConnectionHandler godoc
+// @Tags         auth
+// @Router /hussession/connect/{token} [get]
+// @Summary gets connection token from subservice and returns Hus session ID and user info
+// @Description the token has properties pps, service and sid.
+// @Param token path string true "pps, service name, session ID in signed token which expires only in 10 seconds"
+// @Success      200 "Ok, session has been connected"
+// @Failure      400 "Bad Request"
+// @Failure      404 "Not Found, no such connected session"
+func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
+	token := c.Param("token")
+	claims, exp, err := helper.ParseJWTWithHMAC(token)
+	if err != nil || exp {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	pps := claims["pps"].(string)
+	if pps != "session_connection" {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	service := claims["service"].(string)
+	sid := claims["sid"].(string)
+	suuid, err := uuid.Parse(sid)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "invalid sid")
+	}
+
+	cs, err := ac.dbClient.ConnectedSession.Query().Where(connectedsession.And(
+		connectedsession.Service(service),
+		connectedsession.Csid(suuid),
+	)).WithHusSession(func(hsq *ent.HusSessionQuery) {
+		hsq.WithUser()
+	}).Only(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusNotFound, "no such session")
+	}
+
+	return c.JSON(http.StatusOK, struct {
+		Hsid string    `json:"hsid"`
+		User *ent.User `json:"user,omitempty"`
+	}{
+		Hsid: cs.Hsid.String(),
+		User: cs.Edges.HusSession.Edges.User,
+	})
+}
+
+// SignOutHandler godoc
+// @Tags         auth
+// @Router /hussession/signout/{token} [delete]
+// @Summary gets signout token from subservice and does signout process.
+// @Description there are two types of signout process.
+// @Description 1) sign out sessions related only to given hus session.
+// @Description 2) sign out all related sessions to the user.
+// @Param token path string true "sign out token"
+// @Success      200 "Ok, session has been connected"
+// @Failure      400 "Bad Request"
+// @Failure      500 "Internal Server Error"
+func (ac authApiController) SignOutHandler(c echo.Context) error {
+	token := c.Param("token")
+
+	claims, exp, err := helper.ParseJWTWithHMAC(token)
+	if err != nil || exp {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	pps := claims["pps"].(string)
+	if pps != "session_signout" {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	hsid := claims["hsid"].(string)
+	hsuuid, err := uuid.Parse(hsid)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "parsing uuid failed")
+	}
+
+	soType := claims["type"].(string)
+	switch soType {
+	case "single":
+		log.Println("not yet")
+	case "total":
+		err = session.SignOutTotal(c.Request().Context(), hsuuid)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "signout failed")
+		}
+	default:
+		return c.String(http.StatusBadRequest, "invalid signout type")
+	}
+
+	return c.String(http.StatusOK, "signed out")
 }

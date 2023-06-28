@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
 	"hus-auth/ent/user"
 	"time"
@@ -70,6 +71,42 @@ func (hsc *HusSessionCreate) SetUID(u uint64) *HusSessionCreate {
 	return hsc
 }
 
+// SetNillableUID sets the "uid" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableUID(u *uint64) *HusSessionCreate {
+	if u != nil {
+		hsc.SetUID(*u)
+	}
+	return hsc
+}
+
+// SetSignedAt sets the "signed_at" field.
+func (hsc *HusSessionCreate) SetSignedAt(t time.Time) *HusSessionCreate {
+	hsc.mutation.SetSignedAt(t)
+	return hsc
+}
+
+// SetNillableSignedAt sets the "signed_at" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableSignedAt(t *time.Time) *HusSessionCreate {
+	if t != nil {
+		hsc.SetSignedAt(*t)
+	}
+	return hsc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (hsc *HusSessionCreate) SetUpdatedAt(t time.Time) *HusSessionCreate {
+	hsc.mutation.SetUpdatedAt(t)
+	return hsc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableUpdatedAt(t *time.Time) *HusSessionCreate {
+	if t != nil {
+		hsc.SetUpdatedAt(*t)
+	}
+	return hsc
+}
+
 // SetID sets the "id" field.
 func (hsc *HusSessionCreate) SetID(u uuid.UUID) *HusSessionCreate {
 	hsc.mutation.SetID(u)
@@ -90,9 +127,32 @@ func (hsc *HusSessionCreate) SetUserID(id uint64) *HusSessionCreate {
 	return hsc
 }
 
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableUserID(id *uint64) *HusSessionCreate {
+	if id != nil {
+		hsc = hsc.SetUserID(*id)
+	}
+	return hsc
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (hsc *HusSessionCreate) SetUser(u *User) *HusSessionCreate {
 	return hsc.SetUserID(u.ID)
+}
+
+// AddConnectedSessionIDs adds the "connected_session" edge to the ConnectedSession entity by IDs.
+func (hsc *HusSessionCreate) AddConnectedSessionIDs(ids ...int) *HusSessionCreate {
+	hsc.mutation.AddConnectedSessionIDs(ids...)
+	return hsc
+}
+
+// AddConnectedSession adds the "connected_session" edges to the ConnectedSession entity.
+func (hsc *HusSessionCreate) AddConnectedSession(c ...*ConnectedSession) *HusSessionCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return hsc.AddConnectedSessionIDs(ids...)
 }
 
 // Mutation returns the HusSessionMutation object of the builder.
@@ -142,6 +202,10 @@ func (hsc *HusSessionCreate) defaults() {
 		v := hussession.DefaultPreserved
 		hsc.mutation.SetPreserved(v)
 	}
+	if _, ok := hsc.mutation.UpdatedAt(); !ok {
+		v := hussession.DefaultUpdatedAt()
+		hsc.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := hsc.mutation.ID(); !ok {
 		v := hussession.DefaultID()
 		hsc.mutation.SetID(v)
@@ -159,11 +223,8 @@ func (hsc *HusSessionCreate) check() error {
 	if _, ok := hsc.mutation.Preserved(); !ok {
 		return &ValidationError{Name: "preserved", err: errors.New(`ent: missing required field "HusSession.preserved"`)}
 	}
-	if _, ok := hsc.mutation.UID(); !ok {
-		return &ValidationError{Name: "uid", err: errors.New(`ent: missing required field "HusSession.uid"`)}
-	}
-	if _, ok := hsc.mutation.UserID(); !ok {
-		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "HusSession.user"`)}
+	if _, ok := hsc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "HusSession.updated_at"`)}
 	}
 	return nil
 }
@@ -212,6 +273,14 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
 		_node.Preserved = value
 	}
+	if value, ok := hsc.mutation.SignedAt(); ok {
+		_spec.SetField(hussession.FieldSignedAt, field.TypeTime, value)
+		_node.SignedAt = &value
+	}
+	if value, ok := hsc.mutation.UpdatedAt(); ok {
+		_spec.SetField(hussession.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if nodes := hsc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -229,7 +298,26 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.UID = nodes[0]
+		_node.UID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := hsc.mutation.ConnectedSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionTable,
+			Columns: []string{hussession.ConnectedSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

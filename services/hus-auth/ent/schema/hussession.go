@@ -27,18 +27,28 @@ func (HusSession) Annotations() []schema.Annotation {
 // Fields of the HusSession.
 func (HusSession) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).StructTag(`json:"sid,omitempty"`).Default(uuid.New).Unique(), // sid
-		field.UUID("tid", uuid.UUID{}).Default(uuid.New).Unique(),                                  // tid
-		field.Time("iat").Default(time.Now),                                                        // issued at
-		// if exp is nil, the session expires when the brwoser's session ends.
+		// ID of the Hus session
+		field.UUID("id", uuid.UUID{}).StructTag(`json:"sid,omitempty"`).Default(uuid.New).Unique(),
+		// Session's temporary ID for rotation
+		field.UUID("tid", uuid.UUID{}).Default(uuid.New),
+		// issued at
+		field.Time("iat").Default(time.Now),
+		// in preserved mode, the session token is extended by a week each time the user is redirected to cloudhus.
+		// but tid is rotated each time.
 		field.Bool("preserved").Default(false), // preserved
-		field.Uint64("uid"),                    // uear id
+		// User ID for the case the user signed in.
+		field.Uint64("uid").Optional().Nillable(),
+		field.Time("signed_at").Optional().Nillable(),
+
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
 // Edges of the HusSession.
 func (HusSession) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("user", User.Type).Ref("hus_sessions").Unique().Field("uid").Required(),
+		edge.From("user", User.Type).Ref("hus_sessions").Unique().Field("uid"),
+
+		edge.To("connected_session", ConnectedSession.Type),
 	}
 }

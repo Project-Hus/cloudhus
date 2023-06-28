@@ -12,12 +12,10 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// ConnectedSession is the client for interacting with the ConnectedSession builders.
+	ConnectedSession *ConnectedSessionClient
 	// HusSession is the client for interacting with the HusSession builders.
 	HusSession *HusSessionClient
-	// Service is the client for interacting with the Service builders.
-	Service *ServiceClient
-	// Subdomain is the client for interacting with the Subdomain builders.
-	Subdomain *SubdomainClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -151,9 +149,8 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.ConnectedSession = NewConnectedSessionClient(tx.config)
 	tx.HusSession = NewHusSessionClient(tx.config)
-	tx.Service = NewServiceClient(tx.config)
-	tx.Subdomain = NewSubdomainClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 
@@ -164,7 +161,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: HusSession.QueryXXX(), the query will be executed
+// applies a query, for example: ConnectedSession.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

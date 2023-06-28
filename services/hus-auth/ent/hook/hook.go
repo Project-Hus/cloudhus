@@ -8,6 +8,18 @@ import (
 	"hus-auth/ent"
 )
 
+// The ConnectedSessionFunc type is an adapter to allow the use of ordinary
+// function as ConnectedSession mutator.
+type ConnectedSessionFunc func(context.Context, *ent.ConnectedSessionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ConnectedSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ConnectedSessionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ConnectedSessionMutation", m)
+}
+
 // The HusSessionFunc type is an adapter to allow the use of ordinary
 // function as HusSession mutator.
 type HusSessionFunc func(context.Context, *ent.HusSessionMutation) (ent.Value, error)
@@ -18,30 +30,6 @@ func (f HusSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.HusSessionMutation", m)
-}
-
-// The ServiceFunc type is an adapter to allow the use of ordinary
-// function as Service mutator.
-type ServiceFunc func(context.Context, *ent.ServiceMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ServiceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ServiceMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServiceMutation", m)
-}
-
-// The SubdomainFunc type is an adapter to allow the use of ordinary
-// function as Subdomain mutator.
-type SubdomainFunc func(context.Context, *ent.SubdomainMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SubdomainFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SubdomainMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SubdomainMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary

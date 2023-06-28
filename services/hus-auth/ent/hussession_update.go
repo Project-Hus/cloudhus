@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
 	"hus-auth/ent/predicate"
 	"hus-auth/ent/user"
@@ -78,15 +79,78 @@ func (hsu *HusSessionUpdate) SetUID(u uint64) *HusSessionUpdate {
 	return hsu
 }
 
+// SetNillableUID sets the "uid" field if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableUID(u *uint64) *HusSessionUpdate {
+	if u != nil {
+		hsu.SetUID(*u)
+	}
+	return hsu
+}
+
+// ClearUID clears the value of the "uid" field.
+func (hsu *HusSessionUpdate) ClearUID() *HusSessionUpdate {
+	hsu.mutation.ClearUID()
+	return hsu
+}
+
+// SetSignedAt sets the "signed_at" field.
+func (hsu *HusSessionUpdate) SetSignedAt(t time.Time) *HusSessionUpdate {
+	hsu.mutation.SetSignedAt(t)
+	return hsu
+}
+
+// SetNillableSignedAt sets the "signed_at" field if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableSignedAt(t *time.Time) *HusSessionUpdate {
+	if t != nil {
+		hsu.SetSignedAt(*t)
+	}
+	return hsu
+}
+
+// ClearSignedAt clears the value of the "signed_at" field.
+func (hsu *HusSessionUpdate) ClearSignedAt() *HusSessionUpdate {
+	hsu.mutation.ClearSignedAt()
+	return hsu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (hsu *HusSessionUpdate) SetUpdatedAt(t time.Time) *HusSessionUpdate {
+	hsu.mutation.SetUpdatedAt(t)
+	return hsu
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (hsu *HusSessionUpdate) SetUserID(id uint64) *HusSessionUpdate {
 	hsu.mutation.SetUserID(id)
 	return hsu
 }
 
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (hsu *HusSessionUpdate) SetNillableUserID(id *uint64) *HusSessionUpdate {
+	if id != nil {
+		hsu = hsu.SetUserID(*id)
+	}
+	return hsu
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (hsu *HusSessionUpdate) SetUser(u *User) *HusSessionUpdate {
 	return hsu.SetUserID(u.ID)
+}
+
+// AddConnectedSessionIDs adds the "connected_session" edge to the ConnectedSession entity by IDs.
+func (hsu *HusSessionUpdate) AddConnectedSessionIDs(ids ...int) *HusSessionUpdate {
+	hsu.mutation.AddConnectedSessionIDs(ids...)
+	return hsu
+}
+
+// AddConnectedSession adds the "connected_session" edges to the ConnectedSession entity.
+func (hsu *HusSessionUpdate) AddConnectedSession(c ...*ConnectedSession) *HusSessionUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return hsu.AddConnectedSessionIDs(ids...)
 }
 
 // Mutation returns the HusSessionMutation object of the builder.
@@ -100,8 +164,30 @@ func (hsu *HusSessionUpdate) ClearUser() *HusSessionUpdate {
 	return hsu
 }
 
+// ClearConnectedSession clears all "connected_session" edges to the ConnectedSession entity.
+func (hsu *HusSessionUpdate) ClearConnectedSession() *HusSessionUpdate {
+	hsu.mutation.ClearConnectedSession()
+	return hsu
+}
+
+// RemoveConnectedSessionIDs removes the "connected_session" edge to ConnectedSession entities by IDs.
+func (hsu *HusSessionUpdate) RemoveConnectedSessionIDs(ids ...int) *HusSessionUpdate {
+	hsu.mutation.RemoveConnectedSessionIDs(ids...)
+	return hsu
+}
+
+// RemoveConnectedSession removes "connected_session" edges to ConnectedSession entities.
+func (hsu *HusSessionUpdate) RemoveConnectedSession(c ...*ConnectedSession) *HusSessionUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return hsu.RemoveConnectedSessionIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (hsu *HusSessionUpdate) Save(ctx context.Context) (int, error) {
+	hsu.defaults()
 	return withHooks[int, HusSessionMutation](ctx, hsu.sqlSave, hsu.mutation, hsu.hooks)
 }
 
@@ -127,18 +213,15 @@ func (hsu *HusSessionUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (hsu *HusSessionUpdate) check() error {
-	if _, ok := hsu.mutation.UserID(); hsu.mutation.UserCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "HusSession.user"`)
+// defaults sets the default values of the builder before save.
+func (hsu *HusSessionUpdate) defaults() {
+	if _, ok := hsu.mutation.UpdatedAt(); !ok {
+		v := hussession.UpdateDefaultUpdatedAt()
+		hsu.mutation.SetUpdatedAt(v)
 	}
-	return nil
 }
 
 func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := hsu.check(); err != nil {
-		return n, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(hussession.Table, hussession.Columns, sqlgraph.NewFieldSpec(hussession.FieldID, field.TypeUUID))
 	if ps := hsu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -155,6 +238,15 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := hsu.mutation.Preserved(); ok {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
+	}
+	if value, ok := hsu.mutation.SignedAt(); ok {
+		_spec.SetField(hussession.FieldSignedAt, field.TypeTime, value)
+	}
+	if hsu.mutation.SignedAtCleared() {
+		_spec.ClearField(hussession.FieldSignedAt, field.TypeTime)
+	}
+	if value, ok := hsu.mutation.UpdatedAt(); ok {
+		_spec.SetField(hussession.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if hsu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -183,6 +275,60 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUint64,
 					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if hsu.mutation.ConnectedSessionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionTable,
+			Columns: []string{hussession.ConnectedSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsession.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := hsu.mutation.RemovedConnectedSessionIDs(); len(nodes) > 0 && !hsu.mutation.ConnectedSessionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionTable,
+			Columns: []string{hussession.ConnectedSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := hsu.mutation.ConnectedSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionTable,
+			Columns: []string{hussession.ConnectedSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsession.FieldID,
 				},
 			},
 		}
@@ -259,15 +405,78 @@ func (hsuo *HusSessionUpdateOne) SetUID(u uint64) *HusSessionUpdateOne {
 	return hsuo
 }
 
+// SetNillableUID sets the "uid" field if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableUID(u *uint64) *HusSessionUpdateOne {
+	if u != nil {
+		hsuo.SetUID(*u)
+	}
+	return hsuo
+}
+
+// ClearUID clears the value of the "uid" field.
+func (hsuo *HusSessionUpdateOne) ClearUID() *HusSessionUpdateOne {
+	hsuo.mutation.ClearUID()
+	return hsuo
+}
+
+// SetSignedAt sets the "signed_at" field.
+func (hsuo *HusSessionUpdateOne) SetSignedAt(t time.Time) *HusSessionUpdateOne {
+	hsuo.mutation.SetSignedAt(t)
+	return hsuo
+}
+
+// SetNillableSignedAt sets the "signed_at" field if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableSignedAt(t *time.Time) *HusSessionUpdateOne {
+	if t != nil {
+		hsuo.SetSignedAt(*t)
+	}
+	return hsuo
+}
+
+// ClearSignedAt clears the value of the "signed_at" field.
+func (hsuo *HusSessionUpdateOne) ClearSignedAt() *HusSessionUpdateOne {
+	hsuo.mutation.ClearSignedAt()
+	return hsuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (hsuo *HusSessionUpdateOne) SetUpdatedAt(t time.Time) *HusSessionUpdateOne {
+	hsuo.mutation.SetUpdatedAt(t)
+	return hsuo
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (hsuo *HusSessionUpdateOne) SetUserID(id uint64) *HusSessionUpdateOne {
 	hsuo.mutation.SetUserID(id)
 	return hsuo
 }
 
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (hsuo *HusSessionUpdateOne) SetNillableUserID(id *uint64) *HusSessionUpdateOne {
+	if id != nil {
+		hsuo = hsuo.SetUserID(*id)
+	}
+	return hsuo
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (hsuo *HusSessionUpdateOne) SetUser(u *User) *HusSessionUpdateOne {
 	return hsuo.SetUserID(u.ID)
+}
+
+// AddConnectedSessionIDs adds the "connected_session" edge to the ConnectedSession entity by IDs.
+func (hsuo *HusSessionUpdateOne) AddConnectedSessionIDs(ids ...int) *HusSessionUpdateOne {
+	hsuo.mutation.AddConnectedSessionIDs(ids...)
+	return hsuo
+}
+
+// AddConnectedSession adds the "connected_session" edges to the ConnectedSession entity.
+func (hsuo *HusSessionUpdateOne) AddConnectedSession(c ...*ConnectedSession) *HusSessionUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return hsuo.AddConnectedSessionIDs(ids...)
 }
 
 // Mutation returns the HusSessionMutation object of the builder.
@@ -279,6 +488,27 @@ func (hsuo *HusSessionUpdateOne) Mutation() *HusSessionMutation {
 func (hsuo *HusSessionUpdateOne) ClearUser() *HusSessionUpdateOne {
 	hsuo.mutation.ClearUser()
 	return hsuo
+}
+
+// ClearConnectedSession clears all "connected_session" edges to the ConnectedSession entity.
+func (hsuo *HusSessionUpdateOne) ClearConnectedSession() *HusSessionUpdateOne {
+	hsuo.mutation.ClearConnectedSession()
+	return hsuo
+}
+
+// RemoveConnectedSessionIDs removes the "connected_session" edge to ConnectedSession entities by IDs.
+func (hsuo *HusSessionUpdateOne) RemoveConnectedSessionIDs(ids ...int) *HusSessionUpdateOne {
+	hsuo.mutation.RemoveConnectedSessionIDs(ids...)
+	return hsuo
+}
+
+// RemoveConnectedSession removes "connected_session" edges to ConnectedSession entities.
+func (hsuo *HusSessionUpdateOne) RemoveConnectedSession(c ...*ConnectedSession) *HusSessionUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return hsuo.RemoveConnectedSessionIDs(ids...)
 }
 
 // Where appends a list predicates to the HusSessionUpdate builder.
@@ -296,6 +526,7 @@ func (hsuo *HusSessionUpdateOne) Select(field string, fields ...string) *HusSess
 
 // Save executes the query and returns the updated HusSession entity.
 func (hsuo *HusSessionUpdateOne) Save(ctx context.Context) (*HusSession, error) {
+	hsuo.defaults()
 	return withHooks[*HusSession, HusSessionMutation](ctx, hsuo.sqlSave, hsuo.mutation, hsuo.hooks)
 }
 
@@ -321,18 +552,15 @@ func (hsuo *HusSessionUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (hsuo *HusSessionUpdateOne) check() error {
-	if _, ok := hsuo.mutation.UserID(); hsuo.mutation.UserCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "HusSession.user"`)
+// defaults sets the default values of the builder before save.
+func (hsuo *HusSessionUpdateOne) defaults() {
+	if _, ok := hsuo.mutation.UpdatedAt(); !ok {
+		v := hussession.UpdateDefaultUpdatedAt()
+		hsuo.mutation.SetUpdatedAt(v)
 	}
-	return nil
 }
 
 func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession, err error) {
-	if err := hsuo.check(); err != nil {
-		return _node, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(hussession.Table, hussession.Columns, sqlgraph.NewFieldSpec(hussession.FieldID, field.TypeUUID))
 	id, ok := hsuo.mutation.ID()
 	if !ok {
@@ -367,6 +595,15 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 	if value, ok := hsuo.mutation.Preserved(); ok {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
 	}
+	if value, ok := hsuo.mutation.SignedAt(); ok {
+		_spec.SetField(hussession.FieldSignedAt, field.TypeTime, value)
+	}
+	if hsuo.mutation.SignedAtCleared() {
+		_spec.ClearField(hussession.FieldSignedAt, field.TypeTime)
+	}
+	if value, ok := hsuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(hussession.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if hsuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -394,6 +631,60 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUint64,
 					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if hsuo.mutation.ConnectedSessionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionTable,
+			Columns: []string{hussession.ConnectedSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsession.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := hsuo.mutation.RemovedConnectedSessionIDs(); len(nodes) > 0 && !hsuo.mutation.ConnectedSessionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionTable,
+			Columns: []string{hussession.ConnectedSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := hsuo.mutation.ConnectedSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   hussession.ConnectedSessionTable,
+			Columns: []string{hussession.ConnectedSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: connectedsession.FieldID,
 				},
 			},
 		}

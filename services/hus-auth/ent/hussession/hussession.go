@@ -21,8 +21,14 @@ const (
 	FieldPreserved = "preserved"
 	// FieldUID holds the string denoting the uid field in the database.
 	FieldUID = "uid"
+	// FieldSignedAt holds the string denoting the signed_at field in the database.
+	FieldSignedAt = "signed_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
+	// EdgeConnectedSession holds the string denoting the connected_session edge name in mutations.
+	EdgeConnectedSession = "connected_session"
 	// Table holds the table name of the hussession in the database.
 	Table = "hus_sessions"
 	// UserTable is the table that holds the user relation/edge.
@@ -32,6 +38,13 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "uid"
+	// ConnectedSessionTable is the table that holds the connected_session relation/edge.
+	ConnectedSessionTable = "connected_sessions"
+	// ConnectedSessionInverseTable is the table name for the ConnectedSession entity.
+	// It exists in this package in order to avoid circular dependency with the "connectedsession" package.
+	ConnectedSessionInverseTable = "connected_sessions"
+	// ConnectedSessionColumn is the table column denoting the connected_session relation/edge.
+	ConnectedSessionColumn = "hsid"
 )
 
 // Columns holds all SQL columns for hussession fields.
@@ -41,6 +54,8 @@ var Columns = []string{
 	FieldIat,
 	FieldPreserved,
 	FieldUID,
+	FieldSignedAt,
+	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -60,6 +75,10 @@ var (
 	DefaultIat func() time.Time
 	// DefaultPreserved holds the default value on creation for the "preserved" field.
 	DefaultPreserved bool
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

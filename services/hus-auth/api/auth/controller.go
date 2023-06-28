@@ -37,6 +37,12 @@ func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *e
 	authApi.POST("/auth/session/check/:service/:sid", authApiController.HusSessionCheckHandler)
 	authApi.DELETE("/auth/session/revoke", authApiController.SessionRevocationHandler)
 
+	// social login services
+
+	// Hus session services
+	authApi.GET("/auth/hussession", authApiController.HusSessionHandler)
+	authApi.GET("/auth/hussession/:token", authApiController.SessionConnectionHandler)
+
 	return authApi
 }
 
@@ -59,4 +65,8 @@ type authApis interface {
 
 	HusSessionCheckHandler(c echo.Context) error
 	SessionRevocationHandler(c echo.Context) error
+
+	// Hus session services
+	HusSessionHandler(c echo.Context) error
+	SessionConnectionHandler(c echo.Context) error
 }

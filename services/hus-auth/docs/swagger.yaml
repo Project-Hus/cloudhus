@@ -13,6 +13,57 @@ info:
   title: Cloudhus auth server
   version: 0.0.0
 paths:
+  /hussession:
+    get:
+      description: |-
+        this endpoint can be used both for Cloudhus and subservices.
+        if the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.
+        and if fallback url is given, it will redirect to fallback url if it fails.
+        note that all urls must be url-encoded.
+      parameters:
+      - description: subservice name
+        in: query
+        name: service
+        type: string
+      - description: subservice session id
+        in: query
+        name: sid
+        type: string
+      - description: redirect url
+        in: query
+        name: redirect
+        type: string
+      - description: fallback url
+        in: query
+        name: fallback
+        type: string
+      responses:
+        "303":
+          description: See Other, redirection
+      summary: checks and issues the Hus session token
+      tags:
+      - auth
+  /hussession/{token}:
+    get:
+      description: the token has properties pps, service and sid.
+      parameters:
+      - description: pps, service name, session ID in signed token which expires only
+          in 10 seconds
+        in: path
+        name: token
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Ok, session has been connected
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found, no such connected session
+      summary: gets connection token from subservice and returns Hus session ID and
+        user info
+      tags:
+      - auth
   /session/check/{service}/{sid}:
     post:
       description: |-
@@ -57,6 +108,37 @@ paths:
         "500":
           description: doesn't have to be handled
       summary: revokes every hus session in cookie from database.
+      tags:
+      - auth
+  /social/google:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        validates the google ID token and do some authentication stuff.
+        and redirects the user back to the given  after the process.
+        note that all urls must be url-encoded.
+      parameters:
+      - description: url to be redirected after authentication
+        in: query
+        name: redirect
+        required: true
+        type: string
+      - description: url to be redirected if the authentication fails
+        in: query
+        name: fallback
+        type: string
+      - description: Google ID token
+        in: body
+        name: credential
+        required: true
+        schema:
+          type: string
+      responses:
+        "303":
+          description: See Other
+      summary: gets and processes Google ID token and redirects the user back to the
+        given redirect url.
       tags:
       - auth
   /social/google/{subservice_name}:

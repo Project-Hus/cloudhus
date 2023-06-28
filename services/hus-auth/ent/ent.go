@@ -6,9 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
-	"hus-auth/ent/service"
-	"hus-auth/ent/subdomain"
 	"hus-auth/ent/user"
 	"reflect"
 
@@ -42,10 +41,9 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		hussession.Table: hussession.ValidColumn,
-		service.Table:    service.ValidColumn,
-		subdomain.Table:  subdomain.ValidColumn,
-		user.Table:       user.ValidColumn,
+		connectedsession.Table: connectedsession.ValidColumn,
+		hussession.Table:       hussession.ValidColumn,
+		user.Table:             user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {
