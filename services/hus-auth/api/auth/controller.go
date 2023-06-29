@@ -30,18 +30,15 @@ func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *e
 		return c.String(http.StatusOK, cookiesString)
 	})
 
-	// social login services
-	authApi.POST("/auth/social/google/:service", authApiController.GoogleAuthHandler)
+	// social sign api
+	authApi.POST("/auth/hus/sign/social/google", authApiController.GoogleAuthHandler)
 
-	// session services
-	authApi.POST("/auth/session/check/:service/:sid", authApiController.HusSessionCheckHandler)
-	authApi.DELETE("/auth/session/revoke", authApiController.SessionRevocationHandler)
+	// Hus session api
+	authApi.GET("/auth/hus", authApiController.HusSessionHandler)
+	authApi.GET("/auth/hus/connect/:token", authApiController.SessionConnectionHandler)
 
-	// social login services
-
-	// Hus session services
-	authApi.GET("/auth/hussession", authApiController.HusSessionHandler)
-	authApi.GET("/auth/hussession/:token", authApiController.SessionConnectionHandler)
+	// sign out services
+	authApi.DELETE("/auth/hus/sign/out/:token", authApiController.SignOutHandler)
 
 	return authApi
 }
@@ -60,13 +57,11 @@ type authApiController struct {
 // authApis interface defines what auth api has to handle
 type authApis interface {
 
-	/* client side api */
+	// social sign api
 	GoogleAuthHandler(c echo.Context) error
 
-	HusSessionCheckHandler(c echo.Context) error
-	SessionRevocationHandler(c echo.Context) error
-
-	// Hus session services
+	// Hus session api
 	HusSessionHandler(c echo.Context) error
 	SessionConnectionHandler(c echo.Context) error
+	SignOutHandler(c echo.Context) error
 }
