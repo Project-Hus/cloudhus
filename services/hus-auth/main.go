@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
@@ -73,15 +72,6 @@ func main() {
 	// in lambda environment, actually main's deferred funcs won't be executed.
 	defer dbClient.Close()
 
-	// create new http.Client for authApi
-	authHttpClient := &http.Client{
-		Timeout: time.Second * 5,
-	}
-	authApiControllerParams := auth.AuthApiControllerParams{
-		DbClient:   dbClient,
-		HttpClient: authHttpClient,
-	}
-
 	//  create echo web server instance and set CORS headers
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -117,7 +107,7 @@ func main() {
 		}
 	})
 
-	e = auth.NewAuthApiController(e, authApiControllerParams)
+	e = auth.NewAuthApiController(e)
 
 	// provide api docs with swagger 2.0
 	e.GET("/auth/openapi/*", echoSwagger.WrapHandler)
