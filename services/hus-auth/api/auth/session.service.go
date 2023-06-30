@@ -2,6 +2,7 @@ package auth
 
 import (
 	"hus-auth/common"
+	"hus-auth/common/db"
 	"hus-auth/common/helper"
 	"hus-auth/common/hus"
 	"hus-auth/common/service/session"
@@ -174,7 +175,7 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid sid")
 	}
 
-	cs, err := ac.dbClient.ConnectedSession.Query().Where(connectedsession.And(
+	cs, err := db.Client.ConnectedSession.Query().Where(connectedsession.And(
 		connectedsession.Service(service),
 		connectedsession.Csid(suuid),
 	)).WithHusSession(func(hsq *ent.HusSessionQuery) {

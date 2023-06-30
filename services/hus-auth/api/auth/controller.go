@@ -1,20 +1,14 @@
 package auth
 
 import (
-	"hus-auth/ent"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-type AuthApiControllerParams struct {
-	DbClient   *ent.Client
-	HttpClient *http.Client
-}
-
 // NewAuthApiController returns Echo comprising of auth api routes. instance to main.
-func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *echo.Echo {
-	authApiController := newAuthApiController(params)
+func NewAuthApiController(authApi *echo.Echo) *echo.Echo {
+	authApiController := newAuthApiController()
 
 	authApi.GET("/auth", func(c echo.Context) error {
 		return c.String(http.StatusOK, "\"모든 인증은 Cloudhus로 통한다\" -Cloudhus-")
@@ -31,27 +25,25 @@ func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *e
 	})
 
 	// social sign api
-	authApi.POST("/auth/hus/sign/social/google", authApiController.GoogleAuthHandler)
+	authApi.POST("/auth/hus/sign/social/google", authApiController.GoogleAuthHandler) // from Client
 
 	// Hus session api
-	authApi.GET("/auth/hus", authApiController.HusSessionHandler)
-	authApi.GET("/auth/hus/connect/:token", authApiController.SessionConnectionHandler)
+	authApi.GET("/auth/hus", authApiController.HusSessionHandler)                       // from Client
+	authApi.GET("/auth/hus/connect/:token", authApiController.SessionConnectionHandler) // from Subservice
 
 	// sign out services
-	authApi.DELETE("/auth/hus/sign/out/:token", authApiController.SignOutHandler)
+	authApi.DELETE("/auth/hus/sign/out/:token", authApiController.SignOutHandler) // from Subservice
 
 	return authApi
 }
 
 // newAuthApiController returns a new authApiController that implements every auth api features.
-func newAuthApiController(params AuthApiControllerParams) authApis {
-	return &authApiController{dbClient: params.DbClient, httpClient: params.HttpClient}
+func newAuthApiController() authApis {
+	return &authApiController{}
 }
 
 // authApiController defines what auth api has to have and implements authApis interface at service file.
 type authApiController struct {
-	dbClient   *ent.Client
-	httpClient *http.Client
 }
 
 // authApis interface defines what auth api has to handle
