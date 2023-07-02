@@ -69,29 +69,18 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
-	// when there's no valid Hus session, create new one depending on this flag.
-	var hs *ent.HusSession
-	createFlag := false
-
 	// get hus_st from cookie
 	hus_st, err := c.Cookie("hus_st")
-	if err == http.ErrNoCookie || hus_st.Value == "" {
-		// no session, create new one
-		createFlag = true
-	} else if err != nil {
+	if err != nil && err != http.ErrNoCookie {
 		// there's an error while getting cookie, return error.
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
-	} else {
-		hs, _, err = session.ValidateHusSession(c.Request().Context(), hus_st.Value)
-		if err != nil {
-			createFlag = true
-		}
 	}
 
+	// validate Hus session
+	hs, _, err := session.ValidateHusSession(c.Request().Context(), hus_st.Value)
 	// if no valid Hus session found, establish new Hus session.
 	// after redirection to this same endpoint, it will handle newly established Hus session.
-	if createFlag {
-		/* NEW HUS SESSION CREATION */
+	if err != nil {
 		_, nhst, err := session.CreateHusSession(c.Request().Context())
 		if err != nil {
 			return c.Redirect(http.StatusSeeOther, fallbackURL)
