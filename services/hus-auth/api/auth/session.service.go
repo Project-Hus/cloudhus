@@ -153,7 +153,7 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 	}
 
 	pps := claims["pps"].(string)
-	if pps != "session_connection" {
+	if pps != "hus_connection" {
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 
@@ -174,13 +174,40 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 		return c.String(http.StatusNotFound, "no such session")
 	}
 
-	return c.JSON(http.StatusOK, struct {
-		Hsid string    `json:"hsid"`
-		User *ent.User `json:"user,omitempty"`
-	}{
+	cu := cs.Edges.HusSession.Edges.User
+
+	var hcu *HusConnUser
+	if cu != nil {
+		hcu = &HusConnUser{
+			Uid:             cu.ID,
+			ProfileImageURL: cu.ProfileImageURL,
+			Email:           cu.Email,
+			EmailVerified:   cu.EmailVerified,
+			Name:            cu.Name,
+			GivenName:       cu.GivenName,
+			FamilyName:      cu.FamilyName,
+		}
+	}
+
+	return c.JSON(http.StatusOK, HusConnDto{
 		Hsid: cs.Hsid.String(),
-		User: cs.Edges.HusSession.Edges.User,
+		User: hcu,
 	})
+}
+
+type HusConnDto struct {
+	Hsid string       `json:"hsid"`
+	User *HusConnUser `json:"user"`
+}
+
+type HusConnUser struct {
+	Uid             uint64  `json:"uid"`
+	ProfileImageURL *string `json:"profile_image_url"`
+	Email           string  `json:"email"`
+	EmailVerified   bool    `json:"email_verified"`
+	Name            string  `json:"name"`
+	GivenName       string  `json:"given_name"`
+	FamilyName      string  `json:"family_name"`
 }
 
 // SignOutHandler godoc
