@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"hus-auth/common"
 	"hus-auth/common/db"
+	"hus-auth/common/dto"
 	"hus-auth/common/helper"
 	"hus-auth/common/hus"
 	"hus-auth/ent"
 	"hus-auth/ent/hussession"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -166,21 +166,24 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 			if !ok {
 				return
 			}
-			husConnectURL := service.Subdomains["auth"].URL + "/auth/hussession/connect"
+			husConnectURL := service.Subdomains["auth"].URL + "/auth/hus/connect"
+
+			husConnUser := &dto.HusConnUser{
+				Uid:             u.ID,
+				ProfileImageURL: u.ProfileImageURL,
+				Email:           u.Email,
+				EmailVerified:   u.EmailVerified,
+				Name:            u.Name,
+				GivenName:       u.GivenName,
+				FamilyName:      u.FamilyName,
+			}
 
 			hscJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-				"pps":               "session_sign",
-				"hsid":              cs.Hsid.String(),
-				"sid":               cs.Csid.String(),
-				"uid":               strconv.FormatUint(u.ID, 10),
-				"profile_image_url": u.ProfileImageURL,
-				"email":             u.Email,
-				"email_verified":    u.EmailVerified,
-				"name":              u.Name,
-				"given_name":        u.GivenName,
-				"family_name":       u.FamilyName,
-				"birthdate":         nil,
-				"exp":               time.Now().Add(time.Second * 10).Unix(),
+				"pps":  "session_sign",
+				"hsid": cs.Hsid.String(),
+				"sid":  cs.Csid.String(),
+				"user": husConnUser,
+				"exp":  time.Now().Add(time.Second * 10).Unix(),
 			})
 
 			hscSigned, err := hscJWT.SignedString(hus.HusSecretKeyBytes)

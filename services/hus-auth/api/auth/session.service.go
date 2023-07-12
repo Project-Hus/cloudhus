@@ -3,6 +3,7 @@ package auth
 import (
 	"hus-auth/common"
 	"hus-auth/common/db"
+	"hus-auth/common/dto"
 	"hus-auth/common/helper"
 	"hus-auth/common/hus"
 	"hus-auth/common/service/session"
@@ -176,9 +177,9 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 
 	cu := cs.Edges.HusSession.Edges.User
 
-	var hcu *HusConnUser
+	var hcu *dto.HusConnUser
 	if cu != nil {
-		hcu = &HusConnUser{
+		hcu = &dto.HusConnUser{
 			Uid:             cu.ID,
 			ProfileImageURL: cu.ProfileImageURL,
 			Email:           cu.Email,
@@ -189,25 +190,10 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(http.StatusOK, HusConnDto{
+	return c.JSON(http.StatusOK, dto.HusConnDto{
 		Hsid: cs.Hsid.String(),
 		User: hcu,
 	})
-}
-
-type HusConnDto struct {
-	Hsid string       `json:"hsid"`
-	User *HusConnUser `json:"user"`
-}
-
-type HusConnUser struct {
-	Uid             uint64  `json:"uid"`
-	ProfileImageURL *string `json:"profile_image_url"`
-	Email           string  `json:"email"`
-	EmailVerified   bool    `json:"email_verified"`
-	Name            string  `json:"name"`
-	GivenName       string  `json:"given_name"`
-	FamilyName      string  `json:"family_name"`
 }
 
 // SignOutHandler godoc
