@@ -166,7 +166,7 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 			if !ok {
 				return
 			}
-			husConnectURL := service.Subdomains["auth"].URL + "/auth/hus/connect"
+			husConnectURL := service.Subdomains["auth"].URL + "/auth/hus/sign"
 
 			husConnUser := &dto.HusConnUser{
 				Uid:             u.ID,
@@ -179,9 +179,9 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 			}
 
 			hscJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-				"pps":  "session_sign",
+				"pps":  "sign_in_propagation",
 				"hsid": cs.Hsid.String(),
-				"sid":  cs.Csid.String(),
+				"csid": cs.Csid.String(),
 				"user": husConnUser,
 				"exp":  time.Now().Add(time.Second * 10).Unix(),
 			})
