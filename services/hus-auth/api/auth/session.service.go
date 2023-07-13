@@ -205,7 +205,7 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 // @Description 1) sign out sessions related only to given hus session.
 // @Description 2) sign out all related sessions to the user.
 // @Param token path string true "sign out token"
-// @Success      200 "Ok, session has been connected"
+// @Success      200 "Ok, session has been signed out"
 // @Failure      400 "Bad Request"
 // @Failure      500 "Internal Server Error"
 func (ac authApiController) SignOutHandler(c echo.Context) error {
@@ -226,7 +226,7 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 	}
 
 	pps := claims["pps"].(string)
-	if pps != "session_signout" {
+	if pps != "hus_signout" {
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 

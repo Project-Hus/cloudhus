@@ -138,8 +138,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/hus/signout/{token}": {
-            "delete": {
+        "/hus/signout": {
+            "patch": {
                 "description": "there are two types of signout process.\n1) sign out sessions related only to given hus session.\n2) sign out all related sessions to the user.",
                 "tags": [
                     "auth"
@@ -156,7 +156,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Ok, session has been connected"
+                        "description": "Ok, session has been signed out"
                     },
                     "400": {
                         "description": "Bad Request"

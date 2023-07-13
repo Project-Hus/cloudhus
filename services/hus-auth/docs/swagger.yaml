@@ -98,8 +98,8 @@ paths:
         given redirect url.
       tags:
       - auth
-  /hus/signout/{token}:
-    delete:
+  /hus/signout:
+    patch:
       description: |-
         there are two types of signout process.
         1) sign out sessions related only to given hus session.
@@ -112,7 +112,7 @@ paths:
         type: string
       responses:
         "200":
-          description: Ok, session has been connected
+          description: Ok, session has been signed out
         "400":
           description: Bad Request
         "500":
