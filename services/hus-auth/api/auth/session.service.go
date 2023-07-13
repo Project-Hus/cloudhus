@@ -198,7 +198,7 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 
 // SignOutHandler godoc
 // @Tags         auth
-// @Router /hus/sign/out/{token} [delete]
+// @Router /hus/signout/{token} [delete]
 // @Summary gets signout token from subservice and does signout process.
 // @Description there are two types of signout process.
 // @Description 1) sign out sessions related only to given hus session.

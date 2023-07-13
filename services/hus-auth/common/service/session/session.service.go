@@ -166,7 +166,7 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 			if !ok {
 				return
 			}
-			husConnectURL := service.Subdomains["auth"].URL + "/auth/hus/sign"
+			husConnectURL := service.Subdomains["auth"].URL + "/auth/hus/signin"
 
 			husConnUser := &dto.HusConnUser{
 				Uid:             u.ID,
@@ -238,10 +238,10 @@ func SignOutTotal(ctx context.Context, hsid uuid.UUID) error {
 			if !ok {
 				return
 			}
-			husConnectURL := service.Subdomains["auth"].URL + "/auth/hussession/signout"
+			husConnectURL := service.Subdomains["auth"].URL + "/auth/hus/signout"
 
 			hscJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-				"pps":  "session_signout",
+				"pps":  "signout_propagation",
 				"hsid": cs.Hsid.String(),
 				"exp":  time.Now().Add(time.Second * 10).Unix(),
 			})

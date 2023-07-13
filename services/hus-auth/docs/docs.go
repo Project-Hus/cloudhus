@@ -25,7 +25,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/hussession": {
+        "/hus": {
             "get": {
                 "description": "this endpoint can be used both for Cloudhus and subservices.\nif the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.\nand if fallback url is given, it will redirect to fallback url if it fails.\nnote that all urls must be url-encoded.",
                 "tags": [
@@ -37,25 +37,28 @@ const docTemplate = `{
                         "type": "string",
                         "description": "subservice name",
                         "name": "service",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "subservice session id",
-                        "name": "sid",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "string",
                         "description": "redirect url",
                         "name": "redirect",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "string",
                         "description": "fallback url",
                         "name": "fallback",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "subservice session id",
+                        "name": "sid",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -65,7 +68,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/hussession/{token}": {
+        "/hus/connect/{token}": {
             "get": {
                 "description": "the token has properties pps, service and sid.",
                 "tags": [
@@ -94,73 +97,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/session/check/{service}/{sid}": {
+        "/hus/sign/social/google": {
             "post": {
-                "description": "checks the service and sid and tells the subservice server that the client is signed in.\nafter the subservice server updates the session and responds with 200,\nHus auth server also reponds with 200 to the client.",
-                "tags": [
-                    "auth"
-                ],
-                "summary": "chekcs the service and sid and tells the subservice server that the client is signed in.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "subservice name",
-                        "name": "service",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "session id",
-                        "name": "sid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Ok, theclient now should go to subservice's signing endpoint"
-                    },
-                    "401": {
-                        "description": "Unauthorized, the client is not signed in"
-                    },
-                    "404": {
-                        "description": "Not Found, the service is not registered"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/session/revoke": {
-            "delete": {
-                "description": "can be used to sign out.",
-                "tags": [
-                    "auth"
-                ],
-                "summary": "revokes every hus session in cookie from database.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Hus session tokens in cookie",
-                        "name": "jwt",
-                        "in": "header"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Ok"
-                    },
-                    "500": {
-                        "description": "doesn't have to be handled"
-                    }
-                }
-            }
-        },
-        "/social/google": {
-            "post": {
-                "description": "validates the google ID token and do some authentication stuff.\nand redirects the user back to the given  after the process.\nnote that all urls must be url-encoded.",
+                "description": "validates the google ID token and do some authentication stuff.\nand redirects the user back to the given redirect url after the process is done.\nnote that all urls must be url-encoded.",
                 "consumes": [
                     "application/json"
                 ],
@@ -199,37 +138,31 @@ const docTemplate = `{
                 }
             }
         },
-        "/social/google/{subservice_name}": {
-            "post": {
-                "description": "validates the google ID token and redirects with hus refresh token to /auth/{token_string}.\nthe refresh token will be expired in 7 days.",
-                "consumes": [
-                    "application/json"
-                ],
+        "/hus/signout/{token}": {
+            "delete": {
+                "description": "there are two types of signout process.\n1) sign out sessions related only to given hus session.\n2) sign out all related sessions to the user.",
                 "tags": [
                     "auth"
                 ],
-                "summary": "gets google IDtoken and redirect with hus session cookie.",
+                "summary": "gets signout token from subservice and does signout process.",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "subservice name",
-                        "name": "subservice_name",
+                        "description": "sign out token",
+                        "name": "token",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Google ID token",
-                        "name": "jwt",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ],
                 "responses": {
-                    "301": {
-                        "description": "to /auth/{token_string} or to /error"
+                    "200": {
+                        "description": "Ok, session has been connected"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }
