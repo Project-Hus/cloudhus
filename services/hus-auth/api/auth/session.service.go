@@ -9,6 +9,7 @@ import (
 	"hus-auth/common/service/session"
 	"hus-auth/ent"
 	"hus-auth/ent/connectedsession"
+	"io/ioutil"
 
 	"log"
 	"net/http"
@@ -198,17 +199,26 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 
 // SignOutHandler godoc
 // @Tags         auth
-// @Router /hus/sign/out/{token} [delete]
+// @Router /hus/signout [patch]
 // @Summary gets signout token from subservice and does signout process.
 // @Description there are two types of signout process.
 // @Description 1) sign out sessions related only to given hus session.
 // @Description 2) sign out all related sessions to the user.
 // @Param token path string true "sign out token"
-// @Success      200 "Ok, session has been connected"
+// @Success      200 "Ok, session has been signed out"
 // @Failure      400 "Bad Request"
 // @Failure      500 "Internal Server Error"
 func (ac authApiController) SignOutHandler(c echo.Context) error {
-	token := c.Param("token")
+	// from request body get token string
+	tokenBody := c.Request().Body
+	defer tokenBody.Close()
+
+	tokenByte, err := ioutil.ReadAll(tokenBody)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	token := string(tokenByte)
 
 	claims, exp, err := helper.ParseJWTWithHMAC(token)
 	if err != nil || exp {
@@ -216,7 +226,7 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 	}
 
 	pps := claims["pps"].(string)
-	if pps != "session_signout" {
+	if pps != "hus_signout" {
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 

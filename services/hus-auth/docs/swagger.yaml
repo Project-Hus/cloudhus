@@ -13,7 +13,7 @@ info:
   title: Cloudhus auth server
   version: 0.0.0
 paths:
-  /hussession:
+  /hus:
     get:
       description: |-
         this endpoint can be used both for Cloudhus and subservices.
@@ -24,18 +24,21 @@ paths:
       - description: subservice name
         in: query
         name: service
-        type: string
-      - description: subservice session id
-        in: query
-        name: sid
+        required: true
         type: string
       - description: redirect url
         in: query
         name: redirect
+        required: true
         type: string
       - description: fallback url
         in: query
         name: fallback
+        type: string
+      - description: subservice session id
+        in: query
+        name: sid
+        required: true
         type: string
       responses:
         "303":
@@ -43,7 +46,7 @@ paths:
       summary: checks and issues the Hus session token
       tags:
       - auth
-  /hussession/{token}:
+  /hus/connect/{token}:
     get:
       description: the token has properties pps, service and sid.
       parameters:
@@ -64,59 +67,13 @@ paths:
         user info
       tags:
       - auth
-  /session/check/{service}/{sid}:
-    post:
-      description: |-
-        checks the service and sid and tells the subservice server that the client is signed in.
-        after the subservice server updates the session and responds with 200,
-        Hus auth server also reponds with 200 to the client.
-      parameters:
-      - description: subservice name
-        in: path
-        name: service
-        required: true
-        type: string
-      - description: session id
-        in: path
-        name: sid
-        required: true
-        type: string
-      responses:
-        "200":
-          description: Ok, theclient now should go to subservice's signing endpoint
-        "401":
-          description: Unauthorized, the client is not signed in
-        "404":
-          description: Not Found, the service is not registered
-        "500":
-          description: Internal Server Error
-      summary: chekcs the service and sid and tells the subservice server that the
-        client is signed in.
-      tags:
-      - auth
-  /session/revoke:
-    delete:
-      description: can be used to sign out.
-      parameters:
-      - description: Hus session tokens in cookie
-        in: header
-        name: jwt
-        type: string
-      responses:
-        "200":
-          description: Ok
-        "500":
-          description: doesn't have to be handled
-      summary: revokes every hus session in cookie from database.
-      tags:
-      - auth
-  /social/google:
+  /hus/sign/social/google:
     post:
       consumes:
       - application/json
       description: |-
         validates the google ID token and do some authentication stuff.
-        and redirects the user back to the given  after the process.
+        and redirects the user back to the given redirect url after the process is done.
         note that all urls must be url-encoded.
       parameters:
       - description: url to be redirected after authentication
@@ -141,29 +98,26 @@ paths:
         given redirect url.
       tags:
       - auth
-  /social/google/{subservice_name}:
-    post:
-      consumes:
-      - application/json
+  /hus/signout:
+    patch:
       description: |-
-        validates the google ID token and redirects with hus refresh token to /auth/{token_string}.
-        the refresh token will be expired in 7 days.
+        there are two types of signout process.
+        1) sign out sessions related only to given hus session.
+        2) sign out all related sessions to the user.
       parameters:
-      - description: subservice name
+      - description: sign out token
         in: path
-        name: subservice_name
+        name: token
         required: true
         type: string
-      - description: Google ID token
-        in: body
-        name: jwt
-        required: true
-        schema:
-          type: string
       responses:
-        "301":
-          description: to /auth/{token_string} or to /error
-      summary: gets google IDtoken and redirect with hus session cookie.
+        "200":
+          description: Ok, session has been signed out
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: gets signout token from subservice and does signout process.
       tags:
       - auth
 swagger: "2.0"

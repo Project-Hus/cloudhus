@@ -32,7 +32,7 @@ func NewAuthApiController(authApi *echo.Echo) *echo.Echo {
 	authApi.GET("/auth/hus/connect/:token", authApiController.SessionConnectionHandler) // from Subservice
 
 	// sign out services
-	authApi.DELETE("/auth/hus/sign/out/:token", authApiController.SignOutHandler) // from Subservice
+	authApi.PATCH("/auth/hus/signout", authApiController.SignOutHandler) // from Subservice
 
 	return authApi
 }
