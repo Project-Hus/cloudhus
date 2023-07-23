@@ -38,23 +38,24 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	var err error
 
 	// Query Parameters
-	serviceName := c.QueryParam("service")  // name of the subservice that is requesting
-	sessionID := c.QueryParam("sid")        // session ID of the subservice that is requesting
-	redirectURL := c.QueryParam("redirect") // URL to be redirected after the request is processed
-	fallbackURL := c.QueryParam("fallback") // URL to be redirected if the request fails
-	if fallbackURL == "" {
+	serviceName := c.QueryParam("service")   // name of the subservice that is requesting
+	sessionID := c.QueryParam("sid")         // session ID of the subservice that is requesting
+	redirectURLQ := c.QueryParam("redirect") // URL to be redirected after the request is processed
+	fallbackURLQ := c.QueryParam("fallback") // URL to be redirected if the request fails
+	if fallbackURLQ == "" {
 		// if fallback URL is not given, it redirects to redirect URL
-		fallbackURL = redirectURL
+		fallbackURLQ = redirectURLQ
 	}
 
 	// if any of three parameters are not given, this request can't be handled.
-	if serviceName == "" || sessionID == "" || redirectURL == "" {
+	if serviceName == "" || sessionID == "" || redirectURLQ == "" {
 		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 
-	// url decode
-	redirectURL, err1 := url.QueryUnescape(redirectURL)
-	fallbackURL, err2 := url.QueryUnescape(fallbackURL)
+	// url decode (URI)
+	redirectURL, err1 := url.QueryUnescape(redirectURLQ)
+	fallbackURL, err2 := url.QueryUnescape(fallbackURLQ)
+
 	if err1 != nil || err2 != nil {
 		// invalid url
 		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
@@ -78,8 +79,13 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
+	var rawHst string
+	if hus_st != nil {
+		rawHst = hus_st.Value
+	}
+
 	// validate Hus session
-	hs, _, err := session.ValidateHusSession(c.Request().Context(), hus_st.Value)
+	hs, _, err := session.ValidateHusSession(c.Request().Context(), rawHst)
 	// if no valid Hus session found, establish new Hus session.
 	// after redirection to this same endpoint, it will handle newly established Hus session.
 	if err != nil {
@@ -103,8 +109,8 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		// this is to guarantee that the session is established between Cloudhus and the client
 		tmpRedirect := common.Subservice["cloudhus"].Subdomains["auth"].URL +
 			"/auth/hussession?service=" + serviceName +
-			"&redirect=" + redirectURL +
-			"&fallback=" + fallbackURL +
+			"&redirect=" + redirectURLQ +
+			"&fallback=" + fallbackURLQ +
 			"&sid=" + sessionID
 		c.Redirect(http.StatusSeeOther, tmpRedirect)
 	}

@@ -58,11 +58,31 @@ func CreateHusSession(ctx context.Context) (newSession *ent.HusSession, newSigne
 // ConnectSessions gets Hus session entity, subservice name and subservice's session ID.
 // then makes connection between them and returns error if it occurs.
 func ConnectSessions(ctx context.Context, hs *ent.HusSession, service string, csid uuid.UUID) error {
+	if hs == nil {
+		return fmt.Errorf("hussession is not given")
+	}
 	_, err := db.Client.ConnectedSession.Create().SetHsid(hs.ID).SetService(service).SetCsid(csid).Save(ctx)
 	if err != nil {
 		return fmt.Errorf("connecting sessions failed:%w", err)
 	}
 	return nil
+}
+
+// Session Error represents the error that occurs in session service package.
+type SessionError struct {
+	Message string
+}
+
+func (e SessionError) Error() string {
+	return e.Message
+}
+
+// ExpiredSessionError occurs when the session token is expired.
+var ExpiredValidSessionError = &SessionError{"expired valid session"}
+
+// IsExpiredValid checks if the error is ExpiredValidSessionError.
+func IsExpiredValid(err error) bool {
+	return err == ExpiredValidSessionError
 }
 
 // ValidateHusSession gets Hus session token in string and validates it.
@@ -86,7 +106,7 @@ func ValidateHusSession(ctx context.Context, hst string) (hs *ent.HusSession, su
 	}
 	if exp {
 		// revoke all related sessions (not implemented yet) ------------------------------------------------------------------------
-		return nil, nil, fmt.Errorf("expired sesison")
+		return nil, nil, ExpiredValidSessionError
 	}
 
 	// check if the hus session is valid by querying the database with hus_sid.
@@ -96,19 +116,19 @@ func ValidateHusSession(ctx context.Context, hst string) (hs *ent.HusSession, su
 		return nil, nil, fmt.Errorf("invalid session")
 	}
 
-	u := hs.Edges.User
+	su = hs.Edges.User
 
 	// UUID type is a byte array with a length of 16.
 	// so it can be compared directly.
 	if hs.Tid != husTid {
 		// revoke all user's session and propagate (not implemented yet) ------------------------------------------------------------------------
-		if u != nil {
-			_, _ = db.Client.HusSession.Delete().Where(hussession.UID(u.ID)).Exec(ctx)
+		if su != nil {
+			_, _ = db.Client.HusSession.Delete().Where(hussession.UID(su.ID)).Exec(ctx)
 		}
 		return nil, nil, fmt.Errorf("illegal session")
 	}
 
-	return hs, u, nil
+	return hs, su, nil
 }
 
 // RotateHusSession gets Hus session entity and rotates it's TID.
