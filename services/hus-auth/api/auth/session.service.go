@@ -108,11 +108,11 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		// redirect to same endpoint here with same path and queries
 		// this is to guarantee that the session is established between Cloudhus and the client
 		tmpRedirect := common.Subservice["cloudhus"].Subdomains["auth"].URL +
-			"/auth/hussession?service=" + serviceName +
+			"/auth/hus?service=" + serviceName +
 			"&redirect=" + redirectURLQ +
 			"&fallback=" + fallbackURLQ +
 			"&sid=" + sessionID
-		c.Redirect(http.StatusSeeOther, tmpRedirect)
+		return c.Redirect(http.StatusSeeOther, tmpRedirect)
 	}
 
 	// now handle the valid session
