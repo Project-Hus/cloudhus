@@ -5,6 +5,7 @@ import (
 	"hus-auth/common/db"
 	"hus-auth/common/hus"
 	"hus-auth/common/service/session"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -31,6 +32,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 
 	redirectURL := c.QueryParam("redirect")
 	if redirectURL == "" {
+		log.Println("NO REDIRECT URL GIVEN") // TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG
 		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 	fallbackURL := c.QueryParam("fallback")
@@ -41,22 +43,26 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	redirectURL, err1 := url.QueryUnescape(redirectURL)
 	fallbackURL, err2 := url.QueryUnescape(fallbackURL)
 	if err1 != nil || err2 != nil {
+		log.Println("QUERY UNESCAPING FAILED") // TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG
 		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 
 	// validate the Hus session
 	hst, err := c.Cookie("hus_st")
 	if err != nil {
+		log.Printf("NO HUS ST:%v", err) // TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 	hs, _, err := session.ValidateHusSession(c.Request().Context(), hst.Value)
 	if err != nil {
+		log.Println("INVALID SESSION") // TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
 	// validate and parse the Google ID token
 	payload, err := idtoken.Validate(c.Request().Context(), c.FormValue("credential"), hus.GoogleClientID)
 	if err != nil {
+		log.Println("INVALID IDTOKEN") // TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
@@ -65,23 +71,27 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// check if the user is registered with Google)
 	u, err := db.QueryUserByGoogleSub(c.Request().Context(), sub)
 	if err != nil {
+		log.Println("USER QUERY ERR") // TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 	// create one if there is no Hus account with this Google account
 	if u == nil {
 		u, err = db.CreateUserFromGoogle(c.Request().Context(), *payload)
 		if err != nil {
+			log.Println("CREATING USER FAILED") // TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG
 			return c.Redirect(http.StatusSeeOther, fallbackURL)
 		}
 	}
 
 	err = session.SignHusSession(c.Request().Context(), hs, u)
 	if err != nil {
+		log.Println("SIGNING HUS SESSION FAILED") // TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
 	newToken, err := session.RotateHusSession(c.Request().Context(), hs)
 	if err != nil {
+		log.Println("ROTATING HUS SESSION FAILED") // TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
@@ -98,5 +108,6 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		cookie.Expires = time.Now().AddDate(0, 0, 7)
 	}
 	c.SetCookie(cookie)
+	log.Println("GOOD GOOD GOOD GOOD") // TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG TMP LOG
 	return c.Redirect(http.StatusSeeOther, redirectURL)
 }
