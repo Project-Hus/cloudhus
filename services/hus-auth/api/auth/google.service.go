@@ -5,10 +5,14 @@ import (
 	"hus-auth/common/db"
 	"hus-auth/common/hus"
 	"hus-auth/common/service/session"
+	"hus-auth/ent/connectedsession"
+	"hus-auth/ent/hussession"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/api/idtoken"
 )
@@ -22,6 +26,7 @@ import (
 // @Tags         auth
 // @Accept       json
 // @Param redirect query string true "url to be redirected after authentication"
+// @Param sid query string true "subservice session id"
 // @Param fallback query string false "url to be redirected if the authentication fails"
 // @Param        credential body string true "Google ID token"
 // @Response      303 "See Other"
@@ -30,7 +35,10 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// so all this endpoint should do is just to validate the Google ID token and propagate the result to the connected sessions.
 
 	redirectURL := c.QueryParam("redirect")
+	csid := c.QueryParam("csid")
+
 	if redirectURL == "" {
+		log.Printf("no redirect url given")
 		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 	fallbackURL := c.QueryParam("fallback")
@@ -41,22 +49,38 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	redirectURL, err1 := url.QueryUnescape(redirectURL)
 	fallbackURL, err2 := url.QueryUnescape(fallbackURL)
 	if err1 != nil || err2 != nil {
+		log.Printf("invalid url encoding:%s or %s", redirectURL, fallbackURL)
 		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 
-	// validate the Hus session
-	hst, err := c.Cookie("hus_st")
+	csuuid, err := uuid.Parse(csid)
 	if err != nil {
+		log.Printf("invalid csid:%s", csid)
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
-	hs, _, err := session.ValidateHusSession(c.Request().Context(), hst.Value)
+
+	/* Lax cookie not sent in cross-site redirect */
+	// // validate the Hus session
+	// hst, err := c.Cookie("hus_st")
+	// if err != nil {
+	// 	return c.Redirect(http.StatusSeeOther, fallbackURL)
+	// }
+	// hs, _, err := session.ValidateHusSession(c.Request().Context(), hst.Value)
+	// if err != nil {
+	// 	return c.Redirect(http.StatusSeeOther, fallbackURL)
+	// }
+
+	hs, err := db.Client.HusSession.Query().Where(hussession.HasConnectedSessionWith(connectedsession.Csid(csuuid))).
+		WithConnectedSession().Only(c.Request().Context())
 	if err != nil {
+		log.Printf("querying hussession failed:%s", err.Error())
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
 	// validate and parse the Google ID token
 	payload, err := idtoken.Validate(c.Request().Context(), c.FormValue("credential"), hus.GoogleClientID)
 	if err != nil {
+		log.Printf("invalid google id token:%s", err.Error())
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
@@ -65,23 +89,27 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// check if the user is registered with Google)
 	u, err := db.QueryUserByGoogleSub(c.Request().Context(), sub)
 	if err != nil {
+		log.Printf("querying user by google sub failed:%s", err.Error())
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 	// create one if there is no Hus account with this Google account
 	if u == nil {
 		u, err = db.CreateUserFromGoogle(c.Request().Context(), *payload)
 		if err != nil {
+			log.Printf("creating user with google sub failed:%s", err.Error())
 			return c.Redirect(http.StatusSeeOther, fallbackURL)
 		}
 	}
 
 	err = session.SignHusSession(c.Request().Context(), hs, u)
 	if err != nil {
+		log.Printf("signing hus session failed:%s", err.Error())
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
 	newToken, err := session.RotateHusSession(c.Request().Context(), hs)
 	if err != nil {
+		log.Printf("rotating hus session failed:%s", err.Error())
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
@@ -98,5 +126,6 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		cookie.Expires = time.Now().AddDate(0, 0, 7)
 	}
 	c.SetCookie(cookie)
+	log.Printf("user %d signed in", u.ID)
 	return c.Redirect(http.StatusSeeOther, redirectURL)
 }
