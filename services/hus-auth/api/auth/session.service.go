@@ -221,6 +221,7 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 
 	tokenByte, err := ioutil.ReadAll(tokenBody)
 	if err != nil {
+		log.Printf("reading token failed:%s", err)
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 
@@ -228,17 +229,20 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 
 	claims, exp, err := helper.ParseJWTWithHMAC(token)
 	if err != nil || exp {
+		log.Printf("parsing token failed:%s", err)
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 
 	pps := claims["pps"].(string)
 	if pps != "hus_signout" {
+		log.Printf("invalid token")
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 
 	hsid := claims["hsid"].(string)
 	hsuuid, err := uuid.Parse(hsid)
 	if err != nil {
+		log.Printf("invalid hsid:%s", err)
 		return c.String(http.StatusInternalServerError, "parsing uuid failed")
 	}
 
@@ -249,11 +253,14 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 	case "total":
 		err = session.SignOutTotal(c.Request().Context(), hsuuid)
 		if err != nil {
+			log.Printf("total signout failed:%s", err)
 			return c.String(http.StatusInternalServerError, "signout failed")
 		}
 	default:
+		log.Printf("invalid signout type:%s", soType)
 		return c.String(http.StatusBadRequest, "invalid signout type")
 	}
 
+	log.Printf("signed out successfully")
 	return c.String(http.StatusOK, "signed out")
 }
