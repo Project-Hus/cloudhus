@@ -88,7 +88,7 @@ func IsExpiredValid(err error) bool {
 // ValidateHusSession gets Hus session token in string and validates it.
 // if token is invalid, it returns "invalid session" error.
 // if token is expired, it returns "expired session" error.
-// if token's TID is not matched, it returns "illegal session" error after revoking all user's sessions.
+// if token's TID is not matched, it returns "illegal session" error after revoking user's all sessions.
 // and if it is valid, it returns Hus session and User entities.
 func ValidateHusSession(ctx context.Context, hst string) (hs *ent.HusSession, su *ent.User, err error) {
 	// parse the Hus session token.
@@ -121,7 +121,7 @@ func ValidateHusSession(ctx context.Context, hst string) (hs *ent.HusSession, su
 	// UUID type is a byte array with a length of 16.
 	// so it can be compared directly.
 	if hs.Tid != husTid {
-		// revoke all user's session and propagate (not implemented yet) ------------------------------------------------------------------------
+		// revoke user's all session and propagate (not implemented yet) ------------------------------------------------------------------------
 		if su != nil {
 			_, _ = db.Client.HusSession.Delete().Where(hussession.UID(su.ID)).Exec(ctx)
 		}
@@ -169,10 +169,13 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 		return fmt.Errorf("signing Hus session failed:%w", err)
 	}
 
-	// get connected sessions.
-	connectedSessions, err := hs.QueryConnectedSession().All(ctx)
-	if err != nil && !ent.IsNotFound(err) {
-		return fmt.Errorf("querying connected sessions failed:%w", err)
+	// query connected sessions if it is not queried yet.
+	connectedSessions := hs.Edges.ConnectedSession
+	if connectedSessions == nil {
+		connectedSessions, err = hs.QueryConnectedSession().All(ctx)
+		if err != nil && !ent.IsNotFound(err) {
+			return fmt.Errorf("querying connected sessions failed:%w", err)
+		}
 	}
 
 	// propagate to connected sessions.
@@ -229,26 +232,41 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 	return nil
 }
 
-// SignOutHusSession takes Hus session entity and signs out all user's Hus sessions.
+// SignOutHusSession takes Hus session entity and signs out user's all Hus sessions.
 func SignOutTotal(ctx context.Context, hsid uuid.UUID) error {
+	// first query the hussession's owner and get all that user's hussessions with their connected sessions.
 	hs, err := db.Client.HusSession.Query().Where(hussession.ID(hsid)).WithUser(func(q *ent.UserQuery) {
 		q.WithHusSessions(func(q *ent.HusSessionQuery) {
 			q.WithConnectedSession()
 		})
 	}).Only(ctx)
 	if err != nil {
-		return fmt.Errorf("querying Hus session failed:%w", err)
+		return fmt.Errorf("querying hussession failed:%w", err)
 	}
 
+	if hs.Edges.User == nil {
+		return fmt.Errorf("hussession is not signed")
+	}
 	userHusSessions := hs.Edges.User.Edges.HusSessions
 
-	connectedSessions := []*ent.ConnectedSession{}
+	// gather hussessions' IDs.
+	userHusSessionIDs := []uuid.UUID{}
+	for _, hs := range hs.Edges.User.Edges.HusSessions {
+		userHusSessionIDs = append(userHusSessionIDs, hs.ID)
+	}
+	// sign out user's all hussessions.
+	err = db.Client.HusSession.Update().Where(hussession.IDIn(userHusSessionIDs...)).ClearUID().ClearSignedAt().Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("total signing out failed:%w", err)
+	}
 
 	// gather all connected sessions.
+	connectedSessions := []*ent.ConnectedSession{}
 	for _, hs := range userHusSessions {
 		connectedSessions = append(connectedSessions, hs.Edges.ConnectedSession...)
 	}
 
+	// asynchronically propagate to subservices.
 	wg := sync.WaitGroup{}
 	wg.Add(len(connectedSessions))
 	for _, cs := range connectedSessions {
