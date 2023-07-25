@@ -169,10 +169,10 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 		return fmt.Errorf("signing Hus session failed:%w", err)
 	}
 
-	// get connected sessions.
+	// query connected sessions if it is not queried yet.
 	connectedSessions := hs.Edges.ConnectedSession
 	if connectedSessions == nil {
-		connectedSessions, err := hs.QueryConnectedSession().All(ctx)
+		connectedSessions, err = hs.QueryConnectedSession().All(ctx)
 		if err != nil && !ent.IsNotFound(err) {
 			return fmt.Errorf("querying connected sessions failed:%w", err)
 		}
@@ -232,7 +232,7 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 	return nil
 }
 
-// SignOutHusSession takes Hus session entity and signs out all user's Hus sessions.
+// SignOutHusSession takes Hus session entity and signs out user's all Hus sessions.
 func SignOutTotal(ctx context.Context, hsid uuid.UUID) error {
 	// first query the hussession's owner and get all that user's hussessions with their connected sessions.
 	hs, err := db.Client.HusSession.Query().Where(hussession.ID(hsid)).WithUser(func(q *ent.UserQuery) {
