@@ -56,7 +56,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	csuuid, err := uuid.Parse(csid)
 	if err != nil {
 		log.Printf("invalid csid:%s", csid)
-		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
+		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
 	/* Lax cookie not sent in cross-site redirect */
