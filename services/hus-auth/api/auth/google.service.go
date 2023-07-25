@@ -7,6 +7,7 @@ import (
 	"hus-auth/common/service/session"
 	"hus-auth/ent/connectedsession"
 	"hus-auth/ent/hussession"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -37,6 +38,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	csid := c.QueryParam("csid")
 
 	if redirectURL == "" {
+		log.Printf("no redirect url given")
 		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 	fallbackURL := c.QueryParam("fallback")
@@ -47,11 +49,13 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	redirectURL, err1 := url.QueryUnescape(redirectURL)
 	fallbackURL, err2 := url.QueryUnescape(fallbackURL)
 	if err1 != nil || err2 != nil {
+		log.Printf("invalid url encoding:%s or %s", redirectURL, fallbackURL)
 		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 
 	csuuid, err := uuid.Parse(csid)
 	if err != nil {
+		log.Printf("invalid csid:%s", csid)
 		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 
@@ -69,12 +73,14 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	hs, err := db.Client.HusSession.Query().Where(hussession.HasConnectedSessionWith(connectedsession.Csid(csuuid))).
 		WithConnectedSession().Only(c.Request().Context())
 	if err != nil {
+		log.Printf("querying hussession failed:%s", err.Error())
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
 	// validate and parse the Google ID token
 	payload, err := idtoken.Validate(c.Request().Context(), c.FormValue("credential"), hus.GoogleClientID)
 	if err != nil {
+		log.Printf("invalid google id token:%s", err.Error())
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
@@ -83,23 +89,27 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 	// check if the user is registered with Google)
 	u, err := db.QueryUserByGoogleSub(c.Request().Context(), sub)
 	if err != nil {
+		log.Printf("querying user by google sub failed:%s", err.Error())
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 	// create one if there is no Hus account with this Google account
 	if u == nil {
 		u, err = db.CreateUserFromGoogle(c.Request().Context(), *payload)
 		if err != nil {
+			log.Printf("creating user with google sub failed:%s", err.Error())
 			return c.Redirect(http.StatusSeeOther, fallbackURL)
 		}
 	}
 
 	err = session.SignHusSession(c.Request().Context(), hs, u)
 	if err != nil {
+		log.Printf("signing hus session failed:%s", err.Error())
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
 	newToken, err := session.RotateHusSession(c.Request().Context(), hs)
 	if err != nil {
+		log.Printf("rotating hus session failed:%s", err.Error())
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
@@ -116,5 +126,6 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		cookie.Expires = time.Now().AddDate(0, 0, 7)
 	}
 	c.SetCookie(cookie)
+	log.Printf("user %d signed in", u.ID)
 	return c.Redirect(http.StatusSeeOther, redirectURL)
 }
