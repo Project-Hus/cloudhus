@@ -14,7 +14,7 @@ func QuerySessionBySID(c context.Context, client *ent.Client, sid string) (*ent.
 	if err != nil {
 		return nil, err
 	}
-	hs, err := client.HusSession.Query().Where(hussession.ID(sid_uuid)).Only(c)
+	hs, err := client.HusSession.Query().Where(hussession.ID(sid_uuid)).WithConnectedSession().WithUser().Only(c)
 	if err != nil && !ent.IsNotFound(err) {
 		return nil, err
 	}
