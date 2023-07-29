@@ -49,6 +49,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 
 	// if any of three parameters are not given, this request can't be handled.
 	if serviceName == "" || sessionID == "" || redirectURLQ == "" {
+		log.Println("HusSessionHandler: invalid request")
 		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 
@@ -58,25 +59,29 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 
 	if err1 != nil || err2 != nil {
 		// invalid url
+		log.Println("HusSessionHandler: invalid url")
 		return c.Redirect(http.StatusSeeOther, common.Subservice["cloudhus"].Domain.URL+"/error")
 	}
 
 	// service not registered, then halt.
 	_, ok := common.Subservice[serviceName]
 	if !ok {
-		return c.Redirect(http.StatusSeeOther, fallbackURL)
+		log.Println("HusSessionHandler: service not registered")
+		return c.Redirect(http.StatusSeeOther, fallbackURL+"?message=service_not_registered")
 	}
 	// sessionID to UUID
 	sessionUUID, err := uuid.Parse(sessionID)
 	if err != nil {
-		return c.Redirect(http.StatusSeeOther, fallbackURL)
+		log.Println("HusSessionHandler: invalid session id")
+		return c.Redirect(http.StatusSeeOther, fallbackURL+"message=invalid_session_id")
 	}
 
 	// get hus_st from cookie
 	hus_st, err := c.Cookie("hus_st")
 	if err != nil && err != http.ErrNoCookie {
+		log.Println("HusSessionHandler: error while getting cookie")
 		// there's an error while getting cookie, return error.
-		return c.Redirect(http.StatusSeeOther, fallbackURL)
+		return c.Redirect(http.StatusSeeOther, fallbackURL+"message=getting_cookie_failed")
 	}
 
 	var rawHst string
@@ -91,7 +96,8 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	if err != nil {
 		_, nhst, err := session.CreateHusSession(c.Request().Context())
 		if err != nil {
-			return c.Redirect(http.StatusSeeOther, fallbackURL)
+			log.Println("HusSessionHandler: error while creating hus session")
+			return c.Redirect(http.StatusSeeOther, fallbackURL+"message=creating_hus_session_failed")
 		}
 
 		nhstCookie := &http.Cookie{
@@ -112,19 +118,22 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 			"&redirect=" + redirectURLQ +
 			"&fallback=" + fallbackURLQ +
 			"&sid=" + sessionID
+		log.Println("HusSessionHandler: self redirection", tmpRedirect)
 		return c.Redirect(http.StatusSeeOther, tmpRedirect)
 	}
 
 	// now handle the valid session
 	err = session.ConnectSessions(c.Request().Context(), hs, serviceName, sessionUUID)
 	if err != nil {
-		return c.Redirect(http.StatusSeeOther, fallbackURL)
+		log.Println("HusSessionHandler: error while connecting sessions")
+		return c.Redirect(http.StatusSeeOther, fallbackURL+"message=connecting_sessions_failed")
 	}
 
 	// finally, rotate the Hus session
 	nhst, err := session.RotateHusSession(c.Request().Context(), hs)
 	if err != nil {
-		return c.Redirect(http.StatusSeeOther, fallbackURL)
+		log.Println("HusSessionHandler: error while rotating hus session")
+		return c.Redirect(http.StatusSeeOther, fallbackURL+"message=rotating_hus_session_failed")
 	}
 
 	nhstCookie := &http.Cookie{
@@ -141,6 +150,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 	c.SetCookie(nhstCookie)
 
+	log.Println("HusSessionHandler: session connected")
 	return c.Redirect(http.StatusSeeOther, redirectURL)
 }
 
