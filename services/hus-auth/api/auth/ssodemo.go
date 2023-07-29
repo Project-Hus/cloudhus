@@ -10,6 +10,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// SSODemoHandler godoc
+// @Tags         auth
+// @Router /demo/sso [get]
+// @Summary shows the SSO feature between Cloudhus and Lifthus.
+// @Success      200 "Ok, session is well-handled"
+// @Failure      400 "Bad Request, something's wrong"
+// @Failure      500 "Internal Server Error, something's wrong"
 func (ac authApiController) SSODemoHandler(c echo.Context) error {
 	hst, err := c.Cookie("hus_st")
 	if err != nil && err != http.ErrNoCookie {
@@ -63,8 +70,9 @@ func (ac authApiController) SSODemoHandler(c echo.Context) error {
 		</head>
 		<body>
 			<h1>SSO Demonstration</h1>
-			<p>Hi!`+u.GivenName+`</p>
-			<>Thank you for joining us!</p>
+			<p>Hi! `+u.GivenName+`,</p>
+			<p>and your family name is... `+u.FamilyName+`!</p>
+			<p>Thank you for joining us!</p>
 			<p><a href="https://www.lifthus.com">Lifthus</a></p>
 		</body>
 		</html>

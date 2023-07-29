@@ -25,6 +25,25 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/demo/sso": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "shows the SSO feature between Cloudhus and Lifthus.",
+                "responses": {
+                    "200": {
+                        "description": "Ok, session is well-handled"
+                    },
+                    "400": {
+                        "description": "Bad Request, something's wrong"
+                    },
+                    "500": {
+                        "description": "Internal Server Error, something's wrong"
+                    }
+                }
+            }
+        },
         "/hus": {
             "get": {
                 "description": "this endpoint can be used both for Cloudhus and subservices.\nif the subservice redirects the client to this endpoint with service name, session id and redirect url, its session will be connected to Hus session.\nand if fallback url is given, it will redirect to fallback url if it fails.\nnote that all urls must be url-encoded.",
@@ -112,6 +131,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "url to be redirected after authentication",
                         "name": "redirect",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "subservice session id",
+                        "name": "sid",
                         "in": "query",
                         "required": true
                     },
