@@ -13,6 +13,18 @@ info:
   title: Cloudhus auth server
   version: 0.0.0
 paths:
+  /demo/sso:
+    get:
+      responses:
+        "200":
+          description: Ok, session is well-handled
+        "400":
+          description: Bad Request, something's wrong
+        "500":
+          description: Internal Server Error, something's wrong
+      summary: shows the SSO feature between Cloudhus and Lifthus.
+      tags:
+      - auth
   /hus:
     get:
       description: |-
@@ -79,6 +91,11 @@ paths:
       - description: url to be redirected after authentication
         in: query
         name: redirect
+        required: true
+        type: string
+      - description: subservice session id
+        in: query
+        name: sid
         required: true
         type: string
       - description: url to be redirected if the authentication fails
