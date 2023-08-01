@@ -36,6 +36,23 @@ central authentication, cloud service for Project-Hus which provides various fea
     4. Finally, try signing out from Lifthus. you will see the 2nd pic again.
     Which means that you are signed out from two different domains at the same time.
 
+### Sequence diagrams
+![SSOsequence](https://github.com/Project-Hus/cloudhus/assets/108582413/76992cc2-52d8-4a30-98c4-17e87017a54a)
+
+CASE 1: when user connects without any valid tokens.
+  
+![SSOsequence2](https://github.com/Project-Hus/cloudhus/assets/108582413/38fedd0a-52d0-41eb-9cc1-ce069252d5ea)
+
+CASE 2: when user connects with a valid token.
+
+![SSOsequence3](https://github.com/Project-Hus/cloudhus/assets/108582413/0ac5169f-ca05-4b6f-a3c4-b1985ba32545)
+
+CASE 3: when user signs in.
+
+![SSOsequence4](https://github.com/Project-Hus/cloudhus/assets/108582413/35f765fb-f918-442f-ae7b-6e1028abe9d4)
+
+CASE 4: when user signs out.
+
 </div>
 
 ## Requirements
