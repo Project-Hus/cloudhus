@@ -16,7 +16,6 @@ import (
 
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -31,20 +30,11 @@ func CreateHusSession(ctx context.Context) (newSession *ent.HusSession, newSigne
 		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("creating new hus session failed:%w", err)
 	}
-	// Hus Session Token
-	hst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"pps": "hus_session",
-		"sid": hs.ID.String(),
-		"tid": hs.Tid.String(),
-		"iss": hus.AuthURL,
-		"iat": hs.Iat.Unix(),
-		"exp": time.Now().Add(time.Hour * 48).Unix(),
-		"prv": hs.Preserved,
-	})
-	hsts, err := hst.SignedString(hus.HusSecretKeyBytes)
+
+	hst, err := helper.SignedHST(hs)
 	if err != nil {
 		err = db.Rollback(tx, err)
-		return nil, "", fmt.Errorf("signing session token failed:%w", err)
+		return nil, "", fmt.Errorf("generating session token failed:%w", err)
 	}
 
 	err = tx.Commit()
@@ -52,7 +42,7 @@ func CreateHusSession(ctx context.Context) (newSession *ent.HusSession, newSigne
 		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("committing transaction failed:%w", err)
 	}
-	return hs, hsts, nil
+	return hs, hst, nil
 }
 
 // ConnectSessions gets Hus session entity, subservice name and subservice's session ID.
@@ -142,22 +132,12 @@ func RotateHusSession(ctx context.Context, hs *ent.HusSession) (nstSigned string
 		return "", fmt.Errorf("updating session failed")
 	}
 
-	nst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"pps": "hus_session",   // purpose
-		"sid": hs.ID.String(),  // session token's uuid
-		"tid": hs.Tid.String(), // token id
-		"iss": hus.AuthURL,     // issuer
-		"iat": hs.Iat.Unix(),   // issued at
-		"exp": time.Now().Add(time.Hour * 48).Unix(),
-		"prv": hs.Preserved, // preserved
-	})
-
-	nstSigned, err = nst.SignedString(hus.HusSecretKeyBytes)
+	nst, err := helper.SignedHST(hs)
 	if err != nil {
 		return "", fmt.Errorf("signing Hus session failed")
 	}
 
-	return nstSigned, nil
+	return nst, nil
 }
 
 // SignHusSession takes Hus session entity and user entity and signs the Hus session.
@@ -201,20 +181,12 @@ func SignHusSession(ctx context.Context, hs *ent.HusSession, u *ent.User) error 
 				FamilyName:      u.FamilyName,
 			}
 
-			hscJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-				"pps":  "sign_in_propagation",
-				"hsid": cs.Hsid.String(),
-				"csid": cs.Csid.String(),
-				"user": husConnUser,
-				"exp":  time.Now().Add(time.Second * 10).Unix(),
-			})
-
-			hscSigned, err := hscJWT.SignedString(hus.HusSecretKeyBytes)
+			sipt, err := helper.SignedSIPToken(cs, *husConnUser)
 			if err != nil {
 				return
 			}
 
-			req, err := http.NewRequest(http.MethodPatch, husConnectURL, strings.NewReader(hscSigned))
+			req, err := http.NewRequest(http.MethodPatch, husConnectURL, strings.NewReader(sipt))
 			if err != nil {
 				return
 			}
@@ -278,18 +250,12 @@ func SignOutTotal(ctx context.Context, hsid uuid.UUID) error {
 			}
 			husConnectURL := service.Subdomains["auth"].URL + "/auth/hus/signout"
 
-			hscJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-				"pps":  "signout_propagation",
-				"hsid": cs.Hsid.String(),
-				"exp":  time.Now().Add(time.Second * 10).Unix(),
-			})
-
-			hscSigned, err := hscJWT.SignedString(hus.HusSecretKeyBytes)
+			sopt, err := helper.SignedSOPToken(cs)
 			if err != nil {
 				return
 			}
 
-			req, err := http.NewRequest(http.MethodPatch, husConnectURL, strings.NewReader(hscSigned))
+			req, err := http.NewRequest(http.MethodPatch, husConnectURL, strings.NewReader(sopt))
 			if err != nil {
 				return
 			}

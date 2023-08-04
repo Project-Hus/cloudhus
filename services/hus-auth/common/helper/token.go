@@ -22,7 +22,7 @@ func SignedHST(hs *ent.HusSession) (string, error) {
 	return SignJWT(token)
 }
 
-func SignedSignInPropagationToken(cs *ent.ConnectedSession, hcu dto.HusConnUser) (string, error) {
+func SignedSIPToken(cs *ent.ConnectedSession, hcu dto.HusConnUser) (string, error) {
 	token := NewJWT(jwt.MapClaims{
 		"pps":  "signin_propagation",
 		"hsid": cs.Hsid.String(),
@@ -33,7 +33,7 @@ func SignedSignInPropagationToken(cs *ent.ConnectedSession, hcu dto.HusConnUser)
 	return SignJWT(token)
 }
 
-func SignedSignOutPropagationToken(cs *ent.ConnectedSession) (string, error) {
+func SignedSOPToken(cs *ent.ConnectedSession) (string, error) {
 	token := NewJWT(jwt.MapClaims{
 		"pps":  "signout_propagation",
 		"hsid": cs.Hsid.String(),
