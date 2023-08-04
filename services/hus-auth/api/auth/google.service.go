@@ -3,6 +3,7 @@ package auth
 import (
 	"hus-auth/common"
 	"hus-auth/common/db"
+	"hus-auth/common/helper"
 	"hus-auth/common/hus"
 	"hus-auth/common/service/session"
 	"hus-auth/ent/connectedsession"
@@ -113,15 +114,7 @@ func (ac authApiController) GoogleAuthHandler(c echo.Context) error {
 		return c.Redirect(http.StatusSeeOther, fallbackURL)
 	}
 
-	cookie := &http.Cookie{
-		Name:     "hus_st",
-		Value:    newToken,
-		Path:     "/",
-		Secure:   hus.CookieSecure,
-		HttpOnly: true,
-		Domain:   hus.AuthCookieDomain,
-		SameSite: hus.SameSiteMode,
-	}
+	cookie := helper.HSTCookieMaker(newToken)
 	if hs.Preserved {
 		cookie.Expires = time.Now().AddDate(0, 0, 7)
 	}

@@ -18,8 +18,9 @@ var Origins = []string{}
 var AuthCookieDomain = ""
 var AuthURL = ""
 var ApiURL = ""
-var CookieSecure = false
-var SameSiteMode = http.SameSiteNoneMode
+
+var CookieSecure = true
+var CookieSameSite = http.SameSiteLaxMode
 
 var LifthusURL = "http://localhost:3000"
 
@@ -44,8 +45,6 @@ func InitHusVars(husenv string, _ *ent.Client) {
 		AuthCookieDomain = "auth.cloudhus.com"
 		AuthURL = "https://auth.cloudhus.com"
 		ApiURL = "https://api.cloudhus.com"
-		CookieSecure = true
-		SameSiteMode = http.SameSiteNoneMode
 	case "development":
 		Host = "localhost:9000"
 		URL = "http://localhost:9000"
@@ -54,7 +53,6 @@ func InitHusVars(husenv string, _ *ent.Client) {
 		AuthURL = "http://localhost:9000"
 		ApiURL = "http://localhost:9000"
 		CookieSecure = false
-		SameSiteMode = http.SameSiteLaxMode
 	case "native":
 		Host = "localhost:9001"
 		URL = "http://localhost:9001"
@@ -68,8 +66,6 @@ func InitHusVars(husenv string, _ *ent.Client) {
 		AuthCookieDomain = ""
 		AuthURL = "http://localhost:9001"
 		ApiURL = "http://localhost:9002"
-		CookieSecure = false
-		SameSiteMode = http.SameSiteLaxMode
 	default:
 		log.Fatal("HUS_ENV is not set properly. (production|development|native)")
 	}

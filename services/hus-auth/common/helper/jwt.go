@@ -32,3 +32,13 @@ func ParseJWTWithHMAC(tokenString string) (claims jwt.MapClaims, expired bool, e
 		return nil, false, fmt.Errorf("invalid token")
 	}
 }
+
+// NewJWT creates a new jwt token not signed.
+func NewJWT(c jwt.MapClaims) *jwt.Token {
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, c)
+}
+
+// SignJWT signs a jwt token with HusSecretKey.
+func SignJWT(t *jwt.Token) (string, error) {
+	return t.SignedString(hus.HusSecretKeyBytes)
+}

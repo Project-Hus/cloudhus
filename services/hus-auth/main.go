@@ -96,13 +96,11 @@ func main() {
 
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			// get request host and path
-			hst := c.Request().Host
-			// get path from req
-			pth := c.Request().URL.Path
-			// get origin from req
+			// get request ip address
+			rip := c.RealIP()
 			org := c.Request().Header.Get("Origin")
-			fmt.Println("REQUEST==========", hst, pth, org)
+			fmt.Println("REQUEST from Origin", org, rip)
+			fmt.Println(c.Request())
 			return next(c)
 		}
 	})
