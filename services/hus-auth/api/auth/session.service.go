@@ -5,7 +5,6 @@ import (
 	"hus-auth/common/db"
 	"hus-auth/common/dto"
 	"hus-auth/common/helper"
-	"hus-auth/common/hus"
 	"hus-auth/common/service/session"
 	"hus-auth/ent"
 	"hus-auth/ent/connectedsession"
@@ -100,16 +99,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 			return c.Redirect(http.StatusSeeOther, fallbackURL+"message=creating_hus_session_failed")
 		}
 
-		nhstCookie := &http.Cookie{
-			Name:     "hus_st",
-			Value:    nhst,
-			Path:     "/",
-			Domain:   hus.AuthCookieDomain,
-			HttpOnly: true,
-			Secure:   hus.CookieSecure,
-			SameSite: hus.SameSiteMode,
-		}
-		c.SetCookie(nhstCookie)
+		c.SetCookie(helper.HSTCookieMaker(nhst))
 
 		// redirect to same endpoint here with same path and queries
 		// this is to guarantee that the session is established between Cloudhus and the client
@@ -136,15 +126,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		return c.Redirect(http.StatusSeeOther, fallbackURL+"message=rotating_hus_session_failed")
 	}
 
-	nhstCookie := &http.Cookie{
-		Name:     "hus_st",
-		Value:    nhst,
-		Path:     "/",
-		Domain:   hus.AuthCookieDomain,
-		HttpOnly: true,
-		Secure:   hus.CookieSecure,
-		SameSite: hus.SameSiteMode,
-	}
+	nhstCookie := helper.HSTCookieMaker(nhst)
 	if hs.Preserved {
 		nhstCookie.Expires = time.Now().Add(7 * 24 * time.Hour)
 	}
