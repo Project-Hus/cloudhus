@@ -107,7 +107,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 			Domain:   hus.AuthCookieDomain,
 			HttpOnly: true,
 			Secure:   hus.CookieSecure,
-			SameSite: http.SameSiteLaxMode,
+			SameSite: hus.SameSiteMode,
 		}
 		c.SetCookie(nhstCookie)
 
@@ -143,7 +143,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		Domain:   hus.AuthCookieDomain,
 		HttpOnly: true,
 		Secure:   hus.CookieSecure,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: hus.SameSiteMode,
 	}
 	if hs.Preserved {
 		nhstCookie.Expires = time.Now().Add(7 * 24 * time.Hour)

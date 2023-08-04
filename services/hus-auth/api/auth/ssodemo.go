@@ -51,15 +51,27 @@ func (ac authApiController) SSODemoHandler(c echo.Context) error {
 		<html>
 		<head>
 			<title>SSO Demonstration</title>
+			`+commonStyle+`
 		</head>
 		<body>
+			<div class="container">
 			<h1>SSO Demonstration</h1>
+			<img src="https://avatars.githubusercontent.com/u/124238598?s=200&v=4" alt="Project Hus Logo">
 			<p>You are not signed in!</p>
 			<p>Come and join us!</p>
-			<p><a href="https://www.lifthus.com">Lifthus</a></p>
+			<h3><a href="https://www.lifthus.com" target="_blank">Lifthus</a></h3>
+			</div>
 		</body>
 		</html>
 		`)
+	}
+
+	var profImgURL string
+	profImgURLp := u.ProfileImageURL
+	if profImgURLp == nil {
+		profImgURL = "https://avatars.githubusercontent.com/u/124238598?s=200&v=4"
+	} else {
+		profImgURL = *profImgURLp
 	}
 
 	return c.HTML(http.StatusOK, `
@@ -67,13 +79,17 @@ func (ac authApiController) SSODemoHandler(c echo.Context) error {
 		<html>
 		<head>
 			<title>SSO Demonstration</title>
+			`+commonStyle+`
 		</head>
 		<body>
+			<div class="container">
 			<h1>SSO Demonstration</h1>
-			<p>Hi! `+u.GivenName+`,</p>
-			<p>and your family name is... `+u.FamilyName+`!</p>
+			<img src="`+profImgURL+`" alt="Your profile image">
+			<p>Hi! <b>`+u.GivenName+`</b>,</p>
+			<p>and your family name is... <b>`+u.FamilyName+`</b>!</p>
 			<p>Thank you for joining us!</p>
-			<p><a href="https://www.lifthus.com">Lifthus</a></p>
+			<h3><a href="https://www.lifthus.com" target="_blank">Lifthus</a></h3>
+			</div>
 		</body>
 		</html>
 	`)
@@ -85,11 +101,45 @@ func basicHTMLGenerator(message string) string {
 	<html>
 	<head>
 		<title>SSO Demonstration</title>
+		` + commonStyle + `
 	</head>
 	<body>
-		<h1>SSO Demonstration</h1>
+	<div class="container">
+	<h1>SSO Demonstration</h1>
+	<img src="https://avatars.githubusercontent.com/u/124238598?s=200&v=4" alt="Project Hus Logo">
 		<p>` + message + `</p>
+		<h3><a href="https://www.lifthus.com" target="_blank">Lifthus</a></h3>
+	</div>
 	</body>
 	</html>
 	`
 }
+
+var commonStyle = `
+<style>
+        img {
+            width: 300px;
+            height: 300px;
+            object-fit: contain;
+        }
+		body {
+			margin: 0;
+			padding: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			background-color: #363e50;
+		  }
+		.container {
+			text-align: center;
+			color: #9298e2;
+		}
+		a {
+			color: #5dd1f1
+		}
+		a:visited {
+			color: #03baec
+		}
+</style>
+`
