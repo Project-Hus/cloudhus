@@ -72,7 +72,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	sessionUUID, err := uuid.Parse(sessionID)
 	if err != nil {
 		log.Println("HusSessionHandler: invalid session id")
-		return c.Redirect(http.StatusSeeOther, fallbackURL+"message=invalid_session_id")
+		return c.Redirect(http.StatusSeeOther, fallbackURL+"?message=invalid_session_id")
 	}
 
 	// get hus_st from cookie
@@ -80,7 +80,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	if err != nil && err != http.ErrNoCookie {
 		log.Println("HusSessionHandler: error while getting cookie")
 		// there's an error while getting cookie, return error.
-		return c.Redirect(http.StatusSeeOther, fallbackURL+"message=getting_cookie_failed")
+		return c.Redirect(http.StatusSeeOther, fallbackURL+"?message=getting_cookie_failed")
 	}
 
 	var rawHst string
@@ -96,7 +96,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		_, nhst, err := session.CreateHusSession(c.Request().Context())
 		if err != nil {
 			log.Println("HusSessionHandler: error while creating hus session")
-			return c.Redirect(http.StatusSeeOther, fallbackURL+"message=creating_hus_session_failed")
+			return c.Redirect(http.StatusSeeOther, fallbackURL+"?message=creating_hus_session_failed")
 		}
 
 		c.SetCookie(helper.HSTCookieMaker(nhst))
@@ -116,14 +116,14 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	err = session.ConnectSessions(c.Request().Context(), hs, serviceName, sessionUUID)
 	if err != nil {
 		log.Println("HusSessionHandler: error while connecting sessions")
-		return c.Redirect(http.StatusSeeOther, fallbackURL+"message=connecting_sessions_failed")
+		return c.Redirect(http.StatusSeeOther, fallbackURL+"?message=connecting_sessions_failed")
 	}
 
 	// finally, rotate the Hus session
 	nhst, err := session.RotateHusSession(c.Request().Context(), hs)
 	if err != nil {
 		log.Println("HusSessionHandler: error while rotating hus session")
-		return c.Redirect(http.StatusSeeOther, fallbackURL+"message=rotating_hus_session_failed")
+		return c.Redirect(http.StatusSeeOther, fallbackURL+"?message=rotating_hus_session_failed")
 	}
 
 	nhstCookie := helper.HSTCookieMaker(nhst)
