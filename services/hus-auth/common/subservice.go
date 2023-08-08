@@ -29,7 +29,7 @@ func init() {
 	// at production level, we use actual domain names
 	switch husenv {
 	case "production":
-		Subservice["localhost"] = ServiceDomain{
+		Subservice["lifthus-dev"] = ServiceDomain{
 			Domain: Domain{
 				Name: "localhost",
 				URL:  "http://localhost:3000",
@@ -37,11 +37,11 @@ func init() {
 			Subdomains: map[string]Domain{
 				"auth": {
 					Name: "auth",
-					URL:  "https://auth.lifthus.com",
+					URL:  "https://auth.dev.lifthus.com",
 				},
 				"api": {
 					Name: "api",
-					URL:  "https://api.lifthus.com",
+					URL:  "https://api.dev.lifthus.com",
 				},
 			},
 		}

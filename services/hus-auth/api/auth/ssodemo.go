@@ -46,14 +46,7 @@ func (ac authApiController) SSODemoHandler(c echo.Context) error {
 	u := hs.Edges.User
 
 	if u == nil {
-		return c.HTML(http.StatusOK, `
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<title>SSO Demonstration</title>
-			`+commonStyle+`
-		</head>
-		<body>
+		return c.HTML(http.StatusOK, basicHTMLTemplate(`
 			<div class="container">
 			<h1>SSO Demonstration</h1>
 			<img src="https://avatars.githubusercontent.com/u/124238598?s=200&v=4" alt="Project Hus Logo">
@@ -61,9 +54,7 @@ func (ac authApiController) SSODemoHandler(c echo.Context) error {
 			<p>Come and join us!</p>
 			<h3><a href="https://www.lifthus.com" target="_blank">Lifthus</a></h3>
 			</div>
-		</body>
-		</html>
-		`)
+		`))
 	}
 
 	var profImgURL string
@@ -74,14 +65,7 @@ func (ac authApiController) SSODemoHandler(c echo.Context) error {
 		profImgURL = *profImgURLp
 	}
 
-	return c.HTML(http.StatusOK, `
-	<!DOCTYPE html>
-		<html>
-		<head>
-			<title>SSO Demonstration</title>
-			`+commonStyle+`
-		</head>
-		<body>
+	return c.HTML(http.StatusOK, basicHTMLTemplate(`
 			<div class="container">
 			<h1>SSO Demonstration</h1>
 			<img src="`+profImgURL+`" alt="Your profile image">
@@ -90,12 +74,21 @@ func (ac authApiController) SSODemoHandler(c echo.Context) error {
 			<p>Thank you for joining us!</p>
 			<h3><a href="https://www.lifthus.com" target="_blank">Lifthus</a></h3>
 			</div>
-		</body>
-		</html>
-	`)
+	`))
 }
 
 func basicHTMLGenerator(message string) string {
+	return basicHTMLTemplate(`
+	<div class="container">
+	<h1>SSO Demonstration</h1>
+	<img src="https://avatars.githubusercontent.com/u/124238598?s=200&v=4" alt="Project Hus Logo">
+		<p>` + message + `</p>
+		<h3><a href="https://www.lifthus.com" target="_blank">Lifthus</a></h3>
+	</div>
+	`)
+}
+
+func basicHTMLTemplate(content string) string {
 	return `
 	<!DOCTYPE html>
 	<html>
@@ -104,12 +97,7 @@ func basicHTMLGenerator(message string) string {
 		` + commonStyle + `
 	</head>
 	<body>
-	<div class="container">
-	<h1>SSO Demonstration</h1>
-	<img src="https://avatars.githubusercontent.com/u/124238598?s=200&v=4" alt="Project Hus Logo">
-		<p>` + message + `</p>
-		<h3><a href="https://www.lifthus.com" target="_blank">Lifthus</a></h3>
-	</div>
+	` + content + `
 	</body>
 	</html>
 	`
