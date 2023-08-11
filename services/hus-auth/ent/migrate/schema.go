@@ -42,6 +42,7 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "tid", Type: field.TypeUUID},
 		{Name: "iat", Type: field.TypeTime},
+		{Name: "exp", Type: field.TypeInt64, Default: 1691920417},
 		{Name: "preserved", Type: field.TypeBool, Default: false},
 		{Name: "signed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -55,7 +56,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "hus_sessions_users_hus_sessions",
-				Columns:    []*schema.Column{HusSessionsColumns[6]},
+				Columns:    []*schema.Column{HusSessionsColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

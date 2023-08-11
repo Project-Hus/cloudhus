@@ -26,6 +26,10 @@ var LifthusURL = "http://localhost:3000"
 
 var Http *http.Client
 
+func GetHstExp() int64 {
+	return time.Now().Add(time.Hour * 48).Unix() // 10 min basically
+}
+
 func InitHusVars(husenv string, _ *ent.Client) {
 	Http = &http.Client{Timeout: 5 * time.Second}
 

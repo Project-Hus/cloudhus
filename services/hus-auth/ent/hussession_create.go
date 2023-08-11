@@ -51,6 +51,20 @@ func (hsc *HusSessionCreate) SetNillableIat(t *time.Time) *HusSessionCreate {
 	return hsc
 }
 
+// SetExp sets the "exp" field.
+func (hsc *HusSessionCreate) SetExp(i int64) *HusSessionCreate {
+	hsc.mutation.SetExp(i)
+	return hsc
+}
+
+// SetNillableExp sets the "exp" field if the given value is not nil.
+func (hsc *HusSessionCreate) SetNillableExp(i *int64) *HusSessionCreate {
+	if i != nil {
+		hsc.SetExp(*i)
+	}
+	return hsc
+}
+
 // SetPreserved sets the "preserved" field.
 func (hsc *HusSessionCreate) SetPreserved(b bool) *HusSessionCreate {
 	hsc.mutation.SetPreserved(b)
@@ -198,6 +212,10 @@ func (hsc *HusSessionCreate) defaults() {
 		v := hussession.DefaultIat()
 		hsc.mutation.SetIat(v)
 	}
+	if _, ok := hsc.mutation.Exp(); !ok {
+		v := hussession.DefaultExp
+		hsc.mutation.SetExp(v)
+	}
 	if _, ok := hsc.mutation.Preserved(); !ok {
 		v := hussession.DefaultPreserved
 		hsc.mutation.SetPreserved(v)
@@ -219,6 +237,9 @@ func (hsc *HusSessionCreate) check() error {
 	}
 	if _, ok := hsc.mutation.Iat(); !ok {
 		return &ValidationError{Name: "iat", err: errors.New(`ent: missing required field "HusSession.iat"`)}
+	}
+	if _, ok := hsc.mutation.Exp(); !ok {
+		return &ValidationError{Name: "exp", err: errors.New(`ent: missing required field "HusSession.exp"`)}
 	}
 	if _, ok := hsc.mutation.Preserved(); !ok {
 		return &ValidationError{Name: "preserved", err: errors.New(`ent: missing required field "HusSession.preserved"`)}
@@ -268,6 +289,10 @@ func (hsc *HusSessionCreate) createSpec() (*HusSession, *sqlgraph.CreateSpec) {
 	if value, ok := hsc.mutation.Iat(); ok {
 		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
 		_node.Iat = value
+	}
+	if value, ok := hsc.mutation.Exp(); ok {
+		_spec.SetField(hussession.FieldExp, field.TypeInt64, value)
+		_node.Exp = value
 	}
 	if value, ok := hsc.mutation.Preserved(); ok {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)

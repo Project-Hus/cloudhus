@@ -115,7 +115,7 @@ func ValidateHusSession(ctx context.Context, hst string) (hs *ent.HusSession, su
 		if su != nil {
 			_, _ = db.Client.HusSession.Delete().Where(hussession.UID(su.ID)).Exec(ctx)
 		}
-		return nil, nil, fmt.Errorf("illegal session")
+		return hs, nil, fmt.Errorf("illegal session")
 	}
 
 	return hs, su, nil

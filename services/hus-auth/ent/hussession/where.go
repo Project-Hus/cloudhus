@@ -66,6 +66,11 @@ func Iat(v time.Time) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldIat, v))
 }
 
+// Exp applies equality check predicate on the "exp" field. It's identical to ExpEQ.
+func Exp(v int64) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldExp, v))
+}
+
 // Preserved applies equality check predicate on the "preserved" field. It's identical to PreservedEQ.
 func Preserved(v bool) predicate.HusSession {
 	return predicate.HusSession(sql.FieldEQ(FieldPreserved, v))
@@ -164,6 +169,46 @@ func IatLT(v time.Time) predicate.HusSession {
 // IatLTE applies the LTE predicate on the "iat" field.
 func IatLTE(v time.Time) predicate.HusSession {
 	return predicate.HusSession(sql.FieldLTE(FieldIat, v))
+}
+
+// ExpEQ applies the EQ predicate on the "exp" field.
+func ExpEQ(v int64) predicate.HusSession {
+	return predicate.HusSession(sql.FieldEQ(FieldExp, v))
+}
+
+// ExpNEQ applies the NEQ predicate on the "exp" field.
+func ExpNEQ(v int64) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNEQ(FieldExp, v))
+}
+
+// ExpIn applies the In predicate on the "exp" field.
+func ExpIn(vs ...int64) predicate.HusSession {
+	return predicate.HusSession(sql.FieldIn(FieldExp, vs...))
+}
+
+// ExpNotIn applies the NotIn predicate on the "exp" field.
+func ExpNotIn(vs ...int64) predicate.HusSession {
+	return predicate.HusSession(sql.FieldNotIn(FieldExp, vs...))
+}
+
+// ExpGT applies the GT predicate on the "exp" field.
+func ExpGT(v int64) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGT(FieldExp, v))
+}
+
+// ExpGTE applies the GTE predicate on the "exp" field.
+func ExpGTE(v int64) predicate.HusSession {
+	return predicate.HusSession(sql.FieldGTE(FieldExp, v))
+}
+
+// ExpLT applies the LT predicate on the "exp" field.
+func ExpLT(v int64) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLT(FieldExp, v))
+}
+
+// ExpLTE applies the LTE predicate on the "exp" field.
+func ExpLTE(v int64) predicate.HusSession {
+	return predicate.HusSession(sql.FieldLTE(FieldExp, v))
 }
 
 // PreservedEQ applies the EQ predicate on the "preserved" field.

@@ -5,9 +5,11 @@ import (
 	"hus-auth/common/db"
 	"hus-auth/common/dto"
 	"hus-auth/common/helper"
+	"hus-auth/common/hus"
 	"hus-auth/common/service/session"
 	"hus-auth/ent"
 	"hus-auth/ent/connectedsession"
+	"hus-auth/ent/hussession"
 	"io/ioutil"
 
 	"log"
@@ -93,6 +95,10 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	// if no valid Hus session found, establish new Hus session.
 	// after redirection to this same endpoint, it will handle newly established Hus session.
 	if err != nil {
+		if hs != nil {
+			db.Client.ConnectedSession.Delete().Where(connectedsession.HasHusSessionWith(hussession.ID(hs.ID))).Exec(c.Request().Context())
+			db.Client.HusSession.DeleteOneID(hs.ID).Exec(c.Request().Context())
+		}
 		_, nhst, err := session.CreateHusSession(c.Request().Context())
 		if err != nil {
 			log.Println("HusSessionHandler: error while creating hus session")
@@ -173,6 +179,15 @@ func (ac authApiController) SessionConnectionHandler(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusNotFound, "no such session")
 	}
+
+	chs := cs.Edges.HusSession
+	if chs.Exp < time.Now().Unix() {
+		db.Client.ConnectedSession.Delete().Where(connectedsession.HasHusSessionWith(hussession.ID(chs.ID))).Exec(c.Request().Context())
+		db.Client.HusSession.DeleteOne(chs).Exec(c.Request().Context())
+		return c.String(http.StatusNotFound, "hus session expired")
+	}
+
+	chs.Update().SetExp(hus.GetHstExp()).Save(c.Request().Context())
 
 	cu := cs.Edges.HusSession.Edges.User
 

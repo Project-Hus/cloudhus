@@ -16,7 +16,7 @@ func SignedHST(hs *ent.HusSession) (string, error) {
 		"tid": hs.Tid.String(),
 		"iss": hus.AuthURL,
 		"iat": hs.Iat.Unix(),
-		"exp": time.Now().Add(time.Hour * 48).Unix(),
+		"exp": hs.Exp,
 		"prv": hs.Preserved,
 	})
 	return SignJWT(token)

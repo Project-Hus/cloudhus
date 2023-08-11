@@ -59,6 +59,19 @@ func (hsu *HusSessionUpdate) SetNillableIat(t *time.Time) *HusSessionUpdate {
 	return hsu
 }
 
+// SetExp sets the "exp" field.
+func (hsu *HusSessionUpdate) SetExp(i int64) *HusSessionUpdate {
+	hsu.mutation.ResetExp()
+	hsu.mutation.SetExp(i)
+	return hsu
+}
+
+// AddExp adds i to the "exp" field.
+func (hsu *HusSessionUpdate) AddExp(i int64) *HusSessionUpdate {
+	hsu.mutation.AddExp(i)
+	return hsu
+}
+
 // SetPreserved sets the "preserved" field.
 func (hsu *HusSessionUpdate) SetPreserved(b bool) *HusSessionUpdate {
 	hsu.mutation.SetPreserved(b)
@@ -215,6 +228,10 @@ func (hsu *HusSessionUpdate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (hsu *HusSessionUpdate) defaults() {
+	if _, ok := hsu.mutation.Exp(); !ok {
+		v := hussession.UpdateDefaultExp()
+		hsu.mutation.SetExp(v)
+	}
 	if _, ok := hsu.mutation.UpdatedAt(); !ok {
 		v := hussession.UpdateDefaultUpdatedAt()
 		hsu.mutation.SetUpdatedAt(v)
@@ -235,6 +252,12 @@ func (hsu *HusSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := hsu.mutation.Iat(); ok {
 		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
+	}
+	if value, ok := hsu.mutation.Exp(); ok {
+		_spec.SetField(hussession.FieldExp, field.TypeInt64, value)
+	}
+	if value, ok := hsu.mutation.AddedExp(); ok {
+		_spec.AddField(hussession.FieldExp, field.TypeInt64, value)
 	}
 	if value, ok := hsu.mutation.Preserved(); ok {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
@@ -382,6 +405,19 @@ func (hsuo *HusSessionUpdateOne) SetNillableIat(t *time.Time) *HusSessionUpdateO
 	if t != nil {
 		hsuo.SetIat(*t)
 	}
+	return hsuo
+}
+
+// SetExp sets the "exp" field.
+func (hsuo *HusSessionUpdateOne) SetExp(i int64) *HusSessionUpdateOne {
+	hsuo.mutation.ResetExp()
+	hsuo.mutation.SetExp(i)
+	return hsuo
+}
+
+// AddExp adds i to the "exp" field.
+func (hsuo *HusSessionUpdateOne) AddExp(i int64) *HusSessionUpdateOne {
+	hsuo.mutation.AddExp(i)
 	return hsuo
 }
 
@@ -554,6 +590,10 @@ func (hsuo *HusSessionUpdateOne) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (hsuo *HusSessionUpdateOne) defaults() {
+	if _, ok := hsuo.mutation.Exp(); !ok {
+		v := hussession.UpdateDefaultExp()
+		hsuo.mutation.SetExp(v)
+	}
 	if _, ok := hsuo.mutation.UpdatedAt(); !ok {
 		v := hussession.UpdateDefaultUpdatedAt()
 		hsuo.mutation.SetUpdatedAt(v)
@@ -591,6 +631,12 @@ func (hsuo *HusSessionUpdateOne) sqlSave(ctx context.Context) (_node *HusSession
 	}
 	if value, ok := hsuo.mutation.Iat(); ok {
 		_spec.SetField(hussession.FieldIat, field.TypeTime, value)
+	}
+	if value, ok := hsuo.mutation.Exp(); ok {
+		_spec.SetField(hussession.FieldExp, field.TypeInt64, value)
+	}
+	if value, ok := hsuo.mutation.AddedExp(); ok {
+		_spec.AddField(hussession.FieldExp, field.TypeInt64, value)
 	}
 	if value, ok := hsuo.mutation.Preserved(); ok {
 		_spec.SetField(hussession.FieldPreserved, field.TypeBool, value)
