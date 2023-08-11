@@ -95,6 +95,10 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	// if no valid Hus session found, establish new Hus session.
 	// after redirection to this same endpoint, it will handle newly established Hus session.
 	if err != nil {
+		if hs != nil {
+			db.Client.ConnectedSession.Delete().Where(connectedsession.HasHusSessionWith(hussession.ID(hs.ID))).Exec(c.Request().Context())
+			db.Client.HusSession.DeleteOneID(hs.ID).Exec(c.Request().Context())
+		}
 		_, nhst, err := session.CreateHusSession(c.Request().Context())
 		if err != nil {
 			log.Println("HusSessionHandler: error while creating hus session")
