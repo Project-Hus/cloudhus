@@ -24,6 +24,10 @@ func (HusSession) Annotations() []schema.Annotation {
 	}
 }
 
+func GetHstExp() int64 {
+	return time.Now().Add(time.Hour * 48).Unix() // 10 min basically
+}
+
 // Fields of the HusSession.
 func (HusSession) Fields() []ent.Field {
 	return []ent.Field{
@@ -33,6 +37,8 @@ func (HusSession) Fields() []ent.Field {
 		field.UUID("tid", uuid.UUID{}).Default(uuid.New),
 		// issued at
 		field.Time("iat").Default(time.Now),
+		// expired at
+		field.Int64("exp").Default(GetHstExp()).UpdateDefault(GetHstExp),
 		// in preserved mode, the session token is extended by a week each time the user is redirected to cloudhus.
 		// but tid is rotated each time.
 		field.Bool("preserved").Default(false), // preserved

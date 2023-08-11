@@ -17,6 +17,8 @@ const (
 	FieldTid = "tid"
 	// FieldIat holds the string denoting the iat field in the database.
 	FieldIat = "iat"
+	// FieldExp holds the string denoting the exp field in the database.
+	FieldExp = "exp"
 	// FieldPreserved holds the string denoting the preserved field in the database.
 	FieldPreserved = "preserved"
 	// FieldUID holds the string denoting the uid field in the database.
@@ -52,6 +54,7 @@ var Columns = []string{
 	FieldID,
 	FieldTid,
 	FieldIat,
+	FieldExp,
 	FieldPreserved,
 	FieldUID,
 	FieldSignedAt,
@@ -73,6 +76,10 @@ var (
 	DefaultTid func() uuid.UUID
 	// DefaultIat holds the default value on creation for the "iat" field.
 	DefaultIat func() time.Time
+	// DefaultExp holds the default value on creation for the "exp" field.
+	DefaultExp int64
+	// UpdateDefaultExp holds the default value on update for the "exp" field.
+	UpdateDefaultExp func() int64
 	// DefaultPreserved holds the default value on creation for the "preserved" field.
 	DefaultPreserved bool
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.

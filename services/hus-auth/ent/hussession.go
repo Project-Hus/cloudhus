@@ -22,6 +22,8 @@ type HusSession struct {
 	Tid uuid.UUID `json:"tid,omitempty"`
 	// Iat holds the value of the "iat" field.
 	Iat time.Time `json:"iat,omitempty"`
+	// Exp holds the value of the "exp" field.
+	Exp int64 `json:"exp,omitempty"`
 	// Preserved holds the value of the "preserved" field.
 	Preserved bool `json:"preserved,omitempty"`
 	// UID holds the value of the "uid" field.
@@ -75,7 +77,7 @@ func (*HusSession) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case hussession.FieldPreserved:
 			values[i] = new(sql.NullBool)
-		case hussession.FieldUID:
+		case hussession.FieldExp, hussession.FieldUID:
 			values[i] = new(sql.NullInt64)
 		case hussession.FieldIat, hussession.FieldSignedAt, hussession.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -113,6 +115,12 @@ func (hs *HusSession) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field iat", values[i])
 			} else if value.Valid {
 				hs.Iat = value.Time
+			}
+		case hussession.FieldExp:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field exp", values[i])
+			} else if value.Valid {
+				hs.Exp = value.Int64
 			}
 		case hussession.FieldPreserved:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -183,6 +191,9 @@ func (hs *HusSession) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("iat=")
 	builder.WriteString(hs.Iat.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("exp=")
+	builder.WriteString(fmt.Sprintf("%v", hs.Exp))
 	builder.WriteString(", ")
 	builder.WriteString("preserved=")
 	builder.WriteString(fmt.Sprintf("%v", hs.Preserved))

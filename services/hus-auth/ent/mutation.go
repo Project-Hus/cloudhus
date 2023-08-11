@@ -541,6 +541,8 @@ type HusSessionMutation struct {
 	id                       *uuid.UUID
 	tid                      *uuid.UUID
 	iat                      *time.Time
+	exp                      *int64
+	addexp                   *int64
 	preserved                *bool
 	signed_at                *time.Time
 	updated_at               *time.Time
@@ -729,6 +731,62 @@ func (m *HusSessionMutation) OldIat(ctx context.Context) (v time.Time, err error
 // ResetIat resets all changes to the "iat" field.
 func (m *HusSessionMutation) ResetIat() {
 	m.iat = nil
+}
+
+// SetExp sets the "exp" field.
+func (m *HusSessionMutation) SetExp(i int64) {
+	m.exp = &i
+	m.addexp = nil
+}
+
+// Exp returns the value of the "exp" field in the mutation.
+func (m *HusSessionMutation) Exp() (r int64, exists bool) {
+	v := m.exp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExp returns the old "exp" field's value of the HusSession entity.
+// If the HusSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HusSessionMutation) OldExp(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExp is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExp: %w", err)
+	}
+	return oldValue.Exp, nil
+}
+
+// AddExp adds i to the "exp" field.
+func (m *HusSessionMutation) AddExp(i int64) {
+	if m.addexp != nil {
+		*m.addexp += i
+	} else {
+		m.addexp = &i
+	}
+}
+
+// AddedExp returns the value that was added to the "exp" field in this mutation.
+func (m *HusSessionMutation) AddedExp() (r int64, exists bool) {
+	v := m.addexp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetExp resets all changes to the "exp" field.
+func (m *HusSessionMutation) ResetExp() {
+	m.exp = nil
+	m.addexp = nil
 }
 
 // SetPreserved sets the "preserved" field.
@@ -1028,12 +1086,15 @@ func (m *HusSessionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *HusSessionMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.tid != nil {
 		fields = append(fields, hussession.FieldTid)
 	}
 	if m.iat != nil {
 		fields = append(fields, hussession.FieldIat)
+	}
+	if m.exp != nil {
+		fields = append(fields, hussession.FieldExp)
 	}
 	if m.preserved != nil {
 		fields = append(fields, hussession.FieldPreserved)
@@ -1059,6 +1120,8 @@ func (m *HusSessionMutation) Field(name string) (ent.Value, bool) {
 		return m.Tid()
 	case hussession.FieldIat:
 		return m.Iat()
+	case hussession.FieldExp:
+		return m.Exp()
 	case hussession.FieldPreserved:
 		return m.Preserved()
 	case hussession.FieldUID:
@@ -1080,6 +1143,8 @@ func (m *HusSessionMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldTid(ctx)
 	case hussession.FieldIat:
 		return m.OldIat(ctx)
+	case hussession.FieldExp:
+		return m.OldExp(ctx)
 	case hussession.FieldPreserved:
 		return m.OldPreserved(ctx)
 	case hussession.FieldUID:
@@ -1110,6 +1175,13 @@ func (m *HusSessionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIat(v)
+		return nil
+	case hussession.FieldExp:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExp(v)
 		return nil
 	case hussession.FieldPreserved:
 		v, ok := value.(bool)
@@ -1147,6 +1219,9 @@ func (m *HusSessionMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *HusSessionMutation) AddedFields() []string {
 	var fields []string
+	if m.addexp != nil {
+		fields = append(fields, hussession.FieldExp)
+	}
 	return fields
 }
 
@@ -1155,6 +1230,8 @@ func (m *HusSessionMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *HusSessionMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case hussession.FieldExp:
+		return m.AddedExp()
 	}
 	return nil, false
 }
@@ -1164,6 +1241,13 @@ func (m *HusSessionMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *HusSessionMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case hussession.FieldExp:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddExp(v)
+		return nil
 	}
 	return fmt.Errorf("unknown HusSession numeric field %s", name)
 }
@@ -1211,6 +1295,9 @@ func (m *HusSessionMutation) ResetField(name string) error {
 		return nil
 	case hussession.FieldIat:
 		m.ResetIat()
+		return nil
+	case hussession.FieldExp:
+		m.ResetExp()
 		return nil
 	case hussession.FieldPreserved:
 		m.ResetPreserved()
